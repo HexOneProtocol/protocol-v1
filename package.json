@@ -1,0 +1,42 @@
+{
+  "name": "realfevr-fusion-sc",
+  "version": "1.0.0",
+  "description": "NFT Fusion smart contract",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RealFevr/realfevr-fusion-sc.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RealFevr/realfevr-fusion-sc/issues"
+  },
+  "homepage": "https://github.com/RealFevr/realfevr-fusion-sc#readme",
+  "resolutions": {
+    "hardhat/**/@ethereumjs/tx": "3.5.0"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.5",
+    "@ethereumjs/tx": "3.5.0",
+    "@nomiclabs/hardhat-etherscan": "^3.0.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.2",
+    "@openzeppelin/contracts": "^4.5.0",
+    "@openzeppelin/contracts-upgradeable": "^4.5.2",
+    "@openzeppelin/hardhat-upgrades": "^1.17.0",
+    "@openzeppelin/test-helpers": "^0.5.15",
+    "@openzeppelin/upgrades": "^2.8.0",
+    "chai": "^4.3.6",
+    "dotenv": "^10.0.0",
+    "ethereum-waffle": "^3.0.0",
+    "ethers": "^5.5.4",
+    "hardhat-contract-sizer": "^2.5.1",
+    "hardhat-gas-reporter": "^1.0.8",
+    "solidity-coverage": "^0.7.20",
+    "hardhat": "^2.9.1"
+  }
+}
