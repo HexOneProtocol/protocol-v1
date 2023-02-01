@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "./utils/TokenUtils.sol";
 import "./interfaces/IHexOneVault.sol";
 import "./interfaces/IHexOnePriceFeed.sol";
 
@@ -27,6 +28,9 @@ contract HexOneVault is Ownable, IHexOneVault {
     /// @dev The total USD value of locked base tokens.
     uint256 private lockedUSDValue;
 
+    // @dev Share rate to calculate shareAmount from collaterals.
+    uint256 public shareRate;
+
     uint16 public LIMIT_PRICE_PERCENT = 66; // 66%
 
     /// @dev User infos to mange deposit and retrieve.
@@ -46,6 +50,10 @@ contract HexOneVault is Ownable, IHexOneVault {
 
         baseToken = _baseToken;
         hexOnePriceFeed = _hexOnePriceFeed;
+
+        uint8 decimals = TokenUtils.expectDecimals(_baseToken);
+        uint256 amount = 10**decimals;
+        shareRate = IHexOnePriceFeed(_hexOnePriceFeed).getBaseTokenPrice(_baseToken, amount);
     }
 
     /// @inheritdoc IHexOneVault
@@ -58,11 +66,13 @@ contract HexOneVault is Ownable, IHexOneVault {
     function depositCollateral(
         address _depositor, 
         uint256 _amount,
+        uint256 _duration,
         bool _isCommit
     ) external onlyHexOneProtocol override returns (uint256 shareAmount) {
         address sender = msg.sender;
         IERC20(baseToken).safeTransferFrom(sender, address(this), _amount);
-        shareAmount = IHexOnePriceFeed(hexOnePriceFeed).getBaseTokenPrice(baseToken, _amount);
+        
+        shareAmount = _convertToShare(_amount, _duration);
 
         UserInfo storage userInfo = userInfos[_depositor];
         uint256 depositId = userInfo.depositId;
@@ -70,8 +80,7 @@ contract HexOneVault is Ownable, IHexOneVault {
         userInfo.depositInfos[depositId] = DepositInfo(_amount, shareAmount, block.timestamp, _isCommit);
         userInfo.depositId += 1;
 
-        totalLocked += _amount;
-        lockedUSDValue += shareAmount;
+        _updateLockedValue(_amount);
     }
 
     /// @inheritdoc IHexOneVault
@@ -80,5 +89,36 @@ contract HexOneVault is Ownable, IHexOneVault {
         uint256 limitUSDValue = totalLocked * LIMIT_PRICE_PERCENT / 100;
         require (limitUSDValue > currentUSDValue, "emergency withdraw condition not meet");
         IERC20(baseToken).safeTransfer(msg.sender, totalLocked);
+    }
+
+    /// @notice Calculate shares amount.
+    /// @dev shares = (input HEX + bonuses(input HEX, stake days)) / Share Rate
+    ///      New Share Rate = ((input HEX + payouts) + bonuses((input HEX + payouts), stake days)) / shares
+    /// @param _collateralAmount The amount of collateral.
+    /// @param _duration The maturity duration.
+    /// @return shareAmount The calculated share amount.
+    function _convertToShare(uint256 _collateralAmount, uint256 _duration) internal returns (uint256 shareAmount) {
+        // TODO calculate share amount.
+
+        // Update share rate.
+        _updateShareRate(_collateralAmount, _duration);
+
+        return 0;
+    }
+
+    /// @notice Update shares rate.
+    /// @dev New Share Rate = ((input HEX + payouts) + bonuses((input HEX + payouts), stake days)) / shares
+    /// @param _collateralAmount The amount of collateral.
+    /// @param _duration The maturity duration.
+    function _updateShareRate(uint256 _collateralAmount, uint256 _duration) internal {
+        // TODO calculate new shareRate.
+    }
+
+    /// @notice Update locked base token amount and usd value.
+    /// @param _collateralAmount The amount of collateral.
+    function _updateLockedValue(uint256 _collateralAmount) internal {
+        totalLocked += _collateralAmount;
+        uint256 usdValue = IHexOnePriceFeed(hexOnePriceFeed).getBaseTokenPrice(baseToken, _collateralAmount);
+        lockedUSDValue += usdValue;
     }
 }

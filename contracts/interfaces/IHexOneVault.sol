@@ -29,9 +29,10 @@ interface IHexOneVault {
     ///      it means deposit can't retrieve collateral before maturity.
     /// @param _depositor The address of depositor.
     /// @param _amount The amount of collateral.
+    /// @param _duration The maturity duration.
     /// @param _isCommitType Type of deposit. true/false = commit/uncommit.
     /// @return shareAmount The amount of T-SHARES.
-    function depositCollateral(address _depositor, uint256 _amount, bool _isCommitType) external returns (uint256 shareAmount);
+    function depositCollateral(address _depositor, uint256 _amount, uint256 _duration, bool _isCommitType) external returns (uint256 shareAmount);
 
     /// @notice If total USD value is below 66% of initial USD value,
     ///         can call emergency withdraw.
