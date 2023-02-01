@@ -63,24 +63,56 @@ contract HexOneVault is Ownable, IHexOneVault {
     }
 
     /// @inheritdoc IHexOneVault
+    function setLimitPricePercent(uint16 _percent) external onlyOwner {
+        LIMIT_PRICE_PERCENT = _percent;
+    }
+
+    /// @inheritdoc IHexOneVault
     function depositCollateral(
         address _depositor, 
         uint256 _amount,
         uint256 _duration,
+        uint256 _restakeDuration,
         bool _isCommit
     ) external onlyHexOneProtocol override returns (uint256 shareAmount) {
+        require (!_isCommit || _restakeDuration > 0, "wrong restake duration");
         address sender = msg.sender;
         IERC20(baseToken).safeTransferFrom(sender, address(this), _amount);
         
-        shareAmount = _convertToShare(_amount, _duration);
+        return _depositCollateral(_depositor, _amount, _duration, _restakeDuration, _isCommit);
+    }
 
+    /// @inheritdoc IHexOneVault
+    function claimCollateral(
+        address _depositor,
+        uint256 _depositId
+    ) external onlyHexOneProtocol override returns (uint256 mintAmount, bool burnMode) {
         UserInfo storage userInfo = userInfos[_depositor];
-        uint256 depositId = userInfo.depositId;
-        userInfo.claimed = false;
-        userInfo.depositInfos[depositId] = DepositInfo(_amount, shareAmount, block.timestamp, _isCommit);
-        userInfo.depositId += 1;
+        DepositInfo storage depositInfo = userInfo.depositInfos[_depositId];
+        require (depositInfo.exist, "not exist deposit pool");
+        require (depositInfo.depositTime + depositInfo.duration < block.timestamp, "can not claim before maturity");
 
-        _updateLockedValue(_amount);
+        uint256 depositedAmount = depositInfo.amount;
+        bool isCommitType = depositInfo.isCommitType;
+        uint256 yieldCollateralAmount = _getYieldCollateralAmount(depositedAmount, depositInfo.duration);
+        uint256 retrieveAmount = depositedAmount + yieldCollateralAmount;
+        uint256 shareAmount = 0;
+
+        _updateLockedValue(depositedAmount, false);
+        if (!isCommitType) {
+            IERC20(baseToken).safeTransfer(_depositor, retrieveAmount);
+        } else {
+            shareAmount = _depositCollateral(
+                _depositor, 
+                retrieveAmount, 
+                depositInfo.restakeDuration, 
+                depositInfo.restakeDuration, 
+                true
+            );
+        }
+
+        depositInfo.exist = false;
+        return (shareAmount, depositInfo.isCommitType);
     }
 
     /// @inheritdoc IHexOneVault
@@ -89,6 +121,24 @@ contract HexOneVault is Ownable, IHexOneVault {
         uint256 limitUSDValue = totalLocked * LIMIT_PRICE_PERCENT / 100;
         require (limitUSDValue > currentUSDValue, "emergency withdraw condition not meet");
         IERC20(baseToken).safeTransfer(msg.sender, totalLocked);
+    }
+
+    function _depositCollateral(
+        address _depositor, 
+        uint256 _amount,
+        uint256 _duration,
+        uint256 _restakeDuration,
+        bool _isCommit
+    ) internal returns (uint256 shareAmount) {
+        shareAmount = _convertToShare(_amount, _duration);
+
+        UserInfo storage userInfo = userInfos[_depositor];
+        uint256 depositId = userInfo.depositId;
+        _restakeDuration = _isCommit ? _restakeDuration : 0;
+        userInfo.depositInfos[depositId] = DepositInfo(_amount, shareAmount, block.timestamp, _duration, _restakeDuration, _isCommit, true);
+        userInfo.depositId += 1;
+
+        _updateLockedValue(_amount, true);
     }
 
     /// @notice Calculate shares amount.
@@ -116,9 +166,22 @@ contract HexOneVault is Ownable, IHexOneVault {
 
     /// @notice Update locked base token amount and usd value.
     /// @param _collateralAmount The amount of collateral.
-    function _updateLockedValue(uint256 _collateralAmount) internal {
-        totalLocked += _collateralAmount;
+    /// @param _add Add or remove collateral amount.
+    function _updateLockedValue(uint256 _collateralAmount, bool _add) internal {
         uint256 usdValue = IHexOnePriceFeed(hexOnePriceFeed).getBaseTokenPrice(baseToken, _collateralAmount);
-        lockedUSDValue += usdValue;
+        totalLocked = _add ? totalLocked + _collateralAmount : totalLocked - _collateralAmount;
+        if (_add) {
+            lockedUSDValue += usdValue;
+        } else {
+            lockedUSDValue = lockedUSDValue < usdValue ? 0 : lockedUSDValue - usdValue;
+        }
+    }
+
+    /// @notice Calculate yield collateral amount based one amount and duration.
+    /// @param _collateralAmount The amount of collateral.
+    /// @param _duration The timestamp of duration.
+    function _getYieldCollateralAmount(uint256 _collateralAmount, uint256 _duration) internal view returns (uint256) {
+        // TODO Calcaulte yield collateral amount.
+        return 0;
     }
 }

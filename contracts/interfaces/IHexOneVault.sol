@@ -7,13 +7,15 @@ interface IHexOneVault {
         uint256 amount;
         uint256 shares;
         uint256 depositTime;
+        uint256 duration;
+        uint256 restakeDuration;
         bool isCommitType;
+        bool exist;
     }
 
     struct UserInfo {
         uint256 depositId;
         mapping(uint256 => DepositInfo) depositInfos;
-        bool claimed;
     }
 
     /// @notice Set hexOneProtocol contract address.
@@ -30,12 +32,35 @@ interface IHexOneVault {
     /// @param _depositor The address of depositor.
     /// @param _amount The amount of collateral.
     /// @param _duration The maturity duration.
+    /// @param _restakeDuration If commitType is ture, then restakeDuration is necessary.
     /// @param _isCommitType Type of deposit. true/false = commit/uncommit.
     /// @return shareAmount The amount of T-SHARES.
-    function depositCollateral(address _depositor, uint256 _amount, uint256 _duration, bool _isCommitType) external returns (uint256 shareAmount);
+    function depositCollateral(
+        address _depositor, 
+        uint256 _amount, 
+        uint256 _duration, 
+        uint256 _restakeDuration,
+        bool _isCommitType
+    ) external returns (uint256 shareAmount);
+
+    /// @notice Retrieve collateral after maturity.
+    /// @dev Users can claim collateral after maturity.
+    /// @return mintAmount If depositor's commitType is true then 
+    ///         calculate shareAmount based on restake amount and duration.
+    /// @return burnMode Present depositor's commit type.
+    function claimCollateral(
+        address _depositor,
+        uint256 _depositId
+    ) external returns (uint256 mintAmount, bool burnMode);
 
     /// @notice If total USD value is below 66% of initial USD value,
     ///         can call emergency withdraw.
     /// @dev Only owner can call this function.
     function emergencyWithdraw() external;
+
+    /// @notice Set new limitPricePercent.
+    ///         If total locked USD value is below that, emergencyWithdraw will occur.
+    /// @dev Only owne can call this function.
+    /// @param _percent New limitPricePercent.
+    function setLimitPricePercent(uint16 _percent) external;
 }
