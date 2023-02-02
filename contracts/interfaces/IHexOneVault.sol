@@ -15,8 +15,23 @@ interface IHexOneVault {
 
     struct UserInfo {
         uint256 depositId;
+        uint256 shareBalance;
+        uint256 depositedBalance;
         mapping(uint256 => DepositInfo) depositInfos;
     }
+
+    /// @notice base token of vault.
+    function baseToken() external view returns (address baseToken);
+
+    /// @notice The share balance and deposited balance of user.
+    function balanceOf(address _user) external view returns (uint256, uint256);
+
+    /// @notice Get calimable share amount and base token amount.
+    function claimableAmount(address _user) external view returns (
+        uint256 shareAmount, 
+        uint256 tokenAmount, 
+        uint256[] memory claimableIds
+    );
 
     /// @notice Set hexOneProtocol contract address.
     /// @dev Only owner can call this function and 
@@ -47,11 +62,12 @@ interface IHexOneVault {
     /// @dev Users can claim collateral after maturity.
     /// @return mintAmount If depositor's commitType is true then 
     ///         calculate shareAmount based on restake amount and duration.
+    /// @return burnAmount The amount of $HEX1 should be burn.
     /// @return burnMode Present depositor's commit type.
     function claimCollateral(
         address _depositor,
         uint256 _depositId
-    ) external returns (uint256 mintAmount, bool burnMode);
+    ) external returns (uint256 mintAmount, uint256 burnAmount, bool burnMode);
 
     /// @notice If total USD value is below 66% of initial USD value,
     ///         can call emergency withdraw.
@@ -63,4 +79,8 @@ interface IHexOneVault {
     /// @dev Only owne can call this function.
     /// @param _percent New limitPricePercent.
     function setLimitPricePercent(uint16 _percent) external;
+
+    event CollateralClaimed(address indexed claimer, uint256 claimedAmount);
+
+    event CollateralRestaked(address indexed staker, uint256 restakedAmount, uint256 restakeDuration);
 }

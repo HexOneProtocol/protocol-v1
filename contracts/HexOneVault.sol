@@ -20,7 +20,7 @@ contract HexOneVault is Ownable, IHexOneVault {
 
     /// @dev The address of collateral(base token).
     /// @dev It can't be updates if is't set once.
-    address immutable public baseToken;
+    address public override baseToken;
 
     /// @dev The total amount of locked base token.
     uint256 private totalLocked;
@@ -63,6 +63,43 @@ contract HexOneVault is Ownable, IHexOneVault {
     }
 
     /// @inheritdoc IHexOneVault
+    function balanceOf(address _user) external view override returns (
+        uint256 shareBalance, 
+        uint256 depositedBalance
+    ) {
+        return (userInfos[_user].shareBalance, userInfos[_user].depositedBalance);
+    }
+
+    /// @inheritdoc IHexOneVault
+    function claimableAmount(address _user) external view override returns (
+        uint256 shareAmount, 
+        uint256 tokenAmount,
+        uint256[] memory claimableIds
+    ) {
+        uint256 depositId = userInfos[_user].depositId;
+        uint256 curTime = block.timestamp;
+        uint256[] memory tempClaimableIds = new uint256[](depositId);
+        uint256 index = 0;
+        for (uint256 i = 0; i < depositId; i ++) {
+            DepositInfo memory depositInfo = userInfos[_user].depositInfos[i];
+            if (depositInfo.exist) {
+                uint256 elapsedTime = curTime - depositInfo.depositTime;
+                if (elapsedTime >= depositInfo.duration) {
+                    shareAmount += depositInfo.shares;
+                    tokenAmount += depositInfo.amount;
+                    tempClaimableIds[index ++] = i;
+                }
+            }
+        }
+
+        claimableIds = new uint256[](index);
+        for (uint256 i = 0; i < index; i ++) {
+            claimableIds[i] = tempClaimableIds[i];
+        }
+        delete tempClaimableIds;
+    }
+
+    /// @inheritdoc IHexOneVault
     function setLimitPricePercent(uint16 _percent) external onlyOwner {
         LIMIT_PRICE_PERCENT = _percent;
     }
@@ -86,7 +123,7 @@ contract HexOneVault is Ownable, IHexOneVault {
     function claimCollateral(
         address _depositor,
         uint256 _depositId
-    ) external onlyHexOneProtocol override returns (uint256 mintAmount, bool burnMode) {
+    ) external onlyHexOneProtocol override returns (uint256 mintAmount, uint256 burnAmount, bool burnMode) {
         UserInfo storage userInfo = userInfos[_depositor];
         DepositInfo storage depositInfo = userInfo.depositInfos[_depositId];
         require (depositInfo.exist, "not exist deposit pool");
@@ -97,11 +134,15 @@ contract HexOneVault is Ownable, IHexOneVault {
         uint256 yieldCollateralAmount = _getYieldCollateralAmount(depositedAmount, depositInfo.duration);
         uint256 retrieveAmount = depositedAmount + yieldCollateralAmount;
         uint256 shareAmount = 0;
+        userInfo.shareBalance -= depositInfo.shares;
+        userInfo.depositedBalance -= depositedAmount;
 
         _updateLockedValue(depositedAmount, false);
         if (!isCommitType) {
+            emit CollateralClaimed(_depositor, retrieveAmount);
             IERC20(baseToken).safeTransfer(_depositor, retrieveAmount);
         } else {
+            emit CollateralRestaked(_depositor, retrieveAmount, depositInfo.restakeDuration);
             shareAmount = _depositCollateral(
                 _depositor, 
                 retrieveAmount, 
@@ -109,10 +150,12 @@ contract HexOneVault is Ownable, IHexOneVault {
                 depositInfo.restakeDuration, 
                 true
             );
+            userInfo.shareBalance += shareAmount;
+            userInfo.depositedBalance += retrieveAmount;
         }
 
         depositInfo.exist = false;
-        return (shareAmount, depositInfo.isCommitType);
+        return (shareAmount, depositInfo.shares, depositInfo.isCommitType);
     }
 
     /// @inheritdoc IHexOneVault
@@ -137,6 +180,8 @@ contract HexOneVault is Ownable, IHexOneVault {
         _restakeDuration = _isCommit ? _restakeDuration : 0;
         userInfo.depositInfos[depositId] = DepositInfo(_amount, shareAmount, block.timestamp, _duration, _restakeDuration, _isCommit, true);
         userInfo.depositId += 1;
+        userInfo.shareBalance += shareAmount;
+        userInfo.depositedBalance += _amount;
 
         _updateLockedValue(_amount, true);
     }
