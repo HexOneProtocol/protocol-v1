@@ -133,12 +133,13 @@ contract HexOneVault is Ownable, IHexOneVault {
     function getUserInfos(address _account) external view override returns (DepositShowInfo[] memory) {
         uint256 lastDepositId = userInfos[_account].depositId;
         require (_account != address(0), "zero account address");
-        require (
-            userInfos[_account].shareBalance != 0 && 
-            userInfos[_account].depositedBalance != 0 &&
-            lastDepositId > 0,
-            "no deposited pool"    
-        );
+        if (
+            userInfos[_account].shareBalance == 0 ||
+            userInfos[_account].depositedBalance == 0 ||
+            lastDepositId == 0
+        ) {
+            return new DepositShowInfo[](0);
+        }
 
         uint256 cnt = 0;
         for (uint256 i = 0; i < lastDepositId; i ++) {
@@ -161,6 +162,7 @@ contract HexOneVault is Ownable, IHexOneVault {
                     i,
                     depositInfo.amount,
                     depositInfo.shares,
+                    depositInfo.mintAmount,
                     depositInfo.depositedTimestamp,
                     depositInfo.duration * 1 days + depositInfo.depositedTimestamp
                 );
@@ -214,7 +216,7 @@ contract HexOneVault is Ownable, IHexOneVault {
 
         uint8 hexDecimals = TokenUtils.expectDecimals(hexToken);
         uint256 basePoint = 10**hexDecimals;
-        shareAmount = _amount / shareRate;  // shareAmount: decimals 8
+        shareAmount = _amount / shareRate * 10;  // shareAmount: decimals 8
 
         uint256 hexPrice = IHexOnePriceFeed(hexOnePriceFeed).getHexTokenPrice(basePoint);
         usdValue = hexPrice * _amount / basePoint;

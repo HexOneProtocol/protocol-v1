@@ -26,6 +26,7 @@ interface IHexOneVault {
         uint256 depositId;
         uint256 depositAmount;
         uint256 shareAmount;
+        uint256 mintAmount;
         uint256 lockedTimestamp;
         uint256 endTimestamp;
     }
