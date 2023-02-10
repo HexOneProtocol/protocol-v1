@@ -22,10 +22,6 @@ contract HexOneVault is Ownable, IHexOneVault {
     /// @dev The contract address to get token price.
     address private hexOnePriceFeed;
 
-    /// @dev The address of collateral(base token).
-    /// @dev It can't be updates if is't set once.
-    address public override baseToken;
-
     /// @dev The total amount of locked base token.
     uint256 private totalLocked;
 
@@ -43,16 +39,13 @@ contract HexOneVault is Ownable, IHexOneVault {
     }
 
     constructor (
-        address _baseToken,
         address _hexToken,
         address _hexOnePriceFeed
     ) {
-        require (_baseToken != address(0), "zero base token address");
         require (_hexToken != address(0), "zero hex token address");
         require (_hexOnePriceFeed != address(0), "zero priceFeed contract address");
 
         hexToken = _hexToken;
-        baseToken = _baseToken;
         hexOnePriceFeed = _hexOnePriceFeed;
     }
 
@@ -68,6 +61,11 @@ contract HexOneVault is Ownable, IHexOneVault {
     }
 
     /// @inheritdoc IHexOneVault
+    function baseToken() external view override returns (address) {
+        return hexToken;
+    }
+
+    /// @inheritdoc IHexOneVault
     function depositCollateral(
         address _depositor, 
         uint256 _amount,
@@ -77,7 +75,7 @@ contract HexOneVault is Ownable, IHexOneVault {
     ) external onlyHexOneProtocol override returns (uint256 mintAmount) {
         require (!_isCommit || _restakeDuration > 0, "wrong restake duration");
         address sender = msg.sender;
-        IERC20(baseToken).safeTransferFrom(sender, address(this), _amount);
+        IERC20(hexToken).safeTransferFrom(sender, address(this), _amount);
         
         return _depositCollateral(_depositor, _amount, _duration, _restakeDuration, _isCommit);
     }
@@ -99,9 +97,9 @@ contract HexOneVault is Ownable, IHexOneVault {
         uint256 stakeListId = depositInfo.stakeId;
         IHexToken.StakeStore memory stakeStore = IHexToken(hexToken).stakeLists(address(this), stakeListId);
         uint40 stakeId = stakeStore.stakeId;
-        uint256 beforeBal = IERC20(baseToken).balanceOf(address(this));
+        uint256 beforeBal = IERC20(hexToken).balanceOf(address(this));
         IHexToken(hexToken).stakeEnd(stakeListId, stakeId);
-        uint256 afterBal = IERC20(baseToken).balanceOf(address(this));
+        uint256 afterBal = IERC20(hexToken).balanceOf(address(this));
         uint256 receivedAmount = afterBal - beforeBal;
         require (receivedAmount > 0, "claim failed");
 
@@ -116,13 +114,19 @@ contract HexOneVault is Ownable, IHexOneVault {
                 true
             );
         } else {
-            IERC20(baseToken).safeTransfer(_depositor, receivedAmount);
+            IERC20(hexToken).safeTransfer(_depositor, receivedAmount);
         }
 
         /// update userInfo
         depositInfo.exist = false;
         userInfo.shareBalance -= depositInfo.shares;
         userInfo.depositedBalance -= depositInfo.amount;
+    }
+
+    /// @inheritdoc IHexOneVault
+    function getShareBalance(address _account) external view override returns (uint256) {
+        require (_account != address(0), "zero account address");
+        return userInfos[_account].shareBalance;
     }
 
     /// @inheritdoc IHexOneVault
@@ -183,9 +187,8 @@ contract HexOneVault is Ownable, IHexOneVault {
         /// stake it to hex token
         IHexToken(hexToken).stakeStart(_amount, _duration);
         uint256 stakeId = IHexToken(hexToken).stakeCount(_depositor);
-        IHexToken.StakeStore memory stakeStore = IHexToken(hexToken).stakeLists(address(this), stakeId);
-        uint256 shareAmount = stakeStore.stakeShares;
-        mintAmount = _convertShareToUSD(shareAmount);
+        uint256 shareAmount = 0;
+        (mintAmount, shareAmount) = _convertShare(_amount);
         
         uint256 curDepositId = userInfos[_depositor].depositId;
         userInfos[_depositor].shareBalance += shareAmount;
@@ -205,14 +208,15 @@ contract HexOneVault is Ownable, IHexOneVault {
     }
 
     /// @notice Calculate shares amount and usd value.
-    function _convertShareToUSD(uint256 _shareAmount) internal view returns (uint256 usdValue) {
+    function _convertShare(uint256 _amount) internal view returns (uint256 usdValue, uint256 shareAmount) {
         IHexToken.GlobalsStore memory global = IHexToken(hexToken).globals();
-        uint40 shareRate = global.shareRate;
+        uint40 shareRate = global.shareRate;    // shareRate's basePoint is 10.
 
         uint8 hexDecimals = TokenUtils.expectDecimals(hexToken);
         uint256 basePoint = 10**hexDecimals;
+        shareAmount = _amount / shareRate;  // shareAmount: decimals 8
 
-        uint256 sharePrice = IHexOnePriceFeed(hexOnePriceFeed).getHexTokenPrice(shareRate * basePoint);
-        usdValue = sharePrice * _shareAmount / basePoint;
+        uint256 hexPrice = IHexOnePriceFeed(hexOnePriceFeed).getHexTokenPrice(basePoint);
+        usdValue = hexPrice * _amount / basePoint;
     }
 }

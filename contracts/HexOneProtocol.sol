@@ -80,8 +80,10 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         require (_amount > 0, "invalid amount");
         require (_duration >= MIN_DURATION && _duration <= MAX_DURATION, "invalid duration");
 
-        IHexOneVault hexOnVault = IHexOneVault(vaultInfos[_token]);
-        uint256 mintAmount = hexOnVault.depositCollateral(
+        IHexOneVault hexOneVault = IHexOneVault(vaultInfos[_token]);
+        IERC20(_token).safeTransferFrom(sender, address(this), _amount);
+        IERC20(_token).safeApprove(address(hexOneVault), _amount);
+        uint256 mintAmount = hexOneVault.depositCollateral(
             sender, 
             _amount, 
             _duration, 

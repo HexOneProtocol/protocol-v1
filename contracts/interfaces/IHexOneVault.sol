@@ -30,7 +30,6 @@ interface IHexOneVault {
         uint256 endTimestamp;
     }
 
-    /// @notice base token of vault.
     function baseToken() external view returns (address baseToken);
 
     /// @notice Set hexOneProtocol contract address.
@@ -72,6 +71,8 @@ interface IHexOneVault {
     // ///         can call emergency withdraw.
     // /// @dev Only owner can call this function.
     // function emergencyWithdraw() external;
+
+    function getShareBalance(address _account) external view returns (uint256);
 
     function getUserInfos(address _account) external view returns (DepositShowInfo[] memory);
 

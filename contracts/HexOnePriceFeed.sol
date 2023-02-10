@@ -73,8 +73,9 @@ contract HexOnePriceFeed is Ownable, IHexOnePriceFeed {
         }
 
         uint256 tokenPrice = _getChainlinkTokenPrice(priceFeedAddr);
+        uint8 baseTokenDecimals = TokenUtils.expectDecimals(_baseToken);
 
-        return _amount * tokenPrice / FIXED_POINT_SCALAR;
+        return _amount * tokenPrice / 10**baseTokenDecimals;
     }
 
     /// @notice Get token price according to priceFeed.
