@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./utils/TokenUtils.sol";
 import "./interfaces/IHexOneVault.sol";
+import "./interfaces/IHexToken.sol";
 import "./interfaces/IHexOnePriceFeed.sol";
 
 contract HexOneVault is Ownable, IHexOneVault {
@@ -14,6 +15,9 @@ contract HexOneVault is Ownable, IHexOneVault {
 
     /// @dev The address of HexOneProtocol contract.
     address public hexOneProtocol;
+
+    /// @dev HEX token address.
+    address public hexToken;
 
     /// @dev The contract address to get token price.
     address private hexOnePriceFeed;
@@ -28,9 +32,6 @@ contract HexOneVault is Ownable, IHexOneVault {
     /// @dev The total USD value of locked base tokens.
     uint256 private lockedUSDValue;
 
-    // @dev Share rate to calculate shareAmount from collaterals.
-    uint256 public shareRate;
-
     uint16 public LIMIT_PRICE_PERCENT = 66; // 66%
 
     /// @dev User infos to mange deposit and retrieve.
@@ -43,60 +44,22 @@ contract HexOneVault is Ownable, IHexOneVault {
 
     constructor (
         address _baseToken,
+        address _hexToken,
         address _hexOnePriceFeed
     ) {
         require (_baseToken != address(0), "zero base token address");
+        require (_hexToken != address(0), "zero hex token address");
         require (_hexOnePriceFeed != address(0), "zero priceFeed contract address");
 
+        hexToken = _hexToken;
         baseToken = _baseToken;
         hexOnePriceFeed = _hexOnePriceFeed;
-
-        uint8 decimals = TokenUtils.expectDecimals(_baseToken);
-        uint256 amount = 10**decimals;
-        shareRate = IHexOnePriceFeed(_hexOnePriceFeed).getBaseTokenPrice(_baseToken, amount);
     }
 
     /// @inheritdoc IHexOneVault
     function setHexOneProtocol(address _hexOneProtocol) external onlyOwner {
         require (_hexOneProtocol != address(0), "Zero HexOneProtocol address");
         hexOneProtocol = _hexOneProtocol;
-    }
-
-    /// @inheritdoc IHexOneVault
-    function balanceOf(address _user) external view override returns (
-        uint256 shareBalance, 
-        uint256 depositedBalance
-    ) {
-        return (userInfos[_user].shareBalance, userInfos[_user].depositedBalance);
-    }
-
-    /// @inheritdoc IHexOneVault
-    function claimableAmount(address _user) external view override returns (
-        uint256 shareAmount, 
-        uint256 tokenAmount,
-        uint256[] memory claimableIds
-    ) {
-        uint256 depositId = userInfos[_user].depositId;
-        uint256 curTime = block.timestamp;
-        uint256[] memory tempClaimableIds = new uint256[](depositId);
-        uint256 index = 0;
-        for (uint256 i = 0; i < depositId; i ++) {
-            DepositInfo memory depositInfo = userInfos[_user].depositInfos[i];
-            if (depositInfo.exist) {
-                uint256 elapsedTime = curTime - depositInfo.depositTime;
-                if (elapsedTime >= depositInfo.duration) {
-                    shareAmount += depositInfo.shares;
-                    tokenAmount += depositInfo.amount;
-                    tempClaimableIds[index ++] = i;
-                }
-            }
-        }
-
-        claimableIds = new uint256[](index);
-        for (uint256 i = 0; i < index; i ++) {
-            claimableIds[i] = tempClaimableIds[i];
-        }
-        delete tempClaimableIds;
     }
 
     /// @inheritdoc IHexOneVault
@@ -111,7 +74,7 @@ contract HexOneVault is Ownable, IHexOneVault {
         uint256 _duration,
         uint256 _restakeDuration,
         bool _isCommit
-    ) external onlyHexOneProtocol override returns (uint256 shareAmount) {
+    ) external onlyHexOneProtocol override returns (uint256 mintAmount) {
         require (!_isCommit || _restakeDuration > 0, "wrong restake duration");
         address sender = msg.sender;
         IERC20(baseToken).safeTransferFrom(sender, address(this), _amount);
@@ -123,110 +86,133 @@ contract HexOneVault is Ownable, IHexOneVault {
     function claimCollateral(
         address _depositor,
         uint256 _depositId
-    ) external onlyHexOneProtocol override returns (uint256 mintAmount, uint256 burnAmount, bool burnMode) {
+    ) external onlyHexOneProtocol override returns (
+        uint256 mintAmount, 
+        uint256 burnAmount
+    ) {
         UserInfo storage userInfo = userInfos[_depositor];
         DepositInfo storage depositInfo = userInfo.depositInfos[_depositId];
-        require (depositInfo.exist, "not exist deposit pool");
-        require (depositInfo.depositTime + depositInfo.duration < block.timestamp, "can not claim before maturity");
+        require (depositInfo.exist, "no deposit pool");
+        require (block.timestamp > depositInfo.depositedTimestamp + depositInfo.duration * 1 days,  "before maturity");
 
-        uint256 depositedAmount = depositInfo.amount;
-        bool isCommitType = depositInfo.isCommitType;
-        uint256 yieldCollateralAmount = _getYieldCollateralAmount(depositedAmount, depositInfo.duration);
-        uint256 retrieveAmount = depositedAmount + yieldCollateralAmount;
-        uint256 shareAmount = 0;
-        userInfo.shareBalance -= depositInfo.shares;
-        userInfo.depositedBalance -= depositedAmount;
+        /// unstake and claim rewards
+        uint256 stakeListId = depositInfo.stakeId;
+        IHexToken.StakeStore memory stakeStore = IHexToken(hexToken).stakeLists(address(this), stakeListId);
+        uint40 stakeId = stakeStore.stakeId;
+        uint256 beforeBal = IERC20(baseToken).balanceOf(address(this));
+        IHexToken(hexToken).stakeEnd(stakeListId, stakeId);
+        uint256 afterBal = IERC20(baseToken).balanceOf(address(this));
+        uint256 receivedAmount = afterBal - beforeBal;
+        require (receivedAmount > 0, "claim failed");
 
-        _updateLockedValue(depositedAmount, false);
-        if (!isCommitType) {
-            emit CollateralClaimed(_depositor, retrieveAmount);
-            IERC20(baseToken).safeTransfer(_depositor, retrieveAmount);
-        } else {
-            emit CollateralRestaked(_depositor, retrieveAmount, depositInfo.restakeDuration);
-            shareAmount = _depositCollateral(
+        /// retrieve or restake token
+        burnAmount = depositInfo.mintAmount;
+        if (depositInfo.isCommitType) {
+            mintAmount = _depositCollateral(
                 _depositor, 
-                retrieveAmount, 
+                receivedAmount, 
                 depositInfo.restakeDuration, 
                 depositInfo.restakeDuration, 
                 true
             );
-            userInfo.shareBalance += shareAmount;
-            userInfo.depositedBalance += retrieveAmount;
+        } else {
+            IERC20(baseToken).safeTransfer(_depositor, receivedAmount);
         }
 
+        /// update userInfo
         depositInfo.exist = false;
-        return (shareAmount, depositInfo.shares, depositInfo.isCommitType);
+        userInfo.shareBalance -= depositInfo.shares;
+        userInfo.depositedBalance -= depositInfo.amount;
     }
 
     /// @inheritdoc IHexOneVault
-    function emergencyWithdraw() external onlyOwner {
-        uint256 currentUSDValue = IHexOnePriceFeed(hexOnePriceFeed).getBaseTokenPrice(baseToken, totalLocked);
-        uint256 limitUSDValue = totalLocked * LIMIT_PRICE_PERCENT / 100;
-        require (limitUSDValue > currentUSDValue, "emergency withdraw condition not meet");
-        IERC20(baseToken).safeTransfer(msg.sender, totalLocked);
-    }
+    function getUserInfos(address _account) external view override returns (DepositShowInfo[] memory) {
+        uint256 lastDepositId = userInfos[_account].depositId;
+        require (_account != address(0), "zero account address");
+        require (
+            userInfos[_account].shareBalance != 0 && 
+            userInfos[_account].depositedBalance != 0 &&
+            lastDepositId > 0,
+            "no deposited pool"    
+        );
 
+        uint256 cnt = 0;
+        for (uint256 i = 0; i < lastDepositId; i ++) {
+            DepositInfo memory depositInfo = userInfos[_account].depositInfos[i];
+            if (depositInfo.exist) {
+                cnt ++;
+            }
+        }
+
+        DepositShowInfo[] memory depositShowInfos = new DepositShowInfo[](cnt);
+        if (cnt == 0) {
+            return depositShowInfos;
+        }
+
+        uint256 index = 0;
+        for (uint256 i = 0; i < lastDepositId; i ++) {
+            DepositInfo memory depositInfo = userInfos[_account].depositInfos[i];
+            if (depositInfo.exist) {
+                depositShowInfos[index ++] = DepositShowInfo(
+                    i,
+                    depositInfo.amount,
+                    depositInfo.shares,
+                    depositInfo.depositedTimestamp,
+                    depositInfo.duration * 1 days + depositInfo.depositedTimestamp
+                );
+            }
+        }
+
+        return depositShowInfos;
+    }
+    
+    /// @notice Stake collateral token and calculate USD value to mint $HEX1
+    /// @param _depositor The address of depositor.
+    /// @param _amount The amount of collateral.
+    /// @param _duration The maturity duration.
+    /// @param _restakeDuration If commitType is ture, then restakeDuration is necessary.
+    /// @param _isCommit Type of deposit. true/false = commit/uncommit.
+    /// @return mintAmount The amount of $HEX1 to mint.
     function _depositCollateral(
         address _depositor, 
         uint256 _amount,
         uint256 _duration,
         uint256 _restakeDuration,
         bool _isCommit
-    ) internal returns (uint256 shareAmount) {
-        shareAmount = _convertToShare(_amount, _duration);
-
-        UserInfo storage userInfo = userInfos[_depositor];
-        uint256 depositId = userInfo.depositId;
-        _restakeDuration = _isCommit ? _restakeDuration : 0;
-        userInfo.depositInfos[depositId] = DepositInfo(_amount, shareAmount, block.timestamp, _duration, _restakeDuration, _isCommit, true);
-        userInfo.depositId += 1;
-        userInfo.shareBalance += shareAmount;
-        userInfo.depositedBalance += _amount;
-
-        _updateLockedValue(_amount, true);
+    ) internal returns (uint256 mintAmount) {
+        /// stake it to hex token
+        IHexToken(hexToken).stakeStart(_amount, _duration);
+        uint256 stakeId = IHexToken(hexToken).stakeCount(_depositor);
+        IHexToken.StakeStore memory stakeStore = IHexToken(hexToken).stakeLists(address(this), stakeId);
+        uint256 shareAmount = stakeStore.stakeShares;
+        mintAmount = _convertShareToUSD(shareAmount);
+        
+        uint256 curDepositId = userInfos[_depositor].depositId;
+        userInfos[_depositor].shareBalance += shareAmount;
+        userInfos[_depositor].depositedBalance += _amount;
+        userInfos[_depositor].depositInfos[curDepositId] = DepositInfo(
+            stakeId,
+            _amount,
+            shareAmount,
+            mintAmount,
+            block.timestamp,
+            _duration,
+            _restakeDuration,
+            _isCommit,
+            true
+        );
+        userInfos[_depositor].depositId = curDepositId + 1;
     }
 
-    /// @notice Calculate shares amount.
-    /// @dev shares = (input HEX + bonuses(input HEX, stake days)) / Share Rate
-    ///      New Share Rate = ((input HEX + payouts) + bonuses((input HEX + payouts), stake days)) / shares
-    /// @param _collateralAmount The amount of collateral.
-    /// @param _duration The maturity duration.
-    /// @return shareAmount The calculated share amount.
-    function _convertToShare(uint256 _collateralAmount, uint256 _duration) internal returns (uint256 shareAmount) {
-        // TODO calculate share amount.
+    /// @notice Calculate shares amount and usd value.
+    function _convertShareToUSD(uint256 _shareAmount) internal view returns (uint256 usdValue) {
+        IHexToken.GlobalsStore memory global = IHexToken(hexToken).globals();
+        uint40 shareRate = global.shareRate;
 
-        // Update share rate.
-        _updateShareRate(_collateralAmount, _duration);
+        uint8 hexDecimals = TokenUtils.expectDecimals(hexToken);
+        uint256 basePoint = 10**hexDecimals;
 
-        return 0;
-    }
-
-    /// @notice Update shares rate.
-    /// @dev New Share Rate = ((input HEX + payouts) + bonuses((input HEX + payouts), stake days)) / shares
-    /// @param _collateralAmount The amount of collateral.
-    /// @param _duration The maturity duration.
-    function _updateShareRate(uint256 _collateralAmount, uint256 _duration) internal {
-        // TODO calculate new shareRate.
-    }
-
-    /// @notice Update locked base token amount and usd value.
-    /// @param _collateralAmount The amount of collateral.
-    /// @param _add Add or remove collateral amount.
-    function _updateLockedValue(uint256 _collateralAmount, bool _add) internal {
-        uint256 usdValue = IHexOnePriceFeed(hexOnePriceFeed).getBaseTokenPrice(baseToken, _collateralAmount);
-        totalLocked = _add ? totalLocked + _collateralAmount : totalLocked - _collateralAmount;
-        if (_add) {
-            lockedUSDValue += usdValue;
-        } else {
-            lockedUSDValue = lockedUSDValue < usdValue ? 0 : lockedUSDValue - usdValue;
-        }
-    }
-
-    /// @notice Calculate yield collateral amount based one amount and duration.
-    /// @param _collateralAmount The amount of collateral.
-    /// @param _duration The timestamp of duration.
-    function _getYieldCollateralAmount(uint256 _collateralAmount, uint256 _duration) internal view returns (uint256) {
-        // TODO Calcaulte yield collateral amount.
-        return 0;
+        uint256 sharePrice = IHexOnePriceFeed(hexOnePriceFeed).getHexTokenPrice(shareRate * basePoint);
+        usdValue = sharePrice * _shareAmount / basePoint;
     }
 }

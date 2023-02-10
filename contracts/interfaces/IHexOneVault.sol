@@ -4,9 +4,11 @@ pragma solidity ^0.8.17;
 interface IHexOneVault {
 
     struct DepositInfo {
+        uint256 stakeId;
         uint256 amount;
         uint256 shares;
-        uint256 depositTime;
+        uint256 mintAmount;
+        uint256 depositedTimestamp;
         uint256 duration;
         uint256 restakeDuration;
         bool isCommitType;
@@ -20,18 +22,16 @@ interface IHexOneVault {
         mapping(uint256 => DepositInfo) depositInfos;
     }
 
+    struct DepositShowInfo {
+        uint256 depositId;
+        uint256 depositAmount;
+        uint256 shareAmount;
+        uint256 lockedTimestamp;
+        uint256 endTimestamp;
+    }
+
     /// @notice base token of vault.
     function baseToken() external view returns (address baseToken);
-
-    /// @notice The share balance and deposited balance of user.
-    function balanceOf(address _user) external view returns (uint256, uint256);
-
-    /// @notice Get calimable share amount and base token amount.
-    function claimableAmount(address _user) external view returns (
-        uint256 shareAmount, 
-        uint256 tokenAmount, 
-        uint256[] memory claimableIds
-    );
 
     /// @notice Set hexOneProtocol contract address.
     /// @dev Only owner can call this function and 
@@ -49,30 +49,31 @@ interface IHexOneVault {
     /// @param _duration The maturity duration.
     /// @param _restakeDuration If commitType is ture, then restakeDuration is necessary.
     /// @param _isCommitType Type of deposit. true/false = commit/uncommit.
-    /// @return shareAmount The amount of T-SHARES.
+    /// @return mintAmount The amount of $HEX1 to mint.
     function depositCollateral(
         address _depositor, 
         uint256 _amount, 
         uint256 _duration, 
         uint256 _restakeDuration,
         bool _isCommitType
-    ) external returns (uint256 shareAmount);
+    ) external returns (uint256 mintAmount);
 
     /// @notice Retrieve collateral after maturity.
     /// @dev Users can claim collateral after maturity.
     /// @return mintAmount If depositor's commitType is true then 
     ///         calculate shareAmount based on restake amount and duration.
     /// @return burnAmount The amount of $HEX1 should be burn.
-    /// @return burnMode Present depositor's commit type.
     function claimCollateral(
         address _depositor,
         uint256 _depositId
-    ) external returns (uint256 mintAmount, uint256 burnAmount, bool burnMode);
+    ) external returns (uint256 mintAmount, uint256 burnAmount);
 
-    /// @notice If total USD value is below 66% of initial USD value,
-    ///         can call emergency withdraw.
-    /// @dev Only owner can call this function.
-    function emergencyWithdraw() external;
+    // /// @notice If total USD value is below 66% of initial USD value,
+    // ///         can call emergency withdraw.
+    // /// @dev Only owner can call this function.
+    // function emergencyWithdraw() external;
+
+    function getUserInfos(address _account) external view returns (DepositShowInfo[] memory);
 
     /// @notice Set new limitPricePercent.
     ///         If total locked USD value is below that, emergencyWithdraw will occur.
