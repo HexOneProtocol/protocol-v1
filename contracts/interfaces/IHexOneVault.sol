@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 interface IHexOneVault {
 
     struct DepositInfo {
+        uint256 vaultDepositId;
         uint256 stakeId;
         uint256 amount;
         uint256 shares;
@@ -29,6 +30,18 @@ interface IHexOneVault {
         uint256 mintAmount;
         uint256 lockedTimestamp;
         uint256 endTimestamp;
+    }
+
+    struct VaultDepositInfo {
+        address userAddress;
+        uint256 userDepositId;
+    }
+
+    struct LiquidateInfo {
+        uint256 depositId;
+        address depositor;
+        uint256 hexTokenAmount;
+        uint256 liquidateAmount;
     }
 
     function baseToken() external view returns (address baseToken);
@@ -64,15 +77,14 @@ interface IHexOneVault {
     ///         calculate shareAmount based on restake amount and duration.
     /// @return burnAmount The amount of $HEX1 should be burn.
     function claimCollateral(
-        address _depositor,
+        address _claimer,
         uint256 _depositId
-    ) external returns (uint256 mintAmount, uint256 burnAmount);
+    ) external returns (uint256 mintAmount, uint256 burnAmount, uint256 liquidateAmount);
 
-    // /// @notice If total USD value is below 66% of initial USD value,
-    // ///         can call emergency withdraw.
-    // /// @dev Only owner can call this function.
-    // function emergencyWithdraw() external;
+    /// @notice Get liquidable vault deposit Ids.
+    function getLiquidableDeposits() external view returns (LiquidateInfo[] memory);
 
+    /// @notice Get t-share balance of user.
     function getShareBalance(address _account) external view returns (uint256);
 
     function getUserInfos(address _account) external view returns (DepositShowInfo[] memory);
@@ -82,6 +94,10 @@ interface IHexOneVault {
     /// @dev Only owne can call this function.
     /// @param _percent New limitPricePercent.
     function setLimitPricePercent(uint16 _percent) external;
+
+    /// @notice Set limit claim duration.
+    /// @dev Only owner can call this function.
+    function setLimitClaimDuration(uint256 _duration) external;
 
     event CollateralClaimed(address indexed claimer, uint256 claimedAmount);
 

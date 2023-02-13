@@ -4,6 +4,8 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./utils/TokenUtils.sol";
 import "./interfaces/IHexOneVault.sol";
 import "./interfaces/IHexToken.sol";
@@ -11,7 +13,11 @@ import "./interfaces/IHexOnePriceFeed.sol";
 
 contract HexOneVault is Ownable, IHexOneVault {
 
+    using EnumerableSet for EnumerableSet.UintSet;
     using SafeERC20 for IERC20;
+
+    /// All exists depositId list.
+    EnumerableSet.UintSet private availableDepositIds;
 
     /// @dev The address of HexOneProtocol contract.
     address public hexOneProtocol;
@@ -30,8 +36,18 @@ contract HexOneVault is Ownable, IHexOneVault {
 
     uint16 public LIMIT_PRICE_PERCENT = 66; // 66%
 
+    /// @dev After `LIMIT_CLAIM_DURATION` days, anyone can claim instead of depositor.
+    uint256 public LIMIT_CLAIM_DURATION = 7;
+
+    uint16 constant public FIXED_POINT = 1000;
+
+    uint256 public depositId;
+
     /// @dev User infos to mange deposit and retrieve.
     mapping(address => UserInfo) private userInfos;
+
+    /// @dev DepositInfos by vault side.
+    mapping(uint256 => VaultDepositInfo) private vaultDepositInfos;
 
     modifier onlyHexOneProtocol {
         require (msg.sender == hexOneProtocol, "only hexOneProtocol");
@@ -61,6 +77,11 @@ contract HexOneVault is Ownable, IHexOneVault {
     }
 
     /// @inheritdoc IHexOneVault
+    function setLimitClaimDuration(uint256 _duration) external onlyOwner {
+        LIMIT_CLAIM_DURATION = _duration;
+    }
+
+    /// @inheritdoc IHexOneVault
     function baseToken() external view override returns (address) {
         return hexToken;
     }
@@ -82,29 +103,29 @@ contract HexOneVault is Ownable, IHexOneVault {
 
     /// @inheritdoc IHexOneVault
     function claimCollateral(
-        address _depositor,
+        address _claimer,
         uint256 _depositId
-    ) external onlyHexOneProtocol override returns (
-        uint256 mintAmount, 
-        uint256 burnAmount
-    ) {
+    ) external onlyHexOneProtocol override returns (uint256, uint256, uint256 ) {
+        VaultDepositInfo memory vaultDepositInfo = vaultDepositInfos[_depositId];
+        address _depositor = vaultDepositInfo.userAddress;
+        uint256 _userDepositId = vaultDepositInfo.userDepositId;
+        (
+            bool allowLoss, 
+            uint256 liquidateAmount
+        ) = _checkLoss(_depositId);
         UserInfo storage userInfo = userInfos[_depositor];
-        DepositInfo storage depositInfo = userInfo.depositInfos[_depositId];
+        DepositInfo storage depositInfo = userInfo.depositInfos[_userDepositId];
         require (depositInfo.exist, "no deposit pool");
         require (block.timestamp > depositInfo.depositedTimestamp + depositInfo.duration * 1 days,  "before maturity");
+        require (!allowLoss || _claimer == _depositor, "not proper claimer");
 
         /// unstake and claim rewards
-        uint256 stakeListId = depositInfo.stakeId;
-        IHexToken.StakeStore memory stakeStore = IHexToken(hexToken).stakeLists(address(this), stakeListId);
-        uint40 stakeId = stakeStore.stakeId;
-        uint256 beforeBal = IERC20(hexToken).balanceOf(address(this));
-        IHexToken(hexToken).stakeEnd(stakeListId, stakeId);
-        uint256 afterBal = IERC20(hexToken).balanceOf(address(this));
-        uint256 receivedAmount = afterBal - beforeBal;
+        uint256 receivedAmount = _unstake(depositInfo);
         require (receivedAmount > 0, "claim failed");
 
         /// retrieve or restake token
-        burnAmount = depositInfo.mintAmount;
+        uint256 burnAmount = depositInfo.mintAmount;
+        uint256 mintAmount = 0;
         if (depositInfo.isCommitType) {
             mintAmount = _depositCollateral(
                 _depositor, 
@@ -114,13 +135,26 @@ contract HexOneVault is Ownable, IHexOneVault {
                 true
             );
         } else {
-            IERC20(hexToken).safeTransfer(_depositor, receivedAmount);
+            IERC20(hexToken).safeTransfer(_claimer, receivedAmount);
         }
 
         /// update userInfo
         depositInfo.exist = false;
         userInfo.shareBalance -= depositInfo.shares;
         userInfo.depositedBalance -= depositInfo.amount;
+        availableDepositIds.remove(_depositId);
+
+        return (mintAmount, burnAmount, liquidateAmount);
+    }
+
+    function _unstake(DepositInfo memory _depositInfo) internal returns (uint256) {
+        uint256 stakeListId = _depositInfo.stakeId;
+        IHexToken.StakeStore memory stakeStore = IHexToken(hexToken).stakeLists(address(this), stakeListId);
+        uint40 stakeId = stakeStore.stakeId;
+        uint256 beforeBal = IERC20(hexToken).balanceOf(address(this));
+        IHexToken(hexToken).stakeEnd(stakeListId, stakeId);
+        uint256 afterBal = IERC20(hexToken).balanceOf(address(this));
+        return afterBal - beforeBal;
     }
 
     /// @inheritdoc IHexOneVault
@@ -172,6 +206,43 @@ contract HexOneVault is Ownable, IHexOneVault {
         return depositShowInfos;
     }
     
+    /// @inheritdoc IHexOneVault
+    function getLiquidableDeposits() external view override returns (LiquidateInfo[] memory) {
+        uint256 length = availableDepositIds.length();
+        if (length == 0) {
+            return (new LiquidateInfo[](0));
+        }
+
+        uint256 returnIdLength = 0;
+        for (uint256 i = 0; i < length; i ++) {
+            uint256 id = availableDepositIds.at(i);
+            (bool isAllow, ) = _checkLoss(id);
+            if (!isAllow) {
+                returnIdLength ++;
+            }
+        }
+
+        LiquidateInfo[] memory returnIds = new LiquidateInfo[](returnIdLength);
+        uint256 index = 0;
+        for (uint256 i = 0; i < length; i ++) {
+            uint256 id = availableDepositIds.at(i);
+            (bool isAllow, uint256 liquidateAmount) = _checkLoss(id);
+            if (!isAllow) {
+                VaultDepositInfo memory vaultDepositInfo = vaultDepositInfos[i];
+                address depositor = vaultDepositInfo.userAddress;
+                DepositInfo memory depositInfo = userInfos[depositor].depositInfos[vaultDepositInfo.userDepositId];
+                returnIds[index ++] = LiquidateInfo(
+                    i, 
+                    depositor,
+                    depositInfo.amount,
+                    liquidateAmount
+                );
+            }
+        }
+
+        return returnIds;
+    }
+
     /// @notice Stake collateral token and calculate USD value to mint $HEX1
     /// @param _depositor The address of depositor.
     /// @param _amount The amount of collateral.
@@ -196,6 +267,7 @@ contract HexOneVault is Ownable, IHexOneVault {
         userInfos[_depositor].shareBalance += shareAmount;
         userInfos[_depositor].depositedBalance += _amount;
         userInfos[_depositor].depositInfos[curDepositId] = DepositInfo(
+            depositId,
             stakeId,
             _amount,
             shareAmount,
@@ -207,6 +279,8 @@ contract HexOneVault is Ownable, IHexOneVault {
             true
         );
         userInfos[_depositor].depositId = curDepositId + 1;
+        vaultDepositInfos[depositId] = VaultDepositInfo(_depositor, curDepositId);
+        availableDepositIds.add(depositId ++);
     }
 
     /// @notice Calculate shares amount and usd value.
@@ -220,5 +294,25 @@ contract HexOneVault is Ownable, IHexOneVault {
 
         uint256 hexPrice = IHexOnePriceFeed(hexOnePriceFeed).getHexTokenPrice(basePoint);
         usdValue = hexPrice * _amount / basePoint;
+    }
+
+    /// @notice Check usd loss between initial staked usd value and current usd value.
+    /// @dev The minimum is LIMIT_PRICE_PERCENT%. if current usd value is less than this, return false.
+    /// @return Allow/Block = True/False
+    function _checkLoss(uint256 _depositId) internal view returns (bool, uint256) {
+        VaultDepositInfo memory vaultDepositInfo = vaultDepositInfos[_depositId];
+        DepositInfo memory depositInfo = userInfos[vaultDepositInfo.userAddress].depositInfos[vaultDepositInfo.userDepositId];
+        if (
+            block.timestamp < depositInfo.depositedTimestamp + depositInfo.duration * 7 days ||
+            !depositInfo.isCommitType
+        ) {
+            return (true, 0);
+        }
+
+        uint256 initialUSDValue = depositInfo.mintAmount;
+        uint256 currentUSDValue = IHexOnePriceFeed(hexOnePriceFeed).getHexTokenPrice(depositInfo.amount);
+        uint256 minUSDValue = initialUSDValue * LIMIT_PRICE_PERCENT / FIXED_POINT;
+        bool isAllow = minUSDValue <= currentUSDValue;
+        return (isAllow, isAllow ? 0 : initialUSDValue - currentUSDValue);
     }
 }

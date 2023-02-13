@@ -109,12 +109,16 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
 
         (
             uint256 mintAmount, 
-            uint256 burnAmount
+            uint256 burnAmount,
+            uint256 liquidateAmount
         ) = IHexOneVault(vaultInfos[_token]).claimCollateral(sender, _depositId);
 
         IHexOneToken(hexOneToken).burnToken(burnAmount, sender);
         if (mintAmount > 0) {
             IHexOneToken(hexOneToken).mintToken(mintAmount, sender);
+        }
+        if (liquidateAmount > 0) {
+            IERC20(hexOneToken).safeTransferFrom(sender, address(this), liquidateAmount);
         }
     }
 
