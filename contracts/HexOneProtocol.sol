@@ -68,6 +68,34 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     }
 
     /// @inheritdoc IHexOneProtocol
+    function addCollateralForLiquidate(
+        address _token,
+        uint256 _amount,
+        uint256 _depositId,
+        uint16 _duration
+    ) external override {
+        address sender = msg.sender;
+        require (sender != address(0), "zero address caller");
+        require (allowedTokens.contains(_token), "invalid token");
+        require (_amount > 0, "invalid amount");
+        require (_duration >= MIN_DURATION && _duration <= MAX_DURATION, "invalid duration");
+
+        IHexOneVault hexOneVault = IHexOneVault(vaultInfos[_token]);
+        IERC20(_token).safeTransferFrom(sender, address(this), _amount);
+        IERC20(_token).safeApprove(address(hexOneVault), _amount);
+        uint256 burnAmount = hexOneVault.addCollateralForLiquidate(
+            sender, 
+            _amount, 
+            _depositId, 
+            _duration
+        );
+
+        if (burnAmount > 0) {
+            IHexOneToken(hexOneToken).burnToken(burnAmount, sender);
+        }
+    }
+
+    /// @inheritdoc IHexOneProtocol
     function depositCollateral(
         address _token, 
         uint256 _amount, 
@@ -118,6 +146,11 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
             IHexOneToken(hexOneToken).mintToken(mintAmount, sender);
         }
         if (liquidateAmount > 0) {
+            require (
+                IERC20(hexOneToken).allowance(sender, address(this)) >= liquidateAmount &&
+                IERC20(hexOneToken).balanceOf(sender) >= liquidateAmount,
+                "should pay certain $HEX1 to claim"
+            );
             IERC20(hexOneToken).safeTransferFrom(sender, address(this), liquidateAmount);
         }
     }

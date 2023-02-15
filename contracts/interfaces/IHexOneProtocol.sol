@@ -19,6 +19,19 @@ interface IHexOneProtocol {
     /// @param _maxDuration The max stake duration days.
     function setMaxDuration(uint256 _maxDuration) external;
 
+    /// @notice Add collateral to certain deposit pool to cover loss.
+    /// @dev Depositors can't deposit as commitType. as only uncommit.
+    /// @param _token The address of collateral to deposit.
+    /// @param _amount The amount of collateral to deposit.
+    /// @param _depositId The id of deposit to add collateral.
+    /// @param _duration The duration days.
+    function addCollateralForLiquidate(
+        address _token,
+        uint256 _amount,
+        uint256 _depositId,
+        uint16 _duration
+    ) external;
+
     /// @notice Deposit collateral and receive $HEX1 token.
     /// @param _token The address of collateral to deposit.
     /// @param _amount The amount of collateral to deposit.

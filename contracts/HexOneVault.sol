@@ -98,7 +98,54 @@ contract HexOneVault is Ownable, IHexOneVault {
         address sender = msg.sender;
         IERC20(hexToken).safeTransferFrom(sender, address(this), _amount);
         
-        return _depositCollateral(_depositor, _amount, _duration, _restakeDuration, _isCommit);
+        return _depositCollateral(
+            _depositor, 
+            _amount, 
+            _duration, 
+            _restakeDuration, 
+            _isCommit, 
+            false
+        );
+    }
+
+    /// @inheritdoc IHexOneVault
+    function addCollateralForLiquidate(
+        address _depositor,
+        uint256 _amount,
+        uint256 _vaultDepositId,
+        uint256 _duration
+    ) external onlyHexOneProtocol override returns (uint256 burnAmount) {
+        address sender = msg.sender;
+        IERC20(hexToken).safeTransferFrom(sender, address(this), _amount);
+
+        require (availableDepositIds.contains(_vaultDepositId), "not exists depositId");
+        VaultDepositInfo memory vaultDepositInfo = vaultDepositInfos[_vaultDepositId];
+        address depositedUser = vaultDepositInfo.userAddress;
+        require (depositedUser == _depositor, "not correct depositor");
+        uint256 _userDepositId = vaultDepositInfo.userDepositId;
+
+        UserInfo storage userInfo = userInfos[_depositor];
+        DepositInfo storage depositInfo = userInfo.depositInfos[_userDepositId];
+        require (block.timestamp > depositInfo.depositedTimestamp + depositInfo.duration * 1 days,  "before maturity");
+
+        uint256 receivedAmount = _unstake(depositInfo);
+        burnAmount = depositInfo.mintAmount;
+        _depositCollateral(
+            _depositor, 
+            receivedAmount, 
+            _duration, 
+            0, 
+            false,
+            false
+        );
+
+        /// update userInfo
+        depositInfo.exist = false;
+        userInfo.shareBalance -= depositInfo.shares;
+        userInfo.depositedBalance -= depositInfo.amount;
+        availableDepositIds.remove(_vaultDepositId);
+
+        return burnAmount;
     }
 
     /// @inheritdoc IHexOneVault
@@ -121,7 +168,6 @@ contract HexOneVault is Ownable, IHexOneVault {
 
         /// unstake and claim rewards
         uint256 receivedAmount = _unstake(depositInfo);
-        require (receivedAmount > 0, "claim failed");
 
         /// retrieve or restake token
         uint256 burnAmount = depositInfo.mintAmount;
@@ -132,7 +178,8 @@ contract HexOneVault is Ownable, IHexOneVault {
                 receivedAmount, 
                 depositInfo.restakeDuration, 
                 depositInfo.restakeDuration, 
-                true
+                true,
+                false
             );
         } else {
             IERC20(hexToken).safeTransfer(_claimer, receivedAmount);
@@ -249,13 +296,15 @@ contract HexOneVault is Ownable, IHexOneVault {
     /// @param _duration The maturity duration.
     /// @param _restakeDuration If commitType is ture, then restakeDuration is necessary.
     /// @param _isCommit Type of deposit. true/false = commit/uncommit.
+    /// @param _isLiquidate Status that this deposit is for liquidate loss or not.
     /// @return mintAmount The amount of $HEX1 to mint.
     function _depositCollateral(
         address _depositor, 
         uint256 _amount,
         uint256 _duration,
         uint256 _restakeDuration,
-        bool _isCommit
+        bool _isCommit,
+        bool _isLiquidate
     ) internal returns (uint256 mintAmount) {
         /// stake it to hex token
         IHexToken(hexToken).stakeStart(_amount, _duration);
@@ -271,7 +320,7 @@ contract HexOneVault is Ownable, IHexOneVault {
             stakeId,
             _amount,
             shareAmount,
-            mintAmount,
+            _isLiquidate ? 0 : mintAmount,
             block.timestamp,
             _duration,
             _restakeDuration,

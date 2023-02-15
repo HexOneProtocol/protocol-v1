@@ -71,6 +71,20 @@ interface IHexOneVault {
         bool _isCommitType
     ) external returns (uint256 mintAmount);
 
+    /// @notice Add collateral to certain deposit Id to cover loss.
+    /// @dev Depositors only add collateral and don't receive $HEX1 token as compensation.
+    /// @param _depositor The address of depositor.
+    /// @param _amount The amount of collateral.
+    /// @param _depositId The certain deposit id to cover loss.
+    /// @param _duration The maturity duration.
+    /// @return burnAmount The amount of $HEX1 to burn.
+    function addCollateralForLiquidate(
+        address _depositor,
+        uint256 _amount,
+        uint256 _depositId,
+        uint256 _duration
+    ) external returns (uint256 burnAmount);
+
     /// @notice Retrieve collateral after maturity.
     /// @dev Users can claim collateral after maturity.
     /// @return mintAmount If depositor's commitType is true then 
