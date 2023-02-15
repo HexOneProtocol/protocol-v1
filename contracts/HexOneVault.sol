@@ -126,7 +126,7 @@ contract HexOneVault is Ownable, IHexOneVault {
 
         UserInfo storage userInfo = userInfos[_depositor];
         DepositInfo storage depositInfo = userInfo.depositInfos[_userDepositId];
-        require (block.timestamp > depositInfo.depositedTimestamp + depositInfo.duration * 1 days,  "before maturity");
+        require (block.timestamp > depositInfo.depositedTimestamp,  "before maturity");
 
         uint256 receivedAmount = _unstake(depositInfo);
         burnAmount = depositInfo.mintAmount;
@@ -189,19 +189,29 @@ contract HexOneVault is Ownable, IHexOneVault {
         depositInfo.exist = false;
         userInfo.shareBalance -= depositInfo.shares;
         userInfo.depositedBalance -= depositInfo.amount;
+        userInfo.totalBorrowedAmount -= depositInfo.borrowedAmount;
         availableDepositIds.remove(_depositId);
 
         return (mintAmount, burnAmount, liquidateAmount);
     }
 
-    function _unstake(DepositInfo memory _depositInfo) internal returns (uint256) {
-        uint256 stakeListId = _depositInfo.stakeId;
-        IHexToken.StakeStore memory stakeStore = IHexToken(hexToken).stakeLists(address(this), stakeListId);
-        uint40 stakeId = stakeStore.stakeId;
-        uint256 beforeBal = IERC20(hexToken).balanceOf(address(this));
-        IHexToken(hexToken).stakeEnd(stakeListId, stakeId);
-        uint256 afterBal = IERC20(hexToken).balanceOf(address(this));
-        return afterBal - beforeBal;
+    /// @inheritdoc IHexOneVault
+    function borrowHexOne(
+        address _depositor, 
+        uint256 _depositId, 
+        uint256 _amount
+    ) external onlyHexOneProtocol override {
+        require (availableDepositIds.contains(_depositId), "invalid depositId");
+        VaultDepositInfo memory vaultDepositInfo = vaultDepositInfos[_depositId];
+        address depositedUser = vaultDepositInfo.userAddress;
+        require (depositedUser == _depositor, "not correct depositor");
+        uint256 _userDepositId = vaultDepositInfo.userDepositId;
+
+        UserInfo storage userInfo = userInfos[_depositor];
+        DepositInfo storage depositInfo = userInfo.depositInfos[_userDepositId];
+        require (_getBorrowableAmount(depositInfo) >= _amount, "not enough borrowable amount");
+        depositInfo.borrowedAmount += _amount;
+        depositInfo.mintAmount += _amount;
     }
 
     /// @inheritdoc IHexOneVault
@@ -251,6 +261,44 @@ contract HexOneVault is Ownable, IHexOneVault {
         }
 
         return depositShowInfos;
+    }
+
+    /// @inheritdoc IHexOneVault
+    function getBorrowableAmounts(address _account) 
+        external 
+        view 
+        override 
+        returns (BorrowableInfo[] memory) 
+    {
+        uint256 lastDepositId = userInfos[_account].depositId;
+        if (lastDepositId == 0) {
+            return new BorrowableInfo[](0);
+        }
+
+        uint256 borrowAvailableCnt = 0;
+        for (uint256 i = 0; i < lastDepositId; i ++) {
+            DepositInfo memory depositInfo = userInfos[_account].depositInfos[i];
+            if (_getBorrowableAmount(depositInfo) > 0) {
+                borrowAvailableCnt ++;
+            }
+        }
+
+        uint256 index = 0;
+        BorrowableInfo[] memory borrowableInfos = new BorrowableInfo[](borrowAvailableCnt);
+        for (uint256 i = 0; i < lastDepositId; i ++) {
+            DepositInfo memory depositInfo = userInfos[_account].depositInfos[i];
+            uint256 borrowableAmount = _getBorrowableAmount(depositInfo);
+            if (borrowableAmount > 0) {
+                borrowableInfos[index ++] = BorrowableInfo(depositInfo.vaultDepositId, borrowableAmount);
+            }
+        }
+
+        return borrowableInfos;
+    }
+
+    /// @inheritdoc IHexOneVault
+    function getBorrowedBalance(address _account) external view override returns (uint256) {
+        return userInfos[_account].totalBorrowedAmount;
     }
     
     /// @inheritdoc IHexOneVault
@@ -321,6 +369,7 @@ contract HexOneVault is Ownable, IHexOneVault {
             _amount,
             shareAmount,
             _isLiquidate ? 0 : mintAmount,
+            0,
             block.timestamp,
             _duration,
             _restakeDuration,
@@ -351,8 +400,9 @@ contract HexOneVault is Ownable, IHexOneVault {
     function _checkLoss(uint256 _depositId) internal view returns (bool, uint256) {
         VaultDepositInfo memory vaultDepositInfo = vaultDepositInfos[_depositId];
         DepositInfo memory depositInfo = userInfos[vaultDepositInfo.userAddress].depositInfos[vaultDepositInfo.userDepositId];
+        uint256 endTimestamp = depositInfo.depositedTimestamp + depositInfo.duration * 1 days + 7 days;
         if (
-            block.timestamp < depositInfo.depositedTimestamp + depositInfo.duration * 7 days ||
+            block.timestamp < endTimestamp ||
             !depositInfo.isCommitType
         ) {
             return (true, 0);
@@ -363,5 +413,29 @@ contract HexOneVault is Ownable, IHexOneVault {
         uint256 minUSDValue = initialUSDValue * LIMIT_PRICE_PERCENT / FIXED_POINT;
         bool isAllow = minUSDValue <= currentUSDValue;
         return (isAllow, isAllow ? 0 : initialUSDValue - currentUSDValue);
+    }
+
+    function _getBorrowableAmount(DepositInfo memory _depositInfo) internal view returns (uint256) {
+        if (_depositInfo.exist) {
+            if (block.timestamp > _depositInfo.depositedTimestamp + _depositInfo.duration * 1 days) {
+                uint256 initialUSDValue = _depositInfo.mintAmount;
+                uint256 currentUSDValue = IHexOnePriceFeed(hexOnePriceFeed).getHexTokenPrice(_depositInfo.amount);
+                if (initialUSDValue < currentUSDValue) {
+                    return currentUSDValue - initialUSDValue;
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    function _unstake(DepositInfo memory _depositInfo) internal returns (uint256) {
+        uint256 stakeListId = _depositInfo.stakeId;
+        IHexToken.StakeStore memory stakeStore = IHexToken(hexToken).stakeLists(address(this), stakeListId);
+        uint40 stakeId = stakeStore.stakeId;
+        uint256 beforeBal = IERC20(hexToken).balanceOf(address(this));
+        IHexToken(hexToken).stakeEnd(stakeListId, stakeId);
+        uint256 afterBal = IERC20(hexToken).balanceOf(address(this));
+        return afterBal - beforeBal;
     }
 }

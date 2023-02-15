@@ -44,6 +44,16 @@ interface IHexOneProtocol {
         bool _isCommit
     ) external;
 
+    /// @notice Borrow more $HEX1 token based on already deposited collateral.
+    /// @param _token The address of token already deposited.
+    /// @param _depositId The vault depositId to borrow.
+    /// @param _amount The amount of $HEX1 to borrow.
+    function borrowHexOne(
+        address _token,
+        uint256 _depositId,
+        uint256 _amount
+    ) external;
+
     /// @notice Claim/restake collateral
     /// @param _token The address of collateral.
     /// @param _depositId The deposit id to claim.

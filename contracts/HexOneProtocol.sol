@@ -96,6 +96,22 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     }
 
     /// @inheritdoc IHexOneProtocol
+    function borrowHexOne(
+        address _token,
+        uint256 _depositId,
+        uint256 _amount
+    ) external override {
+        address sender = msg.sender;
+        require (sender != address(0), "zero caller address");
+        require (allowedTokens.contains(_token), "not allowed token");
+        require (depositedTokenInfos[sender].contains(_token), "not deposited token");
+
+        IHexOneVault hexOneVault = IHexOneVault(vaultInfos[_token]);
+        hexOneVault.borrowHexOne(sender, _depositId, _amount);
+        IHexOneToken(hexOneToken).mintToken(_amount, sender);
+    }
+
+    /// @inheritdoc IHexOneProtocol
     function depositCollateral(
         address _token, 
         uint256 _amount, 

@@ -9,6 +9,7 @@ interface IHexOneVault {
         uint256 amount;
         uint256 shares;
         uint256 mintAmount;
+        uint256 borrowedAmount;
         uint256 depositedTimestamp;
         uint256 duration;
         uint256 restakeDuration;
@@ -20,6 +21,7 @@ interface IHexOneVault {
         uint256 depositId;
         uint256 shareBalance;
         uint256 depositedBalance;
+        uint256 totalBorrowedAmount;
         mapping(uint256 => DepositInfo) depositInfos;
     }
 
@@ -30,6 +32,11 @@ interface IHexOneVault {
         uint256 mintAmount;
         uint256 lockedTimestamp;
         uint256 endTimestamp;
+    }
+
+    struct BorrowableInfo {
+        uint256 depositId;
+        uint256 borrowableAmount;
     }
 
     struct VaultDepositInfo {
@@ -45,6 +52,21 @@ interface IHexOneVault {
     }
 
     function baseToken() external view returns (address baseToken);
+
+    /// @notice Get borrowable amount based on already deposited collateral amount.
+    function getBorrowableAmounts(address _account) external view returns (BorrowableInfo[] memory);
+
+    /// @notice Get total borrowed $HEX1 of user.
+    /// @param _account The address of _account.
+    function getBorrowedBalance(address _account) external view returns (uint256);
+    
+    /// @notice Borrow additional $HEX1 from already deposited collateral amount.
+    /// @dev If collateral price is increased, there will be profit.
+    ///         Based on that profit, depositors can borrow $HEX1 additionally.
+    /// @param _depositor The address of depositor (borrower)
+    /// @param _depositId The vault deposit id to borrow.
+    /// @param _amount The amount of $HEX1 token.
+    function borrowHexOne(address _depositor, uint256 _depositId, uint256 _amount) external;
 
     /// @notice Set hexOneProtocol contract address.
     /// @dev Only owner can call this function and 
