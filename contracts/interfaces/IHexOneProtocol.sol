@@ -3,11 +3,22 @@ pragma solidity ^0.8.17;
 
 interface IHexOneProtocol {
 
+    struct Fee {
+        uint16 feeRate;
+        bool enabled;
+    }
+
     /// @notice Add/Remove vaults.
     /// @dev Only owner can call this function.
     /// @param _vaults The address of vaults.
     /// @param _add Add/Remove = true/false.
     function setVaults(address[] memory _vaults, bool _add) external;
+
+    /// @notice Add/Remove staking pools.
+    /// @dev Only owner can call this function.
+    /// @param _stakingPools The address of staking Pool.
+    /// @param _add Add/Remove = true/false.
+    function setStakingPools(address[] memory _stakingPools, bool _add) external;
 
     /// @notice Set Min stake duration.
     /// @dev Only owner can call this function.
@@ -18,6 +29,18 @@ interface IHexOneProtocol {
     /// @dev Only owner can call this function.
     /// @param _maxDuration The max stake duration days.
     function setMaxDuration(uint256 _maxDuration) external;
+
+    /// @notice Set deposit fee by token.
+    /// @dev Only owner can call this function.
+    /// @param _token The address of token.
+    /// @param _fee Deposit fee percent.
+    function setDepositFee(address _token, uint16 _fee) external;
+
+    /// @notice Enable/Disable deposit fee by token.
+    /// @dev Only owner can call this function.
+    /// @param _token The address of token.
+    /// @param _enable Enable/Disable = true/false
+    function setDepositFeeEnable(address _token, bool _enable) external;
 
     /// @notice Add collateral to certain deposit pool to cover loss.
     /// @dev Depositors can't deposit as commitType. as only uncommit.
@@ -61,6 +84,11 @@ interface IHexOneProtocol {
         address _token,
         uint256 _depositId
     ) external;
+
+    /// @notice Check that token is allowed or not.
+    function isAllowedToken(
+        address _token
+    ) external view returns (bool);
 
     event HexOneMint(address indexed recipient, uint256 amount);
 }
