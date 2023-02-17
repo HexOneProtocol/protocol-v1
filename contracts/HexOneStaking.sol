@@ -8,118 +8,212 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./utils/TokenUtils.sol";
 import "./interfaces/IHexOneStaking.sol";
-import "./interfaces/IHexOneProtocol.sol";
+import "./interfaces/IHexOneStakingMaster.sol";
 
 contract HexOneStaking is Ownable, IHexOneStaking {
     using EnumerableSet for EnumerableSet.UintSet;
     using SafeERC20 for IERC20;
 
-    IHexOneProtocol public hexOneProtocol;
     address public override baseToken;
-    uint256 public stakeId;
-    uint256 private poolId;
+    
     uint256 public launchedTime;
-    uint256 private totalPoolAmount;
-    uint256 public stakedAmount;
-    uint16 public stakingRewardRate;
+    // uint256 public stakedAmount;
     uint16 constant FIXED_POINT = 1000;
 
-    mapping(uint256 => PoolInfo) private poolInfos;
-    mapping(address => EnumerableSet.UintSet) private userStakeIds;
-    mapping(address => mapping(uint256 => StakeInfo)) private userStakeInfos;
+    /// @dev rewardTokenAddr => stakeId => tokenIds
+    /// @dev This is for staking ERC721.
+    mapping(address => mapping(uint256 => EnumerableSet.UintSet)) private stakedTokenIds;
+
+    /// @dev rewardTokenAddr => poolId => PoolInfo
+    mapping(address => mapping(uint256 => PoolInfo)) private poolInfos;
+    
+    /// @dev rewardTokenAddr => userAddr => stakeIds
+    mapping(address => mapping(address => EnumerableSet.UintSet)) private userStakeIds;
+
+    /// @dev rewardTokenAddr => userAddr => stakeId => StakeInfo
+    mapping(address => mapping(address => mapping(uint256 => StakeInfo))) private userStakeInfos;
+
+    /// @dev Based on reward token, stakeId is different.
+    mapping(address => uint256) private stakeIds;
+
+    /// @dev Based on reward token, poolId is different.
+    mapping(address => uint256) private poolIds;
+
+    mapping(address => uint256) private stakedAmounts;
+
+    address public stakingMaster;
+
+    bool public NFTStaking;
+
+    modifier onlyStakingMaster {
+        require (msg.sender == stakingMaster, "no permission");
+        _;
+    }
 
     constructor (
         address _baseToken,
-        uint16 _rewardsRate
+        address _stakingMaster,
+        bool _isERC721
     ) {
         require (_baseToken != address(0), "zero baseToken address");
+        require (_stakingMaster != address(0), "zero staking master address");
         launchedTime = block.timestamp;
-        stakingRewardRate = _rewardsRate;
+        stakingMaster = _stakingMaster;
+        baseToken = _baseToken;
+        NFTStaking = _isERC721;
     }
 
     /// @inheritdoc IHexOneStaking
-    function setStakingRewardsRate(uint16 _rewardsRate) external onlyOwner override {
-        stakingRewardRate = _rewardsRate;
+    function setStakingMaster(address _stakingMaster) external onlyOwner override {
+        require (_stakingMaster != address(0), "zero staking master address");
+        stakingMaster = _stakingMaster;
     }
 
     /// @inheritdoc IHexOneStaking
-    function setHexOneProtocol(address _hexOneProtocol) external onlyOwner override {
-        require (_hexOneProtocol != address(0), "zero hexOneProtocol address");
-        hexOneProtocol = IHexOneProtocol(_hexOneProtocol);
+    function stakeERC20Start(
+        address _staker,
+        address _rewardToken,
+        uint256 _amount
+    ) external onlyStakingMaster override {
+        _stakeStart(_staker, _rewardToken, _amount);
     }
 
     /// @inheritdoc IHexOneStaking
-    function stakeStart(uint256 _amount) external override {
-        address sender;
-        require (sender != address(0), "zero caller address");
-        IERC20(baseToken).safeTransferFrom(sender, address(this), _amount);
+    function stakeERC721Start(
+        address _staker,
+        address _rewardToken,
+        uint256[] memory _tokenIds
+    ) external onlyStakingMaster override {
+        uint256 amount = _tokenIds.length;
+        uint256 curStakeId = stakeIds[_rewardToken];
+        for (uint256 i = 0; i < amount; i ++) {
+            uint256 tokenId = _tokenIds[i];
+            stakedTokenIds[_rewardToken][curStakeId].add(tokenId);
+        }
 
-        userStakeInfos[sender][stakeId] = StakeInfo(block.timestamp, _amount, totalPoolAmount);
-        stakedAmount += _amount;
-        poolInfos[poolId ++] = PoolInfo(stakedAmount, totalPoolAmount);
-        userStakeIds[sender].add(stakeId ++);
+        _stakeStart(_staker, _rewardToken, amount);
     }
 
     /// @inheritdoc IHexOneStaking
-    function stakeEnd(uint256 _stakeId) external override {
-        address sender;
-        require (sender != address(0), "zero caller address");
-        require (userStakeIds[sender].contains(_stakeId), "not exist stakeId");
-        uint256 claimableAmount = _getClaimableRewards(sender, _stakeId);
-        userStakeIds[sender].remove(_stakeId);
-        stakedAmount -= userStakeInfos[sender][_stakeId].stakedAmount;
-        poolInfos[poolId ++] = PoolInfo(stakedAmount, totalPoolAmount);
-
-        IERC20(baseToken).safeTransfer(sender, claimableAmount);
+    function stakeERC20End(
+        address _staker,
+        address _rewardToken, 
+        uint256 _stakeId
+    ) external override returns (uint256 stakedAmount, uint256 claimableAmount) {
+        claimableAmount = _stakeEnd(_staker, _rewardToken, _stakeId);
+        stakedAmount = userStakeInfos[_rewardToken][_staker][_stakeId].stakedAmount;
     }
+
+    /// @inheritdoc IHexOneStaking
+    function stakeERC721End(
+        address _staker,
+        address _rewardToken, 
+        uint256 _stakeId
+    ) external override returns (uint256 claimableAmount, uint256[] memory tokenIds) {
+        return (
+            _stakeEnd(_staker, _rewardToken, _stakeId),
+            stakedTokenIds[_rewardToken][_stakeId].values()
+        );
+    }
+    
 
     /// @inheritdoc IHexOneStaking
     function claimableRewards(
-        address _staker
+        address _staker,
+        address _rewardToken
     ) external view override returns (Rewards[] memory) {
         require (_staker != address(0), "zero staker address");
-        require (userStakeIds[_staker].length() > 0, "no staking pool");
+        require (userStakeIds[_rewardToken][_staker].length() > 0, "no staking pool");
 
-        uint256[] memory stakeIds = userStakeIds[_staker].values();
-        Rewards[] memory rewardsData = new Rewards[](stakeIds.length);
-        for (uint256 i = 0; i < stakeIds.length; i ++) {
+        uint256[] memory ids = userStakeIds[_rewardToken][_staker].values();
+        Rewards[] memory rewardsData = new Rewards[](ids.length);
+        for (uint256 i = 0; i < ids.length; i ++) {
             rewardsData[i] = Rewards(
-                stakeIds[i], 
-                _getClaimableRewards(_staker, stakeIds[i])
+                ids[i], 
+                _getClaimableRewards(_staker, _rewardToken, ids[i]),
+                _rewardToken,
+                baseToken
             );
         }
 
         return rewardsData;
     }
 
-    /// @inheritdoc IHexOneStaking
-    function updateRewards(uint256 _amount) external override {
-        address sender;
-        require (sender == address(hexOneProtocol), "only HexOneProtocol");
-        IERC20(baseToken).safeTransferFrom(sender, address(this), _amount);
-        totalPoolAmount += _amount;
-    }
-
-    function _getClaimableRewards(address _staker, uint256 _stakeId) internal view returns (uint256) {
-        StakeInfo memory stakeInfo = userStakeInfos[_staker][_stakeId];
-        if (_stakeId == stakeId - 1) {
-            PoolInfo memory poolInfo = poolInfos[_stakeId];
+    function _getClaimableRewards(
+        address _staker, 
+        address _rewardToken,
+        uint256 _stakeId
+    ) internal view returns (uint256) {
+        StakeInfo memory stakeInfo = userStakeInfos[_rewardToken][_staker][_stakeId];
+        uint256 curStakeId = stakeIds[_rewardToken];
+        if (_stakeId == curStakeId - 1) {
+            PoolInfo memory poolInfo = poolInfos[_rewardToken][_stakeId];
+            uint256 totalPoolAmount = _getTotalPoolAmount(_rewardToken);
             uint256 rewardsAmount = totalPoolAmount - stakeInfo.currentPoolAmount;
             rewardsAmount = rewardsAmount * stakeInfo.stakedAmount / poolInfo.totalStakedAmount;
 
-            return rewardsAmount + stakeInfo.stakedAmount;
+            return rewardsAmount;
         }
 
         uint256 claimableAmount = 0;
-        for (uint256 id = _stakeId; id < stakeId - 1; id ++) {
-            PoolInfo memory pointPoolInfo = poolInfos[id];
-            PoolInfo memory nextPoolInfo = poolInfos[id + 1];
+        for (uint256 id = _stakeId; id < curStakeId; id ++) {
+            PoolInfo memory pointPoolInfo = poolInfos[_rewardToken][id];
+            PoolInfo memory nextPoolInfo = poolInfos[_rewardToken][id + 1];
             uint256 rewardsAmount = nextPoolInfo.poolAmount - pointPoolInfo.poolAmount;
-            rewardsAmount = rewardsAmount * stakingRewardRate / FIXED_POINT;
+            uint256 rewardRate = _getRewardRate(_rewardToken);
+            rewardsAmount = rewardsAmount * rewardRate / FIXED_POINT;
             rewardsAmount = rewardsAmount * stakeInfo.stakedAmount / pointPoolInfo.totalStakedAmount;
             claimableAmount += rewardsAmount;
         }
 
         return claimableAmount + stakeInfo.stakedAmount;
+    }
+
+    function _getRewardRate(address _rewardToken) internal view returns (uint16) {
+        return IHexOneStakingMaster(stakingMaster).getRewardRate(_rewardToken);
+    }
+
+    function _getTotalPoolAmount(address _rewardToken) internal view returns (uint256) {
+        return IHexOneStakingMaster(stakingMaster).getTotalPoolAmount(_rewardToken);
+    }
+
+    function _stakeStart(
+        address _staker, 
+        address _rewardToken, 
+        uint256 _amount
+    ) internal {
+        uint256 curStakeId = stakeIds[_rewardToken];
+        uint256 curPoolId = poolIds[_rewardToken];
+        uint256 totalPoolAmount = _getTotalPoolAmount(_rewardToken);
+        userStakeInfos[_rewardToken][_staker][curStakeId] = StakeInfo(
+            block.timestamp, 
+            _amount, 
+            totalPoolAmount
+        );
+        stakedAmounts[_rewardToken] += _amount;
+        poolInfos[_rewardToken][curPoolId] = PoolInfo(stakedAmounts[_rewardToken], totalPoolAmount);
+        userStakeIds[_rewardToken][_staker].add(curStakeId);
+
+        stakeIds[_rewardToken] = curStakeId + 1;
+        poolIds[_rewardToken] = curPoolId + 1;
+    }
+
+    function _stakeEnd(
+        address _staker, 
+        address _rewardToken, 
+        uint256 _stakeId
+    ) internal returns (uint256) {
+        require (userStakeIds[_rewardToken][_staker].contains(_stakeId), "not exist stakeId");
+        uint256 curPoolId = poolIds[_rewardToken];
+        uint256 claimableAmount = _getClaimableRewards(_staker, _rewardToken, _stakeId);
+        userStakeIds[_rewardToken][_staker].remove(_stakeId);
+        stakedAmounts[_rewardToken] -= userStakeInfos[_rewardToken][_staker][_stakeId].stakedAmount;
+        poolInfos[_rewardToken][curPoolId] = PoolInfo(
+            stakedAmounts[_rewardToken], 
+            _getTotalPoolAmount(_rewardToken)
+        );
+        poolIds[_rewardToken] = curPoolId + 1;
+
+        return claimableAmount;
     }
 }

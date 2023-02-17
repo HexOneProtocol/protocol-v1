@@ -6,6 +6,8 @@ interface IHexOneStaking {
     struct Rewards {
         uint256 stakeId;
         uint256 claimableRewards;
+        address rewardToken;
+        address stakeToken;
     }
 
     struct StakeInfo {
@@ -19,31 +21,44 @@ interface IHexOneStaking {
         uint256 poolAmount;
     }
 
-    /// @notice Set rewards percent for staking.
-    /// @dev Only owner can call this function.
-    function setStakingRewardsRate(uint16 _rewardsRate) external;
-
-    /// @notice Set HexOneProtocol address.
+    /// @notice Set StakingMaster address.
     /// @dev Only ower can call this function.
-    function setHexOneProtocol(address _hexOneProtocol) external;
+    function setStakingMaster(address _stakingMaster) external;
 
-    /// @notice Stake tokens.
-    /// @dev Stakers can stake only token that allowed in HexOneProtocol
-    function stakeStart(uint256 _amount) external;
-
-    /// @notice Unstake tokens.
-    function stakeEnd(
-        uint256 _stakeId
+    /// @notice Stake ERC20 tokens.
+    function stakeERC20Start(
+        address _staker,
+        address _rewardToken,
+        uint256 _amount
     ) external;
+
+    /// @notice Stake ERC721 tokens.
+    function stakeERC721Start(
+        address _staker,
+        address _rewardToken,
+        uint256[] memory _tokenIds
+    ) external;
+
+    /// @notice Unstake ERC20 tokens.
+    /// @return staked amount and claimable rewards info.
+    function stakeERC20End(
+        address _staker,
+        address _rewardToken, 
+        uint256 _stakeId
+    ) external returns (uint256, uint256);
+
+    /// @notice Unstake ERC721 tokens.
+    function stakeERC721End(
+        address _staker,
+        address _rewardToken, 
+        uint256 _stakeId
+    ) external returns (uint256, uint256[] memory);
 
     /// @notice Get claimable rewards.
     function claimableRewards(
-        address _staker
+        address _staker,
+        address _rewardToken
     ) external view returns (Rewards[] memory);
-
-    /// @notice Update rewards amount.
-    /// @dev Only HexOneProtocol can call this function.
-    function updateRewards(uint256 _amount) external;
 
     function baseToken() external view returns (address baseToken);
 }

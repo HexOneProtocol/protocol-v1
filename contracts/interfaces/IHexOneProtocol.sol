@@ -14,11 +14,10 @@ interface IHexOneProtocol {
     /// @param _add Add/Remove = true/false.
     function setVaults(address[] memory _vaults, bool _add) external;
 
-    /// @notice Add/Remove staking pools.
+    /// @notice Set stakingMaster contract address.
     /// @dev Only owner can call this function.
-    /// @param _stakingPools The address of staking Pool.
-    /// @param _add Add/Remove = true/false.
-    function setStakingPools(address[] memory _stakingPools, bool _add) external;
+    /// @param _stakingMaster The address of staking Pool.
+    function setStakingPool(address _stakingMaster) external;
 
     /// @notice Set Min stake duration.
     /// @dev Only owner can call this function.
