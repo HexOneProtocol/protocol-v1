@@ -13,6 +13,7 @@ interface IHexOneVault {
         uint256 depositedTimestamp;
         uint256 duration;
         uint256 restakeDuration;
+        uint256 liquidateAmount;
         bool isCommitType;
         bool exist;
     }
@@ -30,6 +31,7 @@ interface IHexOneVault {
         uint256 depositAmount;
         uint256 shareAmount;
         uint256 mintAmount;
+        uint256 liquidateAmount;
         uint256 lockedTimestamp;
         uint256 endTimestamp;
     }
@@ -47,6 +49,7 @@ interface IHexOneVault {
     struct LiquidateInfo {
         uint256 depositId;
         address depositor;
+        uint256 hexOneTokenAmount;
         uint256 hexTokenAmount;
         uint256 liquidateAmount;
     }
@@ -64,9 +67,9 @@ interface IHexOneVault {
     /// @dev If collateral price is increased, there will be profit.
     ///         Based on that profit, depositors can borrow $HEX1 additionally.
     /// @param _depositor The address of depositor (borrower)
-    /// @param _depositId The vault deposit id to borrow.
+    /// @param _vaultDepositId The vault deposit id to borrow.
     /// @param _amount The amount of $HEX1 token.
-    function borrowHexOne(address _depositor, uint256 _depositId, uint256 _amount) external;
+    function borrowHexOne(address _depositor, uint256 _vaultDepositId, uint256 _amount) external;
 
     /// @notice Set hexOneProtocol contract address.
     /// @dev Only owner can call this function and 
@@ -97,13 +100,13 @@ interface IHexOneVault {
     /// @dev Depositors only add collateral and don't receive $HEX1 token as compensation.
     /// @param _depositor The address of depositor.
     /// @param _amount The amount of collateral.
-    /// @param _depositId The certain deposit id to cover loss.
+    /// @param _vaultDepositId The certain deposit id to cover loss.
     /// @param _duration The maturity duration.
     /// @return burnAmount The amount of $HEX1 to burn.
     function addCollateralForLiquidate(
         address _depositor,
         uint256 _amount,
-        uint256 _depositId,
+        uint256 _vaultDepositId,
         uint256 _duration
     ) external returns (uint256 burnAmount);
 
@@ -114,7 +117,7 @@ interface IHexOneVault {
     /// @return burnAmount The amount of $HEX1 should be burn.
     function claimCollateral(
         address _claimer,
-        uint256 _depositId
+        uint256 _vaultDepositId
     ) external returns (uint256 mintAmount, uint256 burnAmount, uint256 liquidateAmount);
 
     /// @notice Get liquidable vault deposit Ids.

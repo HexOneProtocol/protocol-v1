@@ -26,8 +26,8 @@ describe ("HexOne Protocol", function () {
 
         this.hexOneToken = await deploy("HexOneToken", "HexOneToken", "HexOne", "HEXONE");
         this.hexOnePriceFeed = await deploy(
-            "HexOnePriceFeed", 
-            "HexOnePriceFeed", 
+            "HexOnePriceFeedTest", 
+            "HexOnePriceFeedTest", 
             this.hexToken.address, 
             usdcAddress, 
             usdcPriceFeed,
@@ -39,11 +39,16 @@ describe ("HexOne Protocol", function () {
             this.hexToken.address,
             this.hexOnePriceFeed.address
         );
+        this.stakingMaster = await deploy(
+            "HexOneStakingMaster",
+            "HexOneStakingMaster"
+        );
         this.hexOneProtocol = await deploy(
             "HexOneProtocol",
             "HexOneProtocol",
             this.hexOneToken.address,
             [this.hexOneVault.address],
+            this.stakingMaster.address,
             30,
             120
         );
@@ -52,6 +57,7 @@ describe ("HexOne Protocol", function () {
     it ("initialize", async function () {
         await this.hexOneToken.setAdmin(this.hexOneProtocol.address);
         await this.hexOneVault.setHexOneProtocol(this.hexOneProtocol.address);
+        await this.stakingMaster.setHexOneProtocol(this.hexOneProtocol.address);
     })
 
     it ("buy hex token", async function () {
@@ -84,7 +90,10 @@ describe ("HexOne Protocol", function () {
                 hexAmountForDeposit = BigInt(hexAmountForDeposit) / BigInt(2);
                 let duration = 40;  // 40 days
     
-                console.log(smallNum(hexAmountForDeposit, 8));
+                console.log(
+                    "HEX token amount to deposit: ",
+                    smallNum(hexAmountForDeposit, 8)
+                );
     
                 let beforeBal = await this.hexOneToken.balanceOf(this.depositor_1.address);
                 await this.hexToken.transfer(this.depositor_1.address, BigInt(hexAmountForDeposit));
@@ -103,7 +112,7 @@ describe ("HexOne Protocol", function () {
                 expect (smallNum(afterBal, 18) - smallNum(beforeBal, 18)).to.be.equal(smallNum(expectMintAmount, 18));
                 let shareBalance = await this.hexOneVault.getShareBalance(this.depositor_1.address);
                 expect (smallNum(shareBalance, 8)).to.be.greaterThan(0);
-                console.log("shareBalance: ", smallNum(shareBalance, 8));
+                console.log("shareBalance after deposit collateral: ", smallNum(shareBalance, 8));
             })
         })
 
@@ -129,11 +138,17 @@ describe ("HexOne Protocol", function () {
                 let afterHexOneBal = await this.hexOneToken.balanceOf(this.depositor_1.address);
                 let afterHexBal = await this.hexToken.balanceOf(this.depositor_1.address);
                 expect (smallNum(beforeHexOneBal, 18) - smallNum(afterHexOneBal, 18)).to.be.equal(smallNum(mintAmount, 18));
-                console.log(smallNum(afterHexBal, 8) - smallNum(beforeHexBal, 8));
+                console.log(
+                    "received HEX token amount as rewards: ",
+                    smallNum(afterHexBal, 8) - smallNum(beforeHexBal, 8)
+                );
                 expect (smallNum(afterHexBal, 8) - smallNum(beforeHexBal, 8)).to.be.greaterThan(smallNum(depositedAmount, 8));
                 let shareBalance = await this.hexOneVault.getShareBalance(this.depositor_1.address);
                 expect (smallNum(shareBalance, 8)).to.be.equal(0);
-                console.log(await this.hexOneVault.getUserInfos(this.depositor_1.address));
+                console.log(
+                    "user information after claim: ",
+                    await this.hexOneVault.getUserInfos(this.depositor_1.address)
+                );
                 userInfos = await this.hexOneVault.getUserInfos(this.depositor_1.address);
                 expect (userInfos.length).to.be.equal(0);
             })
@@ -142,6 +157,7 @@ describe ("HexOne Protocol", function () {
         describe ("deposit as commitType and restake it", function () {
             it ("deposit hex as commit type", async function () {
                 let hexAmountForDeposit = await this.hexToken.balanceOf(this.deployer.address);
+                hexAmountForDeposit = BigInt(hexAmountForDeposit) / BigInt(4);
                 let duration = 40;  // 40 days
     
                 let beforeBal = await this.hexOneToken.balanceOf(this.depositor_2.address);
@@ -161,7 +177,7 @@ describe ("HexOne Protocol", function () {
                 expect (smallNum(afterBal, 18) - smallNum(beforeBal, 18)).to.be.equal(smallNum(expectMintAmount, 18));
                 let shareBalance = await this.hexOneVault.getShareBalance(this.depositor_2.address);
                 expect (smallNum(shareBalance, 8)).to.be.greaterThan(0);
-                console.log("shareBalance: ", smallNum(shareBalance, 8));
+                console.log("shareBalance after deposit collateral: ", smallNum(shareBalance, 8));
             })
 
             it ("restake after maturity", async function () {
@@ -179,13 +195,22 @@ describe ("HexOne Protocol", function () {
                 let afterHexBal = await this.hexToken.balanceOf(this.depositor_2.address);
 
                 expect (smallNum(afterHexOneBal, 18)).to.be.greaterThan(smallNum(beforeHexOneBal, 18));
-                console.log(smallNum(afterHexOneBal, 18) - smallNum(beforeHexOneBal, 18));
+                console.log(
+                    "received $HEX1 amount by restake: ", 
+                    smallNum(afterHexOneBal, 18) - smallNum(beforeHexOneBal, 18)
+                );
 
-                console.log(smallNum(afterHexBal, 8) - smallNum(beforeHexBal, 8));
+                console.log(
+                    "received HEX token amount after restake: ",
+                    smallNum(afterHexBal, 8) - smallNum(beforeHexBal, 8)
+                );
                 expect (smallNum(afterHexBal, 8) - smallNum(beforeHexBal, 8)).to.be.equal(0);
 
                 let shareBalance = await this.hexOneVault.getShareBalance(this.depositor_2.address);
-                console.log(smallNum(shareBalance, 8), smallNum(shareAmount, 8));
+                console.log(
+                    "shareBalance before and after restake: ",
+                    smallNum(shareAmount, 8), smallNum(shareBalance, 8)
+                );
                 expect (smallNum(shareBalance, 8)).to.be.greaterThan(smallNum(shareAmount, 8));
                 
                 userInfos = await this.hexOneVault.getUserInfos(this.depositor_2.address);
@@ -195,5 +220,330 @@ describe ("HexOne Protocol", function () {
         })
     })
 
+    describe ("set vaulsts", function () {
+        it ("reverts if caller is not the owner", async function () {
+            await expect (
+                this.hexOneProtocol.connect(this.depositor_1).setVaults([this.hexOneVault.address], false)
+            ).to.be.revertedWith("Ownable: caller is not the owner");
+        })
+
+        it ("remove hexOneVault", async function () {
+            await this.hexOneProtocol.setVaults([this.hexOneVault.address], false);
+            expect (await this.hexOneProtocol.isAllowedToken(this.hexToken.address)).to.be.equal(false);
+        })
+
+        it ("add hexOneVault again", async function () {
+            await this.hexOneProtocol.setVaults([this.hexOneVault.address], true);
+            expect (await this.hexOneProtocol.isAllowedToken(this.hexToken.address)).to.be.equal(true);
+        })
+    })
+
+    describe ("set staking master", function () {
+        it ("deploy new staking master", async function () {
+            this.stakingMaster = await deploy(
+                "HexOneStakingMaster",
+                "HexOneStakingMaster"
+            );
+        })
+
+        it ("set new staking master", async function () {
+            let oldOne = await this.hexOneProtocol.stakingMaster();
+            expect (oldOne).to.be.not.equal(this.stakingMaster.address);
+            
+            /// reverts if caller is not the owner
+            await expect (
+                this.hexOneProtocol.connect(this.depositor_1).setStakingPool(
+                    this.stakingMaster.address
+                )
+            ).to.be.revertedWith("Ownable: caller is not the owner");
+
+            await this.hexOneProtocol.setStakingPool(
+                this.stakingMaster.address
+            );
+
+            expect (
+                await this.hexOneProtocol.stakingMaster()
+            ).to.be.equal(this.stakingMaster.address);
+
+            await this.hexOneProtocol.setStakingPool(
+                oldOne
+            );
+        })
+    })
+
+    describe ("deposit fee", function () {
+        describe ("set deposit fee", function () {
+            it ("reverts if caller is not the owner", async function () {
+                await expect (
+                    this.hexOneProtocol.connect(this.depositor_1).setDepositFee(
+                        this.hexToken.address,
+                        10
+                    )
+                ).to.be.revertedWith("Ownable: caller is not the owner");
+            })
+
+            it ("reverts if token is not allowed", async function () {
+                await expect (
+                    this.hexOneProtocol.setDepositFee(
+                        this.hexOneToken.address,
+                        100
+                    )
+                ).to.be.revertedWith("not allowed token");
+            })
+
+            it ("reverts if deposit fee is over 100%", async function () {
+                await expect (
+                    this.hexOneProtocol.setDepositFee(
+                        this.hexToken.address,
+                        1001
+                    )
+                ).to.be.revertedWith("invalid fee rate");
+            })
+
+            it ("set deposit fee", async function () {
+                await this.hexOneProtocol.setDepositFee(
+                    this.hexToken.address,
+                    30
+                );
+            })
+        })
+
+        describe ("set deposit enable", function () {
+            it ("reverts if caller is not the owner", async function () {
+                await expect (
+                    this.hexOneProtocol.connect(this.depositor_1).setDepositFeeEnable(
+                        this.hexToken.address,
+                        true
+                    )
+                ).to.be.revertedWith("Ownable: caller is not the owner");
+            })
+
+            it ("reverts if token is not allowed", async function () {
+                await expect (
+                    this.hexOneProtocol.setDepositFeeEnable(
+                        this.hexOneToken.address,
+                        true
+                    )
+                ).to.be.revertedWith("not allowed token");
+            })
+
+            it ("set deposit fee enable", async function () {
+                await this.hexOneProtocol.setDepositFeeEnable(
+                    this.hexToken.address,
+                    true
+                );
+            })
+        })
+
+        describe ("deposit collateral with fee", function () {
+            it ("reverts if token is not allowed", async function () {
+                await expect (
+                    this.hexOneProtocol.connect(this.depositor_3).depositCollateral(
+                        this.hexOneToken.address,
+                        bigNum(10),
+                        4,
+                        true
+                    )
+                ).to.be.revertedWith("invalid token");
+            })
+
+            it ("reverts if amount is zero", async function () {
+                await expect (
+                    this.hexOneProtocol.connect(this.depositor_3).depositCollateral(
+                        this.hexToken.address,
+                        0,
+                        4,
+                        true
+                    )
+                ).to.be.revertedWith("invalid amount");
+            })
+
+            it ("reverts if duration is invalid", async function () {
+                await expect (
+                    this.hexOneProtocol.connect(this.depositor_3).depositCollateral(
+                        this.hexToken.address,
+                        bigNum(10),
+                        20,
+                        true
+                    )
+                ).to.be.revertedWith("invalid duration");
+            })
+
+            it ("deposit collateral and check fee", async function () {
+                let hexAmountForDeposit = await this.hexToken.balanceOf(this.deployer.address);
+                hexAmountForDeposit = BigInt(hexAmountForDeposit) / BigInt(4);
+                let duration = 50;  // 50 days
+
+                let beforeBal = await this.hexOneToken.balanceOf(this.depositor_3.address);
+                let stakingPoolAddr = await this.hexOneProtocol.stakingMaster();
+                let beforePoolBal = await this.hexToken.balanceOf(stakingPoolAddr);
+                await this.hexToken.transfer(this.depositor_3.address, BigInt(hexAmountForDeposit));
+                await this.hexToken.connect(this.depositor_3).approve(this.hexOneProtocol.address, BigInt(hexAmountForDeposit));
+                await this.hexOneProtocol.connect(this.depositor_3).depositCollateral(
+                    this.hexToken.address,
+                    BigInt(hexAmountForDeposit),
+                    duration,
+                    false
+                );
+                let afterBal = await this.hexOneToken.balanceOf(this.depositor_3.address);
+                let afterPoolBal = await this.hexToken.balanceOf(stakingPoolAddr);
     
+                let hexPrice = await this.hexOnePriceFeed.getHexTokenPrice(10**8);
+                let feeRate = await this.hexOneProtocol.fees(this.hexToken.address);
+                feeRate = feeRate.feeRate;
+                let feeAmount = BigInt(hexAmountForDeposit) * BigInt(feeRate) / BigInt(1000);
+                let tradeAmount = BigInt(hexAmountForDeposit) - BigInt(feeAmount);
+                let expectMintAmount = BigInt(hexPrice) * BigInt(tradeAmount) / BigInt(10**8);
+    
+                expect (smallNum(afterBal, 18) - smallNum(beforeBal, 18)).to.be.equal(smallNum(expectMintAmount, 18));
+                let shareBalance = await this.hexOneVault.getShareBalance(this.depositor_2.address);
+                expect (smallNum(shareBalance, 8)).to.be.greaterThan(0);
+                expect (smallNum(afterPoolBal, 8) - smallNum(beforePoolBal, 8)).to.be.equal(smallNum(feeAmount, 8));
+                console.log("shareBalance after deposit collateral: ", smallNum(shareBalance, 8));
+            })
+        })
+    })
+
+    describe ("borrow more $HEX1", function () {
+        let increasePricePerToken;
+        it ("set increased testRate for borrow", async function () {
+            let beforePrice = await this.hexOnePriceFeed.getHexTokenPrice(bigNum(1, 8));
+            let testRate = 1500;    // 150%
+            await this.hexOnePriceFeed.setTestRate(testRate);
+            let afterPrice = await this.hexOnePriceFeed.getHexTokenPrice(bigNum(1, 8));
+            increasePricePerToken = BigInt(afterPrice) - BigInt(beforePrice);
+        })
+
+        it ("get borrowable amounts", async function () {
+            let borrowableAmounts = await this.hexOneVault.getBorrowableAmounts(this.depositor_3.address);
+            expect (borrowableAmounts.length).to.be.equal(1);
+            console.log(borrowableAmounts[0]);
+        })
+
+        it ("reverts if token is not allowed", async function () {
+            await expect (
+                this.hexOneProtocol.connect(this.depositor_3).borrowHexOne(
+                    this.hexOneToken.address,
+                    1,
+                    bigNum(10, 18)
+                )
+            ).to.be.revertedWith("not allowed token");
+        })
+
+        it ("borrow more $HEX1", async function () {
+            let depositInfo = await this.hexOneVault.getUserInfos(this.depositor_3.address);
+            let depositedTokenAmount = depositInfo[0].depositAmount;
+            console.log("depositedAmont: ", smallNum(depositedTokenAmount, 8));
+            console.log("increase price per token: ", smallNum(increasePricePerToken, 18));
+
+            let borrowableAmounts = await this.hexOneVault.getBorrowableAmounts(this.depositor_3.address);
+            let borrowableAmount = borrowableAmounts[0].borrowableAmount;
+            let depositId = borrowableAmounts[0].depositId;
+
+            let beforeBal = await this.hexOneToken.balanceOf(this.depositor_3.address);
+            await this.hexOneProtocol.connect(this.depositor_3).borrowHexOne(
+                this.hexToken.address,
+                depositId,
+                BigInt(borrowableAmount)
+            );
+            let afterBal = await this.hexOneToken.balanceOf(this.depositor_3.address);
+            let expectAmount = BigInt(depositedTokenAmount) * BigInt(increasePricePerToken) / BigInt(10**8);
+            let borrowedAmount = BigInt(afterBal) - BigInt(beforeBal);
+
+            console.log(
+                "borrowed $HEX1 token amount: ",
+                smallNum(borrowedAmount, 18),
+                smallNum(borrowableAmount, 18),
+                smallNum(expectAmount, 18)
+            );
+
+            expect (smallNum(borrowedAmount, 18)).to.be.equal(smallNum(borrowableAmount, 18));
+            expect (smallNum(borrowedAmount, 18)).to.be.closeTo(smallNum(expectAmount, 18), 0.001);
+        })
+    })
+
+    describe ("add collateral for liquidate", function () {
+        it ("set decreased testRate for borrow", async function () {
+            let testRate = 600;    // 60%
+            await this.hexOnePriceFeed.setTestRate(testRate);
+        })
+
+        it ("get liquidableDeposits", async function () {
+            let deposits = await this.hexOneVault.getLiquidableDeposits();
+            /// before maturity no liquidableDeposits
+            expect (deposits.length).to.be.equal(0);
+
+            /// spend time
+            await spendTime(60 * day);
+
+            deposits = await this.hexOneVault.getLiquidableDeposits();
+            expect (deposits.length).to.be.equal(1);
+            expect (deposits[0].depositor).to.be.equal(this.depositor_3.address);
+        })
+
+        it ("reverts if caller is not the depositor", async function () {
+            let deposits = await this.hexOneVault.getLiquidableDeposits();
+            let depositInfo = deposits[0];
+
+            let hexAmountForDeposit = await this.hexToken.balanceOf(this.deployer.address);
+            hexAmountForDeposit = BigInt(hexAmountForDeposit) / BigInt(4);
+            let duration = 50;  // 50 days
+
+            await this.hexToken.transfer(this.depositor_1.address, BigInt(hexAmountForDeposit));
+            await this.hexToken.connect(this.depositor_1).approve(this.hexOneProtocol.address, BigInt(hexAmountForDeposit));
+            await expect (
+                this.hexOneProtocol.connect(this.depositor_1).addCollateralForLiquidate(
+                    this.hexToken.address,
+                    BigInt(hexAmountForDeposit),
+                    depositInfo.depositId,
+                    duration
+                )
+            ).to.be.revertedWith("not correct depositor");
+
+            await this.hexToken.connect(this.depositor_1).transfer(this.depositor_3.address, BigInt(hexAmountForDeposit));
+        })
+
+        it ("deposit collateral for liquidate", async function () {
+            let deposits = await this.hexOneVault.getLiquidableDeposits();
+            let depositInfo = deposits[0];
+            let hexAmountForDeposit = await this.hexToken.balanceOf(this.depositor_3.address);
+            let duration = 50;  // 50 days
+
+            let burnHexOneTokenAmount = depositInfo.hexOneTokenAmount;
+            let beforeBal = await this.hexOneToken.balanceOf(this.depositor_3.address);
+            await this.hexToken.connect(this.depositor_3).approve(this.hexOneProtocol.address, BigInt(hexAmountForDeposit));
+            await this.hexOneProtocol.connect(this.depositor_3).addCollateralForLiquidate(
+                this.hexToken.address,
+                BigInt(hexAmountForDeposit),
+                depositInfo.depositId,
+                duration
+            );
+            let afterBal = await this.hexOneToken.balanceOf(this.depositor_3.address);
+
+            console.log(
+                "burn $HEX1 token amount: ",
+                smallNum(BigInt(beforeBal) - BigInt(afterBal), 18),
+                smallNum(burnHexOneTokenAmount, 18)
+            );
+
+            expect (smallNum(BigInt(beforeBal) - BigInt(afterBal), 18)).to.be.equal(smallNum(burnHexOneTokenAmount, 18));
+        })
+    })
+
+    describe ("claim hex token of liquidate deposit by other users", function () {
+        it ("spend time", async function () {
+            let deposits = await this.hexOneVault.getLiquidableDeposits();
+            /// before maturity no liquidableDeposits
+            expect (deposits.length).to.be.equal(0);
+
+            /// spend time
+            await spendTime(60 * day);
+
+            deposits = await this.hexOneVault.getLiquidableDeposits();
+            expect (deposits.length).to.be.equal(1);
+            expect (deposits[0].depositor).to.be.equal(this.depositor_3.address);
+
+            console.log(deposits[0]);
+        })
+    })
 })
