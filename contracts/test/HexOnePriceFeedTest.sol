@@ -4,18 +4,21 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-import "./utils/TokenUtils.sol";
-import "./interfaces/IHexOnePriceFeed.sol";
-import "./interfaces/IUniswapV2Factory.sol";
-import "./interfaces/IUniswapV2Router.sol";
+import "../utils/TokenUtils.sol";
+import "../interfaces/IHexOnePriceFeed.sol";
+import "../interfaces/IUniswapV2Factory.sol";
+import "../interfaces/IUniswapV2Router.sol";
 
-contract HexOnePriceFeed is Ownable, IHexOnePriceFeed {
+contract HexOnePriceFeedTest is Ownable, IHexOnePriceFeed {
     mapping(address => address) private priceFeeds;
     uint256 public constant FIXED_POINT_SCALAR = 1e18;
 
     address private hexToken;
     address private pairToken;
     IUniswapV2Router02 public dexRouter;
+
+    uint16 private testRate = 1000; // 100% = origin price.
+    uint16 private FIXED_POINT = 1000;
 
     constructor (
         address _hexToken,
@@ -32,6 +35,10 @@ contract HexOnePriceFeed is Ownable, IHexOnePriceFeed {
         hexToken = _hexToken;
         pairToken = _pairToken;
         dexRouter = IUniswapV2Router02(_dexRouter);
+    }
+
+    function setTestRate(uint16 _testRate) external {
+        testRate = _testRate;
     }
 
     /// @inheritdoc IHexOnePriceFeed
@@ -97,6 +104,7 @@ contract HexOnePriceFeed is Ownable, IHexOnePriceFeed {
         require(timestamp != 0, "Round not complete");
 
         uint256 tokenPrice = uint256(price);
+        tokenPrice = tokenPrice * testRate / FIXED_POINT;
 
         uint8 decimals = priceFeed.decimals();
         uint8 additionDecimals = 18 - decimals;

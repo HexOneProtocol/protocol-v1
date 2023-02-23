@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "./interfaces/IHexOneProtocol.sol";
 import "./interfaces/IHexOneVault.sol";
+import "./interfaces/IHexOneStakingMaster.sol";
 import "./interfaces/IHexOneToken.sol";
 
 contract HexOneProtocol is Ownable, IHexOneProtocol {
@@ -18,11 +19,22 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     /// @notice Allowed token info based on allowed vaults.    
     EnumerableSet.AddressSet private allowedTokens;
 
+    /// @notice Minimum stake duration. (days)
+    uint256 public MIN_DURATION;
+
+    /// @notice Maximum stake duration. (days)
+    uint256 public MAX_DURATION;
+
     /// @notice The address of $HEX1.
     address public hexOneToken;
 
+    /// @notice The address of staking master.
+    address public stakingMaster;
+
     /// @dev The address to burn tokens.
     address constant DEAD = 0x000000000000000000000000000000000000dEaD;
+
+    uint16 constant FIXED_POINT = 1000;
 
     /// @notice Show vault address from token address.
     mapping(address => address) private vaultInfos;
@@ -30,18 +42,109 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     /// @notice Show deposited token addresses by user.
     mapping(address => EnumerableSet.AddressSet) private depositedTokenInfos;
 
+    /// @notice Fee Info by token.
+    mapping(address => Fee) public fees;
+
     constructor (
         address _hexOneToken,
-        address[] memory _vaults
+        address[] memory _vaults,
+        address _stakingMaster,
+        uint256 _minDuration,
+        uint256 _maxDuration
     ) {
         require (_hexOneToken != address(0), "zero $HEX1 token address");
+        require (_maxDuration > _minDuration, "max Duration is less min duration");
+        require (_stakingMaster != address(0), "zero staking master address");
+        MIN_DURATION = _minDuration;
+        MAX_DURATION = _maxDuration;
         hexOneToken = _hexOneToken;
         _setVaults(_vaults, true);
+        stakingMaster = _stakingMaster;
+    }
+
+    /// @inheritdoc IHexOneProtocol
+    function setMinDuration(uint256 _minDuration) external override onlyOwner {
+        require (_minDuration < MAX_DURATION, "minDuration is bigger than maxDuration");
+        MIN_DURATION = _minDuration;
+    }
+
+    /// @inheritdoc IHexOneProtocol
+    function setMaxDuration(uint256 _maxDuration) external override onlyOwner {
+        require (_maxDuration > MIN_DURATION, "maxDuration is less than minDuration");
+        MAX_DURATION = _maxDuration;
     }
 
     /// @inheritdoc IHexOneProtocol
     function setVaults(address[] memory _vaults, bool _add) external onlyOwner override {
         _setVaults(_vaults, _add);
+    }
+
+    /// @inheritdoc IHexOneProtocol
+    function setStakingPool(address _stakingMaster) external onlyOwner override {
+        stakingMaster = _stakingMaster;
+    }
+
+    /// @inheritdoc IHexOneProtocol
+    function isAllowedToken(
+        address _token
+    ) external view override returns (bool) {
+        return allowedTokens.contains(_token);
+    }
+
+    /// @inheritdoc IHexOneProtocol
+    function setDepositFee(address _token, uint16 _fee) external onlyOwner override {
+        require (allowedTokens.contains(_token), "not allowed token");
+        require (_fee < FIXED_POINT, "invalid fee rate");
+        fees[_token] = Fee(_fee, true);
+    }
+
+    /// @inheritdoc IHexOneProtocol
+    function setDepositFeeEnable(address _token, bool _enable) external onlyOwner override {
+        require (allowedTokens.contains(_token), "not allowed token");
+        fees[_token].enabled = _enable;
+    }
+
+    /// @inheritdoc IHexOneProtocol
+    function addCollateralForLiquidate(
+        address _token,
+        uint256 _amount,
+        uint256 _depositId,
+        uint16 _duration
+    ) external override {
+        address sender = msg.sender;
+        require (sender != address(0), "zero address caller");
+        require (allowedTokens.contains(_token), "invalid token");
+        require (_amount > 0, "invalid amount");
+        require (_duration >= MIN_DURATION && _duration <= MAX_DURATION, "invalid duration");
+
+        IHexOneVault hexOneVault = IHexOneVault(vaultInfos[_token]);
+        _amount = _transferDepositTokenWithFee(sender, _token, _amount);
+        uint256 burnAmount = hexOneVault.addCollateralForLiquidate(
+            sender, 
+            _amount, 
+            _depositId, 
+            _duration
+        );
+
+        if (burnAmount > 0) {
+            IHexOneToken(hexOneToken).burnToken(burnAmount, sender);
+        }
+    }
+
+    /// @inheritdoc IHexOneProtocol
+    function borrowHexOne(
+        address _token,
+        uint256 _depositId,
+        uint256 _amount
+    ) external override {
+        address sender = msg.sender;
+        require (sender != address(0), "zero caller address");
+        require (allowedTokens.contains(_token), "not allowed token");
+        require (depositedTokenInfos[sender].contains(_token), "not deposited token");
+
+        IHexOneVault hexOneVault = IHexOneVault(vaultInfos[_token]);
+        hexOneVault.borrowHexOne(sender, _depositId, _amount);
+        IHexOneToken(hexOneToken).mintToken(_amount, sender);
     }
 
     /// @inheritdoc IHexOneProtocol
@@ -53,27 +156,27 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     ) external override {
         address sender = msg.sender;
         require (sender != address(0), "zero address caller");
-        require (_token != address(0), "zero token address");
-        require (allowedTokens.contains(_token), "not allowed token");
+        require (allowedTokens.contains(_token), "invalid token");
         require (_amount > 0, "invalid amount");
+        require (_duration >= MIN_DURATION && _duration <= MAX_DURATION, "invalid duration");
 
-        IHexOneVault hexOnVault = IHexOneVault(vaultInfos[_token]);
-        uint256 maturity = _duration * 1 days;
-        uint256 shareAmount = hexOnVault.depositCollateral(
+        IHexOneVault hexOneVault = IHexOneVault(vaultInfos[_token]);
+        _amount = _transferDepositTokenWithFee(sender, _token, _amount);
+        uint256 mintAmount = hexOneVault.depositCollateral(
             sender, 
             _amount, 
-            maturity, 
-            maturity, 
+            _duration, 
+            _duration, 
             _isCommit
         );
 
-        require (shareAmount > 0, "depositing amount is too small to mint $HEX1");
+        require (mintAmount > 0, "depositing amount is too small to mint $HEX1");
         if (!depositedTokenInfos[sender].contains(_token)) {
             depositedTokenInfos[sender].add(_token);
         }
-        IHexOneToken(hexOneToken).mintToken(shareAmount, sender);
+        IHexOneToken(hexOneToken).mintToken(mintAmount, sender);
 
-        emit HexOneMint(sender, shareAmount);
+        emit HexOneMint(sender, mintAmount);
     }
 
     /// @inheritdoc IHexOneProtocol
@@ -81,59 +184,33 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         address sender = msg.sender;
         require (sender != address(0), "zero caller address");
         require (allowedTokens.contains(_token), "not allowed token");
+        require (depositedTokenInfos[sender].contains(_token), "not deposited token");
+
         (
             uint256 mintAmount, 
             uint256 burnAmount,
-            bool burnMode
+            uint256 liquidateAmount
         ) = IHexOneVault(vaultInfos[_token]).claimCollateral(sender, _depositId);
 
-        IERC20(hexOneToken).safeTransferFrom(sender, DEAD, burnAmount);
-        if (!burnMode && mintAmount > 0) {
+        if (burnAmount > 0) {
+            IHexOneToken(hexOneToken).burnToken(burnAmount, sender);
+        }
+        if (mintAmount > 0) {
             IHexOneToken(hexOneToken).mintToken(mintAmount, sender);
         }
-    }
-
-    /// @inheritdoc IHexOneProtocol
-    function getShareBalance(address _user, address _token) external view override returns (uint256 shareBal) {
-        require (_user != address(0), "zero user address");
-        require (allowedTokens.contains(_token), "not allowed token");
-        (shareBal, ) = IHexOneVault(vaultInfos[_token]).balanceOf(_user);
-    }
-
-    /// @inheritdoc IHexOneProtocol
-    function getDepositInfo(address _user) external view override returns (DepositInfo memory) {
-        require (_user != address(0), "zero user address");
-        DepositInfo memory depositInfo;
-        depositInfo.depositedTokens = depositedTokenInfos[_user].values();
-        if (depositInfo.depositedTokens.length == 0) {
-            return depositInfo;
+        if (liquidateAmount > 0) {
+            require (
+                IERC20(hexOneToken).allowance(sender, address(this)) >= liquidateAmount &&
+                IERC20(hexOneToken).balanceOf(sender) >= liquidateAmount,
+                "should pay certain $HEX1 to claim"
+            );
+            IERC20(hexOneToken).safeTransferFrom(sender, address(this), liquidateAmount);
         }
-
-        for (uint256 i = 0; i < depositInfo.depositedTokens.length; i ++) {
-            address token = depositInfo.depositedTokens[i];
-            IHexOneVault vault = IHexOneVault(vaultInfos[token]);
-            (uint256 shareBal, uint256 depositedBal) = vault.balanceOf(_user);
-            depositInfo.shareAmounts[i] = shareBal;
-            depositInfo.depositedAmounts[i] = depositedBal;
-            uint256[] memory claimableIds;
-            (
-                shareBal, 
-                depositedBal, 
-                claimableIds
-            ) = vault.claimableAmount(_user);
-
-            depositInfo.claimableShareAmount[i] = shareBal;
-            depositInfo.claimableTokenAmount[i] = depositedBal;
-            depositInfo.claimableIds[i] = claimableIds;
-        }
-
-        return depositInfo;
     }
 
     /// @notice Add/Remove vault and base token addresses.
     function _setVaults(address[] memory _vaults, bool _add) internal {
         uint256 length = _vaults.length;
-        require (length > 0, "invalid vaults array");
         for (uint256 i = 0; i < length; i ++) {
             address vault = _vaults[i];
             address token = IHexOneVault(vault).baseToken();
@@ -153,5 +230,28 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
                 vaultInfos[token] = address(0);
             }
         }
+    }
+
+    /// @notice Transfer token from sender and take fee.
+    /// @param _depositor The address of depositor.
+    /// @param _token The address of deposit token.
+    /// @param _amount The amount of token to deposit.
+    /// @return Real token amount without fee.
+    function _transferDepositTokenWithFee(
+        address _depositor,
+        address _token,
+        uint256 _amount
+    ) internal returns (uint256) {
+        uint16 fee = fees[_token].enabled ? fees[_token].feeRate : 0;
+        uint256 feeAmount = _amount * fee / FIXED_POINT;
+        uint256 realAmount = _amount - feeAmount;
+        IERC20(_token).safeTransferFrom(_depositor, address(this), _amount);
+        address vaultAddress = vaultInfos[_token];
+        require (vaultAddress != address(0), "proper vault is not set");
+        IERC20(_token).safeApprove(vaultAddress, realAmount);
+        IERC20(_token).safeApprove(stakingMaster, feeAmount);
+        IHexOneStakingMaster(stakingMaster).updateRewards(_token, feeAmount);
+
+        return realAmount;
     }
 }

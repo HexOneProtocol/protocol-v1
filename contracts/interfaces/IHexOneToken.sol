@@ -9,7 +9,10 @@ interface IHexOneToken {
     /// @param _recipient The address of recipient.
     function mintToken(uint256 _amount, address _recipient) external;
 
-    /// @notice Set admin address.
+    /// @notice burn $HEX1 token as much as _amount.
+    function burnToken(uint256 _amount, address _account) external;
+
+    /// @notice Set admin address. HexOneProtocol is admin.
     /// @dev This function can be called by only owner.
     /// @param _admin The address of admin.
     function setAdmin(address _admin) external;

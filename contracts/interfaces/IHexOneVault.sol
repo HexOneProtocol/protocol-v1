@@ -4,11 +4,16 @@ pragma solidity ^0.8.17;
 interface IHexOneVault {
 
     struct DepositInfo {
+        uint256 vaultDepositId;
+        uint256 stakeId;
         uint256 amount;
         uint256 shares;
-        uint256 depositTime;
+        uint256 mintAmount;
+        uint256 borrowedAmount;
+        uint256 depositedHexDay;
         uint256 duration;
         uint256 restakeDuration;
+        uint256 liquidateAmount;
         bool isCommitType;
         bool exist;
     }
@@ -17,21 +22,56 @@ interface IHexOneVault {
         uint256 depositId;
         uint256 shareBalance;
         uint256 depositedBalance;
+        uint256 totalBorrowedAmount;
         mapping(uint256 => DepositInfo) depositInfos;
     }
 
-    /// @notice base token of vault.
+    struct DepositShowInfo {
+        uint256 depositId;
+        uint256 depositAmount;
+        uint256 shareAmount;
+        uint256 mintAmount;
+        uint256 liquidateAmount;
+        uint256 lockedHexDay;
+        uint256 endHexDay;
+        uint256 curHexDay;
+        bool commitType;
+    }
+
+    struct BorrowableInfo {
+        uint256 depositId;
+        uint256 borrowableAmount;
+    }
+
+    struct VaultDepositInfo {
+        address userAddress;
+        uint256 userDepositId;
+    }
+
+    struct LiquidateInfo {
+        uint256 depositId;
+        address depositor;
+        uint256 hexOneTokenAmount;
+        uint256 hexTokenAmount;
+        uint256 liquidateAmount;
+    }
+
     function baseToken() external view returns (address baseToken);
 
-    /// @notice The share balance and deposited balance of user.
-    function balanceOf(address _user) external view returns (uint256, uint256);
+    /// @notice Get borrowable amount based on already deposited collateral amount.
+    function getBorrowableAmounts(address _account) external view returns (BorrowableInfo[] memory);
 
-    /// @notice Get calimable share amount and base token amount.
-    function claimableAmount(address _user) external view returns (
-        uint256 shareAmount, 
-        uint256 tokenAmount, 
-        uint256[] memory claimableIds
-    );
+    /// @notice Get total borrowed $HEX1 of user.
+    /// @param _account The address of _account.
+    function getBorrowedBalance(address _account) external view returns (uint256);
+    
+    /// @notice Borrow additional $HEX1 from already deposited collateral amount.
+    /// @dev If collateral price is increased, there will be profit.
+    ///         Based on that profit, depositors can borrow $HEX1 additionally.
+    /// @param _depositor The address of depositor (borrower)
+    /// @param _vaultDepositId The vault deposit id to borrow.
+    /// @param _amount The amount of $HEX1 token.
+    function borrowHexOne(address _depositor, uint256 _vaultDepositId, uint256 _amount) external;
 
     /// @notice Set hexOneProtocol contract address.
     /// @dev Only owner can call this function and 
@@ -49,36 +89,56 @@ interface IHexOneVault {
     /// @param _duration The maturity duration.
     /// @param _restakeDuration If commitType is ture, then restakeDuration is necessary.
     /// @param _isCommitType Type of deposit. true/false = commit/uncommit.
-    /// @return shareAmount The amount of T-SHARES.
+    /// @return mintAmount The amount of $HEX1 to mint.
     function depositCollateral(
         address _depositor, 
         uint256 _amount, 
         uint256 _duration, 
         uint256 _restakeDuration,
         bool _isCommitType
-    ) external returns (uint256 shareAmount);
+    ) external returns (uint256 mintAmount);
+
+    /// @notice Add collateral to certain deposit Id to cover loss.
+    /// @dev Depositors only add collateral and don't receive $HEX1 token as compensation.
+    /// @param _depositor The address of depositor.
+    /// @param _amount The amount of collateral.
+    /// @param _vaultDepositId The certain deposit id to cover loss.
+    /// @param _duration The maturity duration.
+    /// @return burnAmount The amount of $HEX1 to burn.
+    function addCollateralForLiquidate(
+        address _depositor,
+        uint256 _amount,
+        uint256 _vaultDepositId,
+        uint256 _duration
+    ) external returns (uint256 burnAmount);
 
     /// @notice Retrieve collateral after maturity.
     /// @dev Users can claim collateral after maturity.
     /// @return mintAmount If depositor's commitType is true then 
     ///         calculate shareAmount based on restake amount and duration.
     /// @return burnAmount The amount of $HEX1 should be burn.
-    /// @return burnMode Present depositor's commit type.
     function claimCollateral(
-        address _depositor,
-        uint256 _depositId
-    ) external returns (uint256 mintAmount, uint256 burnAmount, bool burnMode);
+        address _claimer,
+        uint256 _vaultDepositId
+    ) external returns (uint256 mintAmount, uint256 burnAmount, uint256 liquidateAmount);
 
-    /// @notice If total USD value is below 66% of initial USD value,
-    ///         can call emergency withdraw.
-    /// @dev Only owner can call this function.
-    function emergencyWithdraw() external;
+    /// @notice Get liquidable vault deposit Ids.
+    function getLiquidableDeposits() external view returns (LiquidateInfo[] memory);
+
+    /// @notice Get t-share balance of user.
+    function getShareBalance(address _account) external view returns (uint256);
+
+    function getUserInfos(address _account) external view returns (DepositShowInfo[] memory);
 
     /// @notice Set new limitPricePercent.
     ///         If total locked USD value is below that, emergencyWithdraw will occur.
     /// @dev Only owne can call this function.
     /// @param _percent New limitPricePercent.
     function setLimitPricePercent(uint16 _percent) external;
+
+    /// @notice Set limit claim duration.
+    /// @dev Only owner can call this function.
+    function setLimitClaimDuration(uint256 _duration) external;
 
     event CollateralClaimed(address indexed claimer, uint256 claimedAmount);
 
