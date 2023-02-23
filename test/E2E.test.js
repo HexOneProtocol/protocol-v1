@@ -18,7 +18,9 @@ describe ("HexOne Protocol", function () {
             this.deployer,
             this.depositor_1,
             this.depositor_2,
-            this.depositor_3
+            this.depositor_3,
+            this.staker_1,
+            this.staker_2
         ] = await ethers.getSigners();
 
         this.uniswapRouter = new ethers.Contract(uniswapRouterAddress, uniswap_abi, this.deployer);
@@ -60,6 +62,26 @@ describe ("HexOne Protocol", function () {
         await this.stakingMaster.setHexOneProtocol(this.hexOneProtocol.address);
     })
 
+    it ("create staking pool", async function () {
+        this.stakingPoolHex = await deploy(
+            "HexOneStaking",
+            "HexOneStaking",
+            this.hexToken.address,
+            this.stakingMaster.address,
+            false
+        );
+
+        await this.stakingMaster.setAllowTokens([this.hexToken.address], true);
+        await this.stakingMaster.setAllowedRewardTokens(
+            this.hexToken.address,
+            [this.hexToken.address],
+            true
+        );
+
+        await this.stakingMaster.setStakingPools([this.hexToken.address], [this.stakingPoolHex.address]);
+        await this.stakingMaster.setRewardsRate([this.hexToken.address], [600]);        // 60% for hexToken
+    })
+
     it ("buy hex token", async function () {
         let ethAmountForBuy = bigNum(1, 18);
         let WETHAddress = await this.uniswapRouter.WETH();
@@ -81,6 +103,30 @@ describe ("HexOne Protocol", function () {
         let afterBal = await this.hexToken.balanceOf(this.deployer.address);
 
         expect (smallNum(afterBal, 8) - smallNum(beforeBal, 8)).to.be.equal(smallNum(expectHexTokenAmount, 8));
+
+        let transferAmount = BigInt(expectHexTokenAmount) / BigInt(6);
+        await this.hexToken.transfer(this.staker_1.address, BigInt(transferAmount));
+        await this.hexToken.transfer(this.staker_2.address, BigInt(transferAmount));
+    })
+
+    describe ("staking hex token", function () {
+        it ("stake hexToken", async function () {
+            let stakeAmount = await this.hexToken.balanceOf(this.staker_1.address);
+            await this.hexToken.connect(this.staker_1).approve(this.stakingMaster.address, BigInt(stakeAmount));
+            await this.stakingMaster.connect(this.staker_1).stakeERC20Start(
+                this.hexToken.address,
+                this.hexToken.address,
+                BigInt(stakeAmount)
+            );
+
+            stakeAmount = BigInt(stakeAmount) / BigInt(2);
+            await this.hexToken.connect(this.staker_2).approve(this.stakingMaster.address, BigInt(stakeAmount));
+            await this.stakingMaster.connect(this.staker_2).stakeERC20Start(
+                this.hexToken.address,
+                this.hexToken.address,
+                BigInt(stakeAmount)
+            );
+        })
     })
 
     describe ("deposit and claim hex", function () {
@@ -398,7 +444,7 @@ describe ("HexOne Protocol", function () {
                 expect (smallNum(afterBal, 18) - smallNum(beforeBal, 18)).to.be.equal(smallNum(expectMintAmount, 18));
                 let shareBalance = await this.hexOneVault.getShareBalance(this.depositor_2.address);
                 expect (smallNum(shareBalance, 8)).to.be.greaterThan(0);
-                expect (smallNum(afterPoolBal, 8) - smallNum(beforePoolBal, 8)).to.be.equal(smallNum(feeAmount, 8));
+                expect (smallNum(BigInt(afterPoolBal) - BigInt(beforePoolBal), 8)).to.be.equal(smallNum(feeAmount, 8));
                 console.log("shareBalance after deposit collateral: ", smallNum(shareBalance, 8));
             })
         })
@@ -635,6 +681,49 @@ describe ("HexOne Protocol", function () {
             expect (
                 smallNum(BigInt(beforeHexOneTokenBal) - BigInt(afterHexOneTokenBal), 18)
             ).to.be.equal(smallNum(BigInt(liquidateAmount) + BigInt(hexOneTokenAmount), 18));
+        })
+    })
+
+    describe ("unstake and get rewards", function () {
+        it ("claimable rewards", async function () {
+            let rewardAmount_1 = await this.stakingMaster.claimableRewards(
+                this.staker_1.address,
+                this.hexToken.address,
+                this.hexToken.address
+            );
+
+            let rewardAmount_2 = await this.stakingMaster.claimableRewards(
+                this.staker_2.address,
+                this.hexToken.address,
+                this.hexToken.address
+            );
+
+            expect (rewardAmount_1.length).to.be.equal(1);
+            expect (rewardAmount_2.length).to.be.equal(1);
+
+            let beforeBal = await this.hexToken.balanceOf(this.staker_1.address);
+            await this.stakingMaster.connect(this.staker_1).stakeERC20End(
+                this.hexToken.address,
+                this.hexToken.address,
+                rewardAmount_1[0].stakeId
+            );
+            let afterBal = await this.hexToken.balanceOf(this.staker_1.address);
+
+            expect (smallNum(BigInt(afterBal) - BigInt(beforeBal), 8)).to.be.equal(
+                smallNum(BigInt(rewardAmount_1[0].claimableRewards) + BigInt(rewardAmount_1[0].stakedAmount), 8)
+            );
+
+            beforeBal = await this.hexToken.balanceOf(this.staker_2.address);
+            await this.stakingMaster.connect(this.staker_2).stakeERC20End(
+                this.hexToken.address,
+                this.hexToken.address,
+                rewardAmount_2[0].stakeId
+            );
+            afterBal = await this.hexToken.balanceOf(this.staker_2.address);
+
+            expect (smallNum(BigInt(afterBal) - BigInt(beforeBal), 8)).to.be.equal(
+                smallNum(BigInt(rewardAmount_2[0].claimableRewards) + BigInt(rewardAmount_2[0].stakedAmount), 8)
+            );
         })
     })
 })

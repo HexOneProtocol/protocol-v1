@@ -128,8 +128,11 @@ contract HexOneStaking is Ownable, IHexOneStaking {
         uint256[] memory ids = userStakeIds[_rewardToken][_staker].values();
         Rewards[] memory rewardsData = new Rewards[](ids.length);
         for (uint256 i = 0; i < ids.length; i ++) {
+            uint256 _stakeId = ids[i];
+            StakeInfo memory stakeInfo = userStakeInfos[_rewardToken][_staker][_stakeId];
             rewardsData[i] = Rewards(
-                ids[i], 
+                _stakeId, 
+                stakeInfo.stakedAmount,
                 _getClaimableRewards(_staker, _rewardToken, ids[i]),
                 _rewardToken,
                 baseToken
@@ -156,7 +159,7 @@ contract HexOneStaking is Ownable, IHexOneStaking {
         }
 
         uint256 claimableAmount = 0;
-        for (uint256 id = _stakeId; id < curStakeId; id ++) {
+        for (uint256 id = _stakeId; id < curStakeId - 1; id ++) {
             PoolInfo memory pointPoolInfo = poolInfos[_rewardToken][id];
             PoolInfo memory nextPoolInfo = poolInfos[_rewardToken][id + 1];
             uint256 rewardsAmount = nextPoolInfo.poolAmount - pointPoolInfo.poolAmount;
@@ -166,7 +169,15 @@ contract HexOneStaking is Ownable, IHexOneStaking {
             claimableAmount += rewardsAmount;
         }
 
-        return claimableAmount + stakeInfo.stakedAmount;
+        {
+            PoolInfo memory poolInfo = poolInfos[_rewardToken][curStakeId - 1];
+            uint256 totalPoolAmount = _getTotalPoolAmount(_rewardToken);
+            uint256 rewardsAmount = totalPoolAmount - stakeInfo.currentPoolAmount;
+            rewardsAmount = rewardsAmount * stakeInfo.stakedAmount / poolInfo.totalStakedAmount;
+            claimableAmount += rewardsAmount;
+        }
+
+        return claimableAmount;
     }
 
     function _getRewardRate(address _rewardToken) internal view returns (uint16) {

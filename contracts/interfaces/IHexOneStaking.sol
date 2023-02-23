@@ -5,6 +5,7 @@ interface IHexOneStaking {
 
     struct Rewards {
         uint256 stakeId;
+        uint256 stakedAmount;
         uint256 claimableRewards;
         address rewardToken;
         address stakeToken;
