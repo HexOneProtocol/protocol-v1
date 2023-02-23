@@ -127,16 +127,22 @@ contract HexOneVault is Ownable, IHexOneVault {
 
         UserInfo storage userInfo = userInfos[_depositor];
         DepositInfo storage depositInfo = userInfo.depositInfos[_userDepositId];
-        require (block.timestamp > depositInfo.depositedTimestamp,  "before maturity");
+        require (!_beforeMaturity(depositInfo), "before maturity");
 
         uint256 receivedAmount = _unstake(depositInfo);
+        receivedAmount += _amount;
+        (
+            bool isAllow, uint256 liquidateAmount
+        ) = _checkLoss(_vaultDepositId, false);
+        require (!isAllow, "not liquidate deposit");
+
         burnAmount = depositInfo.mintAmount;
         _depositCollateral(
             _depositor, 
             receivedAmount, 
             _duration, 
             0, 
-            depositInfo.borrowedAmount + depositInfo.mintAmount,
+            liquidateAmount,
             false,
             true
         );
@@ -165,8 +171,11 @@ contract HexOneVault is Ownable, IHexOneVault {
         UserInfo storage userInfo = userInfos[_depositor];
         DepositInfo storage depositInfo = userInfo.depositInfos[_userDepositId];
         require (depositInfo.exist, "no deposit pool");
-        require (block.timestamp > depositInfo.depositedTimestamp + depositInfo.duration * 1 days,  "before maturity");
-        require (!allowLoss || _claimer == _depositor, "not proper claimer");
+        require (!_beforeMaturity(depositInfo),  "before maturity");
+        if (_claimer != _depositor) {
+            (allowLoss, ) = _checkLoss(_vaultDepositId, true);
+            require (!allowLoss, "not proper claimer");    
+        }
 
         /// unstake and claim rewards
         uint256 receivedAmount = _unstake(depositInfo);
@@ -249,17 +258,21 @@ contract HexOneVault is Ownable, IHexOneVault {
         }
 
         uint256 index = 0;
+        uint256 curHexDay = IHexToken(hexToken).currentDay();
         for (uint256 i = 0; i < lastDepositId; i ++) {
             DepositInfo memory depositInfo = userInfos[_account].depositInfos[i];
+            (, uint256 liquidateAmount) = _checkLoss(depositInfo.vaultDepositId, false);
             if (depositInfo.exist) {
                 depositShowInfos[index ++] = DepositShowInfo(
                     depositInfo.vaultDepositId,
                     depositInfo.amount,
                     depositInfo.shares,
                     depositInfo.mintAmount,
-                    depositInfo.liquidateAmount,
-                    depositInfo.depositedTimestamp,
-                    depositInfo.duration * 1 days + depositInfo.depositedTimestamp
+                    liquidateAmount,
+                    depositInfo.depositedHexDay,
+                    depositInfo.duration + depositInfo.depositedHexDay,
+                    curHexDay,
+                    depositInfo.isCommitType
                 );
             }
         }
@@ -362,21 +375,22 @@ contract HexOneVault is Ownable, IHexOneVault {
     ) internal returns (uint256 mintAmount) {
         /// stake it to hex token
         IHexToken(hexToken).stakeStart(_amount, _duration);
-        uint256 stakeId = IHexToken(hexToken).stakeCount(_depositor);
+        uint256 stakeId = IHexToken(hexToken).stakeCount(address(this));
         uint256 shareAmount = 0;
         (mintAmount, shareAmount) = _convertShare(_amount);
         
         uint256 curDepositId = userInfos[_depositor].depositId;
+        uint256 curHexDay = IHexToken(hexToken).currentDay();
         userInfos[_depositor].shareBalance += shareAmount;
         userInfos[_depositor].depositedBalance += _amount;
         userInfos[_depositor].depositInfos[curDepositId] = DepositInfo(
             depositId,
-            stakeId,
+            stakeId - 1,
             _amount,
             shareAmount,
             _isLiquidate ? 0 : mintAmount,
             0,
-            block.timestamp,
+            curHexDay,
             _duration,
             _restakeDuration,
             _isLiquidate ? _liquidateAmount : 0,
@@ -407,25 +421,26 @@ contract HexOneVault is Ownable, IHexOneVault {
     function _checkLoss(uint256 _depositId, bool _liquidate) internal view returns (bool, uint256) {
         VaultDepositInfo memory vaultDepositInfo = vaultDepositInfos[_depositId];
         DepositInfo memory depositInfo = userInfos[vaultDepositInfo.userAddress].depositInfos[vaultDepositInfo.userDepositId];
-        uint256 endTimestamp = depositInfo.depositedTimestamp + depositInfo.duration * 1 days;
-        endTimestamp = _liquidate ? endTimestamp : endTimestamp + 7 days;
+        uint256 curHexDay = IHexToken(hexToken).currentDay();
+        uint256 endTimestamp = depositInfo.depositedHexDay + depositInfo.duration;
+        endTimestamp = _liquidate ? endTimestamp + LIMIT_CLAIM_DURATION : endTimestamp;
         if (
-            block.timestamp < endTimestamp ||
+            curHexDay < endTimestamp ||
             depositInfo.isCommitType
         ) {
             return (true, 0);
         }
 
-        uint256 initialUSDValue = depositInfo.mintAmount + depositInfo.borrowedAmount + depositInfo.liquidateAmount;
+        uint256 initialUSDValue = depositInfo.mintAmount + depositInfo.liquidateAmount;
         uint256 currentUSDValue = IHexOnePriceFeed(hexOnePriceFeed).getHexTokenPrice(depositInfo.amount);
         uint256 minUSDValue = initialUSDValue * LIMIT_PRICE_PERCENT / FIXED_POINT;
         bool isAllow = minUSDValue <= currentUSDValue;
-        return (isAllow, isAllow ? 0 : initialUSDValue - currentUSDValue);
+        return (isAllow, isAllow ? 0 : minUSDValue - currentUSDValue);
     }
 
     function _getBorrowableAmount(DepositInfo memory _depositInfo) internal view returns (uint256) {
         if (_depositInfo.exist) {
-            if (block.timestamp < _depositInfo.depositedTimestamp + _depositInfo.duration * 1 days) {
+            if (_beforeMaturity(_depositInfo)) {
                 uint256 initialUSDValue = _depositInfo.mintAmount;
                 uint256 currentUSDValue = IHexOnePriceFeed(hexOnePriceFeed).getHexTokenPrice(_depositInfo.amount);
                 if (initialUSDValue < currentUSDValue) {
@@ -445,5 +460,10 @@ contract HexOneVault is Ownable, IHexOneVault {
         IHexToken(hexToken).stakeEnd(stakeListId, stakeId);
         uint256 afterBal = IERC20(hexToken).balanceOf(address(this));
         return afterBal - beforeBal;
+    }
+
+    function _beforeMaturity(DepositInfo memory _depositInfo) internal view returns (bool) {
+        uint256 curHexDay = IHexToken(hexToken).currentDay();
+        return (curHexDay < _depositInfo.depositedHexDay + _depositInfo.duration);
     }
 }

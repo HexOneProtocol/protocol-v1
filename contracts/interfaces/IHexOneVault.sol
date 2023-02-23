@@ -10,7 +10,7 @@ interface IHexOneVault {
         uint256 shares;
         uint256 mintAmount;
         uint256 borrowedAmount;
-        uint256 depositedTimestamp;
+        uint256 depositedHexDay;
         uint256 duration;
         uint256 restakeDuration;
         uint256 liquidateAmount;
@@ -32,8 +32,10 @@ interface IHexOneVault {
         uint256 shareAmount;
         uint256 mintAmount;
         uint256 liquidateAmount;
-        uint256 lockedTimestamp;
-        uint256 endTimestamp;
+        uint256 lockedHexDay;
+        uint256 endHexDay;
+        uint256 curHexDay;
+        bool commitType;
     }
 
     struct BorrowableInfo {
