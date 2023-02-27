@@ -1,22 +1,18 @@
 {
-  "name": "realfevr-fusion-sc",
+  "name": "HexOne protocol",
   "version": "1.0.0",
-  "description": "NFT Fusion smart contract",
+  "description": "HexOne stable coin based on HEX",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RealFevr/realfevr-fusion-sc.git"
+    "url": "git+https://github.com/CinDrallig/hex1.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/RealFevr/realfevr-fusion-sc/issues"
-  },
-  "homepage": "https://github.com/RealFevr/realfevr-fusion-sc#readme",
   "resolutions": {
     "hardhat/**/@ethereumjs/tx": "3.5.0"
   },
