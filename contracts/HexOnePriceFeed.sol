@@ -49,6 +49,9 @@ contract HexOnePriceFeed is Ownable, IHexOnePriceFeed {
         address _baseToken,
         uint256 _amount
     ) external view override returns (uint256) {
+        if (_baseToken == address(0)) {     /// native token
+            _baseToken = dexRouter.WETH();
+        }
         return _convertToUSD(_baseToken, _amount);
     }
 

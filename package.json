@@ -1,8 +1,11 @@
 {
-  "name": "HexOne protocol",
+  "name": "hexoneprotocol",
   "version": "1.0.0",
-  "description": "HexOne stable coin based on HEX",
-  "main": "index.js",
+  "description": "Hex One Protocol is a stablecoin backed by t-shares",
+  "main": "hardhat.config.js",
+  "directories": {
+    "test": "test"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,6 +19,10 @@
   "resolutions": {
     "hardhat/**/@ethereumjs/tx": "3.5.0"
   },
+  "bugs": {
+    "url": "https://github.com/CinDrallig/hex1/issues"
+  },
+  "homepage": "https://github.com/CinDrallig/hex1#readme",
   "devDependencies": {
     "@chainlink/contracts": "^0.6.0",
     "@ethereumjs/tx": "3.5.0",
