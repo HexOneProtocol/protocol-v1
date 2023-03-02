@@ -7,6 +7,23 @@ interface IHexOneBootstrap {
         bool enable;
     }
 
+    struct DistributionRate {
+        uint16 sacrificeDistributionRate;
+        uint16 sacrificeLiquifyRate;
+    }
+
+    struct RequestAirdrop {
+        uint256 requestDay;
+        uint256 balance;
+        bool isShareHolder;
+        bool claimed;
+    }
+
+    struct RequestAmount {
+        uint256 amountByHexHolder;
+        uint256 amountByHEXITHolder;
+    }
+
     struct Param {
         address hexOnePriceFeed;
         address dexRouter;
@@ -18,8 +35,13 @@ interface IHexOneBootstrap {
         uint256 airdropStartTime;
         uint16 sacrificeDuration;
         uint16 airdropDuration;
-        uint16 sacrificeRate;
-        uint16 airdropRate;
+        // rate information
+        uint16 rateForSacrifice;
+        uint16 rateforAirdrop;
+        uint16 sacrificeDistRate;
+        uint16 sacrificeLiquifyRate;
+        uint16 airdropDistRateforHexHolder;
+        uint16 airdropDistRateforHEXITHolder;
     }
 
     /// @notice Set escrow contract address.
@@ -30,6 +52,15 @@ interface IHexOneBootstrap {
     /// @dev Only owner can call this function.
     /// @param _priceFeed The address of hexOnePriceFeed contract.
     function setPriceFeedCA(address _priceFeed) external;
+
+    /// @notice Check if user is sacrifice participant.
+    function isSacrificeParticipant(address _user) external view returns (bool);
+
+    /// @notice Get left airdrop requestors.
+    function getAirdropRequestors() external view returns (address[] memory);
+
+    /// @notice Get sacrifice participants.
+    function getSacrificeParticipants() external view returns (address[] memory);
 
     /// @notice Add/Remove allowed tokens for sacrifice.
     /// @dev Only owner can call this function.
@@ -54,13 +85,22 @@ interface IHexOneBootstrap {
     /// @dev Anyone can attend to this but should do this with allowed token.
     function sacrificeToken(address _token, uint256 _amount) external;
 
+    /// @notice Request airdrop.
+    /// @dev It can be called in airdrop duration and 
+    ///      each person can call this function only one time.
+    function requestAirdrop(bool _isShareHolder) external;
+
+    /// @notice Claim HEXIT token as airdrop.
+    /// @dev If users have requests that didn't claim yet, they can request claim.
+    function claimAirdrop() external;
+
     /// @notice Withdraw token to owner address.
     /// @dev This can be called by only owner and also when only after sacrifice finished.
     function withdrawToken(address _token) external;
 
     /// @notice Ditribute reward token(HEXIT) to sacrifice participants.
     /// @dev This can be called by only owner and also when only after sacrifice finished.
-    function distributeRewards() external;
+    function distributeRewardsForSacrifice() external;
 
     event AllowedTokensSet(address[] tokens, bool enable);
 
