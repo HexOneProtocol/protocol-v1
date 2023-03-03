@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
+import "./utils/TokenUtils.sol";
 import "./interfaces/IHexOneBootstrap.sol";
 import "./interfaces/IHexOnePriceFeed.sol";
 import "./interfaces/IUniswapV2Router.sol";
@@ -28,8 +30,8 @@ contract HexOneBootstrap is Ownable, IHexOneBootstrap {
     ///         for distribute $HEX1 token to sacrifice participants.
     uint16 public sacrificeDistRate;
 
-    /// @notice Percent for will be used for liquify.
-    uint16 public sacrificeLiquifyRate;
+    /// @notice Percent for will be used for liquidity.
+    uint16 public sacrificeLiquidityRate;
 
     /// @notice Percent for users who has t-shares by staking hex.
     uint16 public airdropDistRateForHexHolder;
@@ -48,6 +50,9 @@ contract HexOneBootstrap is Ownable, IHexOneBootstrap {
 
     /// @notice total sacrificed weight info by daily.
     mapping(uint256 => uint256) public totalSacrificeWeight;
+
+    /// @notice received HEXIT token amount info per user.
+    mapping(address => uint256) public userRewardsForSacrifice;
 
     /// @notice weight that user sacrificed by daily.
     mapping(uint256 => mapping(address => uint256)) public sacrificeUserWeight;
@@ -76,6 +81,7 @@ contract HexOneBootstrap is Ownable, IHexOneBootstrap {
     uint256 public airdropStartTime;
     uint256 public airdropEndTime;
     uint256 public airdropHEXITAmount;
+    uint256 public override sacrificeHEXITAmount;
 
     uint16 constant public FIXED_POINT = 1000;
 
@@ -141,11 +147,11 @@ contract HexOneBootstrap is Ownable, IHexOneBootstrap {
         rateForAirdrop = _param.rateforAirdrop;
 
         require (
-            _param.sacrificeDistRate + _param.sacrificeLiquifyRate == FIXED_POINT, 
+            _param.sacrificeDistRate + _param.sacrificeLiquidityRate == FIXED_POINT, 
             "sacrificeRate: invalid rate"
         );
         sacrificeDistRate = _param.sacrificeDistRate;
-        sacrificeLiquifyRate = _param.sacrificeLiquifyRate;
+        sacrificeLiquidityRate = _param.sacrificeLiquidityRate;
 
         require (
             _param.airdropDistRateforHexHolder + _param.airdropDistRateforHEXITHolder == FIXED_POINT, 
@@ -153,6 +159,11 @@ contract HexOneBootstrap is Ownable, IHexOneBootstrap {
         );
         airdropDistRateForHexHolder = _param.airdropDistRateforHexHolder;
         airdropDistRateForHEXITHolder = _param.airdropDistRateforHEXITHolder;
+    }
+
+    /// @inheritdoc IHexOneBootstrap
+    function afterSacrificeDuration() external view override returns (bool) {
+        return block.timestamp > sacrificeEndTime;
     }
 
     /// @inheritdoc IHexOneBootstrap
@@ -193,6 +204,7 @@ contract HexOneBootstrap is Ownable, IHexOneBootstrap {
         for (uint256 i = 0; i < length; i ++) {
             address token = _tokens[i];
             allowedTokens[token].enable = true;
+            allowedTokens[token].decimals = TokenUtils.expectDecimals(token);
         }
         emit AllowedTokensSet(_tokens, _enable);
     }
@@ -308,6 +320,8 @@ contract HexOneBootstrap is Ownable, IHexOneBootstrap {
             uint256 sacrificeRewardsAmount = rewardsAmount * rateForSacrifice / FIXED_POINT;
             uint256 airdropAmount = rewardsAmount - sacrificeRewardsAmount;
             airdropHEXITAmount += airdropAmount;
+            sacrificeHEXITAmount += sacrificeRewardsAmount;
+            userRewardsForSacrifice[participant] += sacrificeRewardsAmount;
             IHEXIT(hexitToken).mintToken(sacrificeRewardsAmount, participant);
         }
 
@@ -397,23 +411,23 @@ contract HexOneBootstrap is Ownable, IHexOneBootstrap {
         uint256 _amount
     ) internal {
         uint256 amountForDistribution = _amount * sacrificeDistRate / FIXED_POINT;
-        uint256 amountForLiquify = _amount - amountForDistribution;
+        uint256 amountForLiquidity = _amount - amountForDistribution;
 
         /// distribution
         _swapToken(_token, escrowCA, amountForDistribution);
 
-        /// liquify
-        uint256 swapAmountForLiquify = amountForLiquify / 2;
-        _swapToken(_token, address(this), swapAmountForLiquify);
+        /// liquidity
+        uint256 swapAmountForLiquidity = amountForLiquidity / 2;
+        _swapToken(_token, address(this), swapAmountForLiquidity);
         uint256 pairTokenBalance = IERC20(pairToken).balanceOf(address(this));
         if (pairTokenBalance > 0) {
             IERC20(pairToken).approve(address(dexRouter), pairTokenBalance);
-            IERC20(_token).approve(address(dexRouter), swapAmountForLiquify);
+            IERC20(_token).approve(address(dexRouter), swapAmountForLiquidity);
             dexRouter.addLiquidity(
                 pairToken, 
                 _token, 
                 pairTokenBalance, 
-                swapAmountForLiquify, 
+                swapAmountForLiquidity, 
                 0, 
                 0, 
                 address(this), 

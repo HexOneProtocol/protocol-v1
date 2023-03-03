@@ -89,5 +89,8 @@ interface IHexOneProtocol {
         address _token
     ) external view returns (bool);
 
+    /// @notice Get vault contract address by token.
+    function getVaultAddress(address _token) external view returns (address);
+
     event HexOneMint(address indexed recipient, uint256 amount);
 }

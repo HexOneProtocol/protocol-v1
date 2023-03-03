@@ -102,8 +102,12 @@ contract HexOnePriceFeed is Ownable, IHexOnePriceFeed {
         uint256 tokenPrice = uint256(price);
 
         uint8 decimals = priceFeed.decimals();
-        uint8 additionDecimals = 18 - decimals;
-        return tokenPrice * 10**additionDecimals;
+        if (decimals > 18) {
+            return tokenPrice / 10**(decimals - 18);
+        } else {
+            uint8 additionDecimals = 18 - decimals;
+            return tokenPrice * 10**additionDecimals;
+        }
     }
 
     function _convertHexToPairToken(uint256 _amount) internal view returns(uint256) {

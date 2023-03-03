@@ -4,12 +4,13 @@ pragma solidity ^0.8.17;
 interface IHexOneBootstrap {
     struct Token {
         uint16 weight;
+        uint8 decimals;
         bool enable;
     }
 
     struct DistributionRate {
         uint16 sacrificeDistributionRate;
-        uint16 sacrificeLiquifyRate;
+        uint16 sacrificeLiquidityRate;
     }
 
     struct RequestAirdrop {
@@ -39,10 +40,19 @@ interface IHexOneBootstrap {
         uint16 rateForSacrifice;
         uint16 rateforAirdrop;
         uint16 sacrificeDistRate;
-        uint16 sacrificeLiquifyRate;
+        uint16 sacrificeLiquidityRate;
         uint16 airdropDistRateforHexHolder;
         uint16 airdropDistRateforHEXITHolder;
     }
+
+    /// @notice Check if now is after sacrificeEndTime.
+    function afterSacrificeDuration() external view returns (bool);
+
+    /// @notice minted HEXIT amount for sacrifice.
+    function sacrificeHEXITAmount() external view returns (uint256 sacrificeHEXITAmount);
+
+    /// @notice received HEXIT token amount of _user for sacrifice.
+    function userRewardsForSacrifice(address _user) external view returns (uint256);
 
     /// @notice Set escrow contract address.
     /// @dev Only owner can call this function.

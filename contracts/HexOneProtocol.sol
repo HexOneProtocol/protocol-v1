@@ -92,6 +92,13 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     }
 
     /// @inheritdoc IHexOneProtocol
+    function getVaultAddress(
+        address _token
+    ) external view override returns (address) {
+        return vaultInfos[_token];
+    }
+
+    /// @inheritdoc IHexOneProtocol
     function setDepositFee(address _token, uint16 _fee) external onlyOwner override {
         require (allowedTokens.contains(_token), "not allowed token");
         require (_fee < FIXED_POINT, "invalid fee rate");
