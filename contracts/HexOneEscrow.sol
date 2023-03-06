@@ -3,13 +3,13 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./interfaces/IHexOneProtocol.sol";
 import "./interfaces/IHexOneBootstrap.sol";
 import "./interfaces/IHexOneVault.sol";
 import "./interfaces/IHexOneEscrow.sol";
 
-contract HexOneEscrow is Ownable, IHexOneEscrow {
+contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
     using SafeERC20 for IERC20;
 
     /// @dev The address of HexOneBootstrap contract.
@@ -35,12 +35,16 @@ contract HexOneEscrow is Ownable, IHexOneEscrow {
         _;
     }
 
-    constructor (
+    constructor () {
+        _disableInitializers();
+    }
+
+    function initialize (
         address _hexOneBootstrap,
         address _hexToken,
         address _hexOneToken,
         address _hexOneProtocol
-    ) {
+    ) public initializer {
         require (_hexOneBootstrap != address(0), "zero HexOneBootstrap contract address");
         require (_hexToken != address(0), "zero Hex token address");
         require (_hexOneToken != address(0), "zero HexOne token address");
@@ -50,6 +54,7 @@ contract HexOneEscrow is Ownable, IHexOneEscrow {
         hexToken = _hexToken;
         hexOneToken = _hexOneToken;
         hexOneProtocol = _hexOneProtocol;
+        __Ownable_init();
     }
 
     /// @inheritdoc IHexOneEscrow

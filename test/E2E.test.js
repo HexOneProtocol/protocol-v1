@@ -5,7 +5,7 @@ const { constants } = require('@openzeppelin/test-helpers');
 const { uniswap_abi } = require('../external_abi/uniswap.abi.json');
 const { erc20_abi } = require('../external_abi/erc20.abi.json');
 
-const { deploy, bigNum, getCurrentTimestamp, smallNum, spendTime, day } = require('../scripts/utils');
+const { deploy, bigNum, getCurrentTimestamp, smallNum, spendTime, day, deployProxy } = require('../scripts/utils');
 
 describe ("HexOne Protocol", function () {
     let usdcAddress = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
@@ -27,32 +27,38 @@ describe ("HexOne Protocol", function () {
         this.hexToken = new ethers.Contract(hexTokenAddress, erc20_abi, this.deployer);
 
         this.hexOneToken = await deploy("HexOneToken", "HexOneToken", "HexOne", "HEXONE");
-        this.hexOnePriceFeed = await deploy(
+        this.hexOnePriceFeed = await deployProxy(
             "HexOnePriceFeedTest", 
             "HexOnePriceFeedTest", 
-            this.hexToken.address, 
-            usdcAddress, 
-            usdcPriceFeed,
-            this.uniswapRouter.address
+            [
+                this.hexToken.address, 
+                usdcAddress, 
+                usdcPriceFeed,
+                this.uniswapRouter.address
+            ]
         );
-        this.hexOneVault = await deploy(
+        this.hexOneVault = await deployProxy(
             "HexOneVault",
             "HexOneVault",
-            this.hexToken.address,
-            this.hexOnePriceFeed.address
+            [
+                this.hexToken.address,
+                this.hexOnePriceFeed.address
+            ]
         );
-        this.stakingMaster = await deploy(
+        this.stakingMaster = await deployProxy(
             "HexOneStakingMaster",
             "HexOneStakingMaster"
         );
-        this.hexOneProtocol = await deploy(
+        this.hexOneProtocol = await deployProxy(
             "HexOneProtocol",
             "HexOneProtocol",
-            this.hexOneToken.address,
-            [this.hexOneVault.address],
-            this.stakingMaster.address,
-            30,
-            120
+            [
+                this.hexOneToken.address,
+                [this.hexOneVault.address],
+                this.stakingMaster.address,
+                30,
+                120
+            ]
         );
     })
 
@@ -63,12 +69,14 @@ describe ("HexOne Protocol", function () {
     })
 
     it ("create staking pool", async function () {
-        this.stakingPoolHex = await deploy(
+        this.stakingPoolHex = await deployProxy(
             "HexOneStaking",
             "HexOneStaking",
-            this.hexToken.address,
-            this.stakingMaster.address,
-            false
+            [
+                this.hexToken.address,
+                this.stakingMaster.address,
+                false    
+            ]
         );
 
         await this.stakingMaster.setAllowTokens([this.hexToken.address], true);

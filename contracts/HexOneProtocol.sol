@@ -3,14 +3,14 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "./interfaces/IHexOneProtocol.sol";
 import "./interfaces/IHexOneVault.sol";
 import "./interfaces/IHexOneStakingMaster.sol";
 import "./interfaces/IHexOneToken.sol";
 
-contract HexOneProtocol is Ownable, IHexOneProtocol {
+contract HexOneProtocol is OwnableUpgradeable, IHexOneProtocol {
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
 
@@ -32,9 +32,9 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     address public stakingMaster;
 
     /// @dev The address to burn tokens.
-    address constant DEAD = 0x000000000000000000000000000000000000dEaD;
+    address public DEAD;
 
-    uint16 constant FIXED_POINT = 1000;
+    uint16 public FIXED_POINT;
 
     /// @notice Show vault address from token address.
     mapping(address => address) private vaultInfos;
@@ -45,13 +45,17 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     /// @notice Fee Info by token.
     mapping(address => Fee) public fees;
 
-    constructor (
+    constructor () {
+        _disableInitializers();
+    }
+
+    function initialize (
         address _hexOneToken,
         address[] memory _vaults,
         address _stakingMaster,
         uint256 _minDuration,
         uint256 _maxDuration
-    ) {
+    ) public initializer {
         require (_hexOneToken != address(0), "zero $HEX1 token address");
         require (_maxDuration > _minDuration, "max Duration is less min duration");
         require (_stakingMaster != address(0), "zero staking master address");
@@ -60,6 +64,11 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         hexOneToken = _hexOneToken;
         _setVaults(_vaults, true);
         stakingMaster = _stakingMaster;
+
+        DEAD = 0x000000000000000000000000000000000000dEaD;
+        FIXED_POINT = 1000;
+
+        __Ownable_init();
     }
 
     /// @inheritdoc IHexOneProtocol

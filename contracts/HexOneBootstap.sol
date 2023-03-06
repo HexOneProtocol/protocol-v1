@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
@@ -14,7 +14,7 @@ import "./interfaces/IHEXIT.sol";
 import "./interfaces/IHexToken.sol";
 
 /// @notice For sacrifice and airdrop
-contract HexOneBootstrap is Ownable, IHexOneBootstrap {
+contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.UintSet;
     using SafeERC20 for IERC20;
@@ -40,10 +40,10 @@ contract HexOneBootstrap is Ownable, IHexOneBootstrap {
     uint16 public airdropDistRateForHEXITHolder;
 
     /// @notice Percent that will be used for daily airdrop.
-    uint16 constant public distRateForDailyAirdrop = 500;    // 50%
+    uint16 public distRateForDailyAirdrop;    // 50%
 
     /// @notice Percent that will be supplied daily.
-    uint16 constant public supplyCropRateForSacrifice = 47;    // 4.7%
+    uint16 public supplyCropRateForSacrifice;    // 4.7%
 
     /// @notice Allowed token info.
     mapping(address => Token) public allowedTokens;
@@ -74,7 +74,7 @@ contract HexOneBootstrap is Ownable, IHexOneBootstrap {
     address public hexToken;
     address public pairToken;
     address public escrowCA;
-    uint256 constant public sacrificeInitialSupply = 5_555_555 * 1e18;
+    uint256 public sacrificeInitialSupply;
 
     uint256 public sacrificeStartTime;
     uint256 public sacrificeEndTime;
@@ -83,7 +83,7 @@ contract HexOneBootstrap is Ownable, IHexOneBootstrap {
     uint256 public airdropHEXITAmount;
     uint256 public override sacrificeHEXITAmount;
 
-    uint16 constant public FIXED_POINT = 1000;
+    uint16 public FIXED_POINT;
 
     EnumerableSet.AddressSet private sacrificeParticipants;
     EnumerableSet.AddressSet private airdropRequestors;
@@ -112,9 +112,11 @@ contract HexOneBootstrap is Ownable, IHexOneBootstrap {
         _;
     }
 
-    constructor (
-        Param memory _param
-    ) { 
+    constructor () {
+        _disableInitializers();
+    }
+
+    function initialize(Param memory _param) public initializer {
         require (_param.hexOnePriceFeed != address(0), "zero hexOnePriceFeed address");
         hexOnePriceFeed = _param.hexOnePriceFeed;
 
@@ -159,6 +161,13 @@ contract HexOneBootstrap is Ownable, IHexOneBootstrap {
         );
         airdropDistRateForHexHolder = _param.airdropDistRateforHexHolder;
         airdropDistRateForHEXITHolder = _param.airdropDistRateforHEXITHolder;
+
+        distRateForDailyAirdrop = 500;  // 50%
+        supplyCropRateForSacrifice = 47;    // 4.7%
+        sacrificeInitialSupply = 5_555_555 * 1e18;
+        FIXED_POINT = 1000;
+
+        __Ownable_init();
     }
 
     /// @inheritdoc IHexOneBootstrap
@@ -389,7 +398,7 @@ contract HexOneBootstrap is Ownable, IHexOneBootstrap {
         return (dayIndex, 0);
     }
 
-    function _calcSupplyAmountForSacrifice(uint256 _dayIndex) internal pure returns (uint256) {
+    function _calcSupplyAmountForSacrifice(uint256 _dayIndex) internal view returns (uint256) {
         uint256 supplyAmount = sacrificeInitialSupply;
         for (uint256 i = 0; i < _dayIndex; i ++) {
             supplyAmount = supplyAmount * supplyCropRateForSacrifice / FIXED_POINT;

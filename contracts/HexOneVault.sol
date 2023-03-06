@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
@@ -11,7 +11,7 @@ import "./interfaces/IHexOneVault.sol";
 import "./interfaces/IHexToken.sol";
 import "./interfaces/IHexOnePriceFeed.sol";
 
-contract HexOneVault is Ownable, IHexOneVault {
+contract HexOneVault is OwnableUpgradeable, IHexOneVault {
 
     using EnumerableSet for EnumerableSet.UintSet;
     using SafeERC20 for IERC20;
@@ -34,12 +34,12 @@ contract HexOneVault is Ownable, IHexOneVault {
     /// @dev The total USD value of locked base tokens.
     uint256 private lockedUSDValue;
 
-    uint16 public LIMIT_PRICE_PERCENT = 660; // 66%
+    uint16 public LIMIT_PRICE_PERCENT; // 66%
 
     /// @dev After `LIMIT_CLAIM_DURATION` days, anyone can claim instead of depositor.
-    uint256 public LIMIT_CLAIM_DURATION = 7;
+    uint256 public LIMIT_CLAIM_DURATION;
 
-    uint16 constant public FIXED_POINT = 1000;
+    uint16 public FIXED_POINT;
 
     uint256 public depositId;
 
@@ -54,15 +54,25 @@ contract HexOneVault is Ownable, IHexOneVault {
         _;
     }
 
-    constructor (
+    constructor () {
+        _disableInitializers();
+    }
+
+    function initialize (
         address _hexToken,
         address _hexOnePriceFeed
-    ) {
+    ) public initializer {
         require (_hexToken != address(0), "zero hex token address");
         require (_hexOnePriceFeed != address(0), "zero priceFeed contract address");
 
         hexToken = _hexToken;
         hexOnePriceFeed = _hexOnePriceFeed;
+
+        LIMIT_PRICE_PERCENT = 660;  // 66%
+        LIMIT_CLAIM_DURATION = 7;
+        FIXED_POINT = 1000;
+
+        __Ownable_init();
     }
 
     /// @inheritdoc IHexOneVault
