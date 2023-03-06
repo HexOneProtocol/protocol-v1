@@ -72,6 +72,7 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
         uint256 collateralAmount = balanceOfHex();
         require (collateralAmount > 0, "no collateral to deposit");
 
+        IERC20(hexToken).approve(hexOneProtocol, collateralAmount);
         IHexOneProtocol(hexOneProtocol).depositCollateral(
             hexToken, 
             collateralAmount, 

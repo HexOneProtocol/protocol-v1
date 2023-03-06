@@ -64,11 +64,18 @@ contract HexOnePriceFeedTest is OwnableUpgradeable, IHexOnePriceFeed {
         address _baseToken,
         uint256 _amount
     ) external view override returns (uint256) {
+        if (_baseToken == hexToken) {
+            return getHexTokenPrice(_amount);
+        }
+
+        if (_baseToken == address(0)) {     /// native token
+            _baseToken = dexRouter.WETH();
+        }
         return _convertToUSD(_baseToken, _amount);
     }
 
     /// @inheritdoc IHexOnePriceFeed
-    function getHexTokenPrice(uint256 _amount) external view override returns (uint256) {
+    function getHexTokenPrice(uint256 _amount) public view override returns (uint256) {
         uint256 pairTokenAmount = _convertHexToPairToken(_amount);
         if (pairTokenAmount == 0) return 0;
         return _convertToUSD(pairToken, pairTokenAmount);

@@ -117,6 +117,11 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     }
 
     function initialize(Param memory _param) public initializer {
+        FIXED_POINT = 1000;
+        distRateForDailyAirdrop = 500;  // 50%
+        supplyCropRateForSacrifice = 47;    // 4.7%
+        sacrificeInitialSupply = 5_555_555 * 1e18;
+
         require (_param.hexOnePriceFeed != address(0), "zero hexOnePriceFeed address");
         hexOnePriceFeed = _param.hexOnePriceFeed;
 
@@ -135,11 +140,10 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
 
         require (_param.hexToken != address(0), "zero hexToken address");
         require (_param.pairToken != address(0), "zero pairToken address");
-        require (_param.escrowCA != address(0), "zero escrow contract address");
         require (_param.hexitToken != address(0), "zero hexit token address");
         hexToken = _param.hexToken;
         pairToken = _param.pairToken;
-        escrowCA = _param.escrowCA;
+        hexitToken = _param.hexitToken;
 
         require (
             _param.rateForSacrifice + _param.rateforAirdrop == FIXED_POINT, 
@@ -161,11 +165,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         );
         airdropDistRateForHexHolder = _param.airdropDistRateforHexHolder;
         airdropDistRateForHEXITHolder = _param.airdropDistRateforHEXITHolder;
-
-        distRateForDailyAirdrop = 500;  // 50%
-        supplyCropRateForSacrifice = 47;    // 4.7%
-        sacrificeInitialSupply = 5_555_555 * 1e18;
-        FIXED_POINT = 1000;
 
         __Ownable_init();
     }
@@ -225,7 +224,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     ) external onlyOwner override {
         uint256 length = _tokens.length;
         require (length > 0, "invalid length");
-        require (block.timestamp > sacrificeEndTime, "sacrifice duration");
+        require (block.timestamp < sacrificeStartTime, "too late to set");
 
         for (uint256 i = 0; i < length; i ++) {
             address token = _tokens[i];
@@ -266,7 +265,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             requestedAmountInfo[dayIndex].amountByHexHolder += heldAmount;
         } else {
             heldAmount = IERC20(hexitToken).balanceOf(sender);
-            require (heldAmount > 0, "not hexit balance");
+            require (heldAmount > 0, "no hexit balance");
             requestedAmountInfo[dayIndex].amountByHEXITHolder += heldAmount;
         }
 
@@ -423,39 +422,62 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         uint256 amountForLiquidity = _amount - amountForDistribution;
 
         /// distribution
-        _swapToken(_token, escrowCA, amountForDistribution);
+        _swapToken(
+            _token,
+            hexToken, 
+            escrowCA, 
+            amountForDistribution
+        );
 
         /// liquidity
         uint256 swapAmountForLiquidity = amountForLiquidity / 2;
-        _swapToken(_token, address(this), swapAmountForLiquidity);
+        _swapToken(
+            _token, 
+            hexToken,
+            address(this), 
+            swapAmountForLiquidity
+        );
+        _swapToken(
+            _token, 
+            pairToken,
+            address(this), 
+            swapAmountForLiquidity
+        );
         uint256 pairTokenBalance = IERC20(pairToken).balanceOf(address(this));
-        if (pairTokenBalance > 0) {
+        uint256 hexTokenBalance = IERC20(hexToken).balanceOf(address(this));
+        if (pairTokenBalance > 0 && hexTokenBalance > 0) {
             IERC20(pairToken).approve(address(dexRouter), pairTokenBalance);
-            IERC20(_token).approve(address(dexRouter), swapAmountForLiquidity);
+            IERC20(hexToken).approve(address(dexRouter), hexTokenBalance);
             dexRouter.addLiquidity(
                 pairToken, 
-                _token, 
+                hexToken, 
                 pairTokenBalance, 
-                swapAmountForLiquidity, 
+                hexTokenBalance, 
                 0, 
                 0, 
                 address(this), 
                 block.timestamp
             );
         }
-        
     }
 
+    /// @notice Swap sacrifice token to hex/pair token.
+    /// @param _token The address of sacrifice token.
+    /// @param _targetToken The address of token to be swapped to.
+    /// @param _recipient The address of recipient.
+    /// @param _amount The amount of sacrifice token.
     function _swapToken(
         address _token,
+        address _targetToken,
         address _recipient,
         uint256 _amount
     ) internal {
-        address[] memory path = new address[](2);
+        if (_amount == 0) return;
 
-        if (_amount > 0) {
+        address[] memory path = new address[](2);
+        if (_token != _targetToken) {
             path[0] = _token == address(0) ? dexRouter.WETH() : _token;
-            path[1] = hexToken;
+            path[1] = _targetToken;
 
             if (_token == address(0)) {
                 dexRouter.swapExactETHForTokensSupportingFeeOnTransferTokens{value: _amount}(
@@ -474,6 +496,8 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
                     block.timestamp
                 );
             }
+        } else {
+            IERC20(_targetToken).safeTransfer(_recipient, _amount);
         }
     }
 

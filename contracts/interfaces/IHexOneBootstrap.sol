@@ -31,7 +31,6 @@ interface IHexOneBootstrap {
         address hexToken;
         address pairToken;
         address hexitToken;
-        address escrowCA;
         uint256 sacrificeStartTime;
         uint256 airdropStartTime;
         uint16 sacrificeDuration;

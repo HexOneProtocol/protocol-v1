@@ -203,6 +203,8 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
                 true,
                 false
             );
+            burnAmount = 0;
+            mintAmount = mintAmount > burnAmount ? mintAmount - burnAmount : 0;
         } else {
             IERC20(hexToken).safeTransfer(_claimer, receivedAmount);
         }
