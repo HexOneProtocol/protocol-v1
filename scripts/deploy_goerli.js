@@ -1,55 +1,56 @@
 const { ethers, network } = require("hardhat");
-const { deploy, deployProxy, getCurrentTimestamp, spendTime, bigNum, smallNum, day, hour } = require('../scripts/utils');
+const { deploy, deployProxy, getCurrentTimestamp, spendTime, bigNum, smallNum, day, hour, getContract } = require('../scripts/utils');
 
 const { uniswap_abi } = require('../external_abi/uniswap.abi.json');
 const { erc20_abi } = require('../external_abi/erc20.abi.json');
 const { hex_abi } = require('../external_abi/hex.abi.json');
 
 async function deployContracts() {
+    const [deployer] = await ethers.getSigners();
     let usdcAddress = "0x07865c6E87B9F70255377e024ace6630C1Eaa37F";
     let usdcPriceFeed = "0xAb5c49580294Aff77670F839ea425f5b78ab3Ae7";
     let uniswapRouterAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 
-    this.hexToken = await deploy("HexMockToken", "HexMockToken");
-    this.uniswapRouter = new ethers.Contract(uniswapRouterAddress, uniswap_abi, this.deployer);
-    this.USDC = new ethers.Contract(usdcAddress, erc20_abi, this.deployer);
-    this.hexOneToken = await deploy("HexOneToken", "HexOneToken", "HexOne", "HEXONE");
-    this.hexOnePriceFeed = await deployProxy(
+    let hexToken = await deploy("HexMockToken", "HexMockToken");
+    let uniswapRouter = new ethers.Contract(uniswapRouterAddress, uniswap_abi, deployer);
+    let USDC = new ethers.Contract(usdcAddress, erc20_abi, deployer);
+    let hexOneToken = await deploy("HexOneToken", "HexOneToken", "HexOne", "HEXONE");
+    let hexOnePriceFeed = await deployProxy(
         "HexOnePriceFeedTest", 
         "HexOnePriceFeedTest", 
         [
-            this.hexToken.address, 
+            hexToken.address, 
             usdcAddress, 
             usdcPriceFeed,
-            this.uniswapRouter.address
+            uniswapRouter.address
         ]
     );
 
-    this.hexOneVault = await deployProxy(
+    let hexOneVault = await deployProxy(
         "HexOneVault",
         "HexOneVault",
         [
-            this.hexToken.address,
-            this.hexOnePriceFeed.address
+            hexToken.address,
+            hexOnePriceFeed.address
         ]
     );
-    this.stakingMaster = await deployProxy(
+    let stakingMaster = await deployProxy(
         "HexOneStakingMaster",
         "HexOneStakingMaster"
     );
-    this.hexOneProtocol = await deployProxy(
+    let hexOneProtocol = await deployProxy(
         "HexOneProtocol",
         "HexOneProtocol",
         [
-            this.hexOneToken.address,
-            [this.hexOneVault.address],
-            this.stakingMaster.address,
+            hexOneToken.address,
+            [hexOneVault.address],
+            stakingMaster.address,
             30,
             120
         ]
     );
 
-    this.HEXIT = await deploy(
+    let HEXIT = await deploy(
         "HEXIT",
         "HEXIT",
         "Hex Incentive Token",
@@ -64,11 +65,11 @@ async function deployContracts() {
     let airdropDuration = 100;      // 100 days.
 
     let bootstrapParam = {
-        hexOnePriceFeed: this.hexOnePriceFeed.address,
-        dexRouter: this.uniswapRouter.address,
-        hexToken: this.hexToken.address,
+        hexOnePriceFeed: hexOnePriceFeed.address,
+        dexRouter: uniswapRouter.address,
+        hexToken: hexToken.address,
         pairToken: usdcAddress,
-        hexitToken: this.HEXIT.address,
+        hexitToken: HEXIT.address,
         sacrificeStartTime: sacrificeStartTime,
         airdropStartTime: airdropStarTime,
         sacrificeDuration: sacrificeDuration,
@@ -81,36 +82,100 @@ async function deployContracts() {
         airdropDistRateforHEXITHolder: 300  // 30%
     };
 
-    this.hexOneBootstrap = await deployProxy(
+    let hexOneBootstrap = await deployProxy(
         "HexOneBootstrap",
         "HexOneBootstrap",
         [bootstrapParam]
     );
 
-    this.hexOneEscrow = await deployProxy(
+    let hexOneEscrow = await deployProxy(
         "HexOneEscrow",
         "HexOneEscrow",
         [
-            this.hexOneBootstrap.address,
-            this.hexToken.address,
-            this.hexOneToken.address,
-            this.hexOneProtocol.address
+            hexOneBootstrap.address,
+            hexToken.address,
+            hexOneToken.address,
+            hexOneProtocol.address
         ]
     );
 
-    return (
-        this.hexToken,
-        this.uniswapRouter,
-        this.USDC,
-        this.hexOneToken,
-        this.hexOnePriceFeed,
-        this.hexOneVault,
-        this.stakingMaster,
-        this.hexOneProtocol,
-        this.HEXIT,
-        this.hexOneBootstrap,
-        this.hexOneEscrow
+    return [
+        hexToken,
+        uniswapRouter,
+        USDC,
+        hexOneToken,
+        hexOnePriceFeed,
+        hexOneVault,
+        stakingMaster,
+        hexOneProtocol,
+        HEXIT,
+        hexOneBootstrap,
+        hexOneEscrow
+    ];
+}
+
+async function getContracts() {
+    const [deployer] = await ethers.getSigners();
+    let usdcAddress = "0x07865c6E87B9F70255377e024ace6630C1Eaa37F";
+    let uniswapRouterAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+
+    let hexToken = await getContract("HexMockToken", "HexMockToken", "goerli");
+    let uniswapRouter = new ethers.Contract(uniswapRouterAddress, uniswap_abi, deployer);
+    let USDC = new ethers.Contract(usdcAddress, erc20_abi, deployer);
+    let hexOneToken = await getContract("HexOneToken", "HexOneToken", "goerli");
+    let hexOnePriceFeed = await getContract(
+        "HexOnePriceFeedTest", 
+        "HexOnePriceFeedTest", 
+        "goerli"
     );
+
+    let hexOneVault = await getContract(
+        "HexOneVault",
+        "HexOneVault", 
+        "goerli"
+    );
+    let stakingMaster = await getContract(
+        "HexOneStakingMaster",
+        "HexOneStakingMaster", 
+        "goerli"
+    );
+    let hexOneProtocol = await getContract(
+        "HexOneProtocol",
+        "HexOneProtocol", 
+        "goerli"
+    );
+
+    let HEXIT = await getContract(
+        "HEXIT",
+        "HEXIT", 
+        "goerli"
+    );
+
+    let hexOneBootstrap = await getContract(
+        "HexOneBootstrap",
+        "HexOneBootstrap", 
+        "goerli"
+    );
+
+    let hexOneEscrow = await getContract(
+        "HexOneEscrow",
+        "HexOneEscrow", 
+        "goerli"
+    );
+
+    return [
+        hexToken,
+        uniswapRouter,
+        USDC,
+        hexOneToken,
+        hexOnePriceFeed,
+        hexOneVault,
+        stakingMaster,
+        hexOneProtocol,
+        HEXIT,
+        hexOneBootstrap,
+        hexOneEscrow
+    ];
 }
 
 async function initialize(
@@ -183,37 +248,50 @@ async function addLiquidify(
 async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
+    let [
+        hexToken,
+        uniswapRouter,
+        USDC,
+        hexOneToken,
+        hexOnePriceFeed,
+        hexOneVault,
+        stakingMaster,
+        hexOneProtocol,
+        HEXIT,
+        hexOneBootstrap,
+        hexOneEscrow
+    ] = await deployContracts();
 
-    [
-        this.hexToken,
-        this.uniswapRouter,
-        this.USDC,
-        this.hexOneToken,
-        this.hexOnePriceFeed,
-        this.hexOneVault,
-        this.stakingMaster,
-        this.hexOneProtocol,
-        this.HEXIT,
-        this.hexOneBootstrap,
-        this.hexOneEscrow
-     ] = await deployContracts();
+    // let [
+    //     hexToken,
+    //     uniswapRouter,
+    //     USDC,
+    //     hexOneToken,
+    //     hexOnePriceFeed,
+    //     hexOneVault,
+    //     stakingMaster,
+    //     hexOneProtocol,
+    //     HEXIT,
+    //     hexOneBootstrap,
+    //     hexOneEscrow
+    // ] = await getContracts();
 
     console.log("initialize");
     await initialize(
-        this.hexOneToken,
-        this.hexOneVault,
-        this.stakingMaster,
-        this.hexOneProtocol,
-        this.HEXIT,
-        this.hexOneBootstrap,
-        this.hexOneEscrow
+        hexOneToken,
+        hexOneVault,
+        stakingMaster,
+        hexOneProtocol,
+        HEXIT,
+        hexOneBootstrap,
+        hexOneEscrow
     );
 
     console.log("buy USDC token and add liquidity");
     await addLiquidify(
-        this.hexToken,
-        this.uniswapRouter,
-        this.USDC
+        hexToken,
+        uniswapRouter,
+        USDC
     );
 
     console.log("Deployed successfully");
