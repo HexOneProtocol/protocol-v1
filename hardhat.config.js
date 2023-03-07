@@ -43,5 +43,8 @@ module.exports = {
       mainnet: process.env.ETH_API_KEY,
       goerli: process.env.ETH_API_KEY
     }
+  },
+  mocha: {
+    timeout: 2000000000
   }
 };

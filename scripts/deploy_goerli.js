@@ -1,5 +1,5 @@
 const { ethers, network } = require("hardhat");
-const { deploy } = require('./utils');
+const { deploy, deployProxy, getCurrentTimestamp, spendTime, bigNum, smallNum, day, hour } = require('../scripts/utils');
 
 const { uniswap_abi } = require('../external_abi/uniswap.abi.json');
 const { erc20_abi } = require('../external_abi/erc20.abi.json');
