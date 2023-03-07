@@ -54,4 +54,10 @@ interface IHexToken {
     function stakeLists(address stakerAddr, uint256 stakeIndex) external view returns (StakeStore memory);
 
     function currentDay() external view returns (uint256);
+
+    function dailyData(uint256 dayIndex) external view returns (
+        uint72 dayPayoutTotal,
+        uint72 dayStakeSharesTotal,
+        uint56 dayUnclaimedSatoshisTotal
+    );
 }
