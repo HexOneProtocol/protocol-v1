@@ -12,10 +12,10 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        // url: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
-        // blockNumber: 16589147
-        url: "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
-        blockNumber: 8611771
+        url: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+        blockNumber: 16589147
+        // url: "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+        // blockNumber: 8611771
       },
     },
     goerli: {

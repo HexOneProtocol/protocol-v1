@@ -14,6 +14,7 @@ interface IHexOneVault {
         uint256 duration;
         uint256 restakeDuration;
         uint256 liquidateAmount;
+        uint256 initHexPrice;
         bool isCommitType;
         bool exist;
     }
@@ -32,6 +33,8 @@ interface IHexOneVault {
         uint256 shareAmount;
         uint256 mintAmount;
         uint256 liquidateAmount;
+        uint256 borrowableAmount;
+        uint256 initialHexPrice;
         uint256 lockedHexDay;
         uint256 endHexDay;
         uint256 curHexDay;
@@ -54,6 +57,7 @@ interface IHexOneVault {
         uint256 hexOneTokenAmount;
         uint256 hexTokenAmount;
         uint256 liquidateAmount;
+        uint256 maxLiquidateHexAmount;
     }
 
     function baseToken() external view returns (address baseToken);
