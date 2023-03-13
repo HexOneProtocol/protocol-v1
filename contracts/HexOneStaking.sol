@@ -4,13 +4,13 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "./utils/TokenUtils.sol";
 import "./interfaces/IHexOneStaking.sol";
 import "./interfaces/IHexOneStakingMaster.sol";
 
-contract HexOneStaking is Ownable, IHexOneStaking {
+contract HexOneStaking is OwnableUpgradeable, IHexOneStaking {
     using EnumerableSet for EnumerableSet.UintSet;
     using SafeERC20 for IERC20;
 
@@ -18,7 +18,7 @@ contract HexOneStaking is Ownable, IHexOneStaking {
     
     uint256 public launchedTime;
     // uint256 public stakedAmount;
-    uint16 constant FIXED_POINT = 1000;
+    uint16 public FIXED_POINT;
 
     /// @dev rewardTokenAddr => stakeId => tokenIds
     /// @dev This is for staking ERC721.
@@ -50,17 +50,25 @@ contract HexOneStaking is Ownable, IHexOneStaking {
         _;
     }
 
-    constructor (
+    constructor () {
+        _disableInitializers();
+    }
+
+    function initialize (
         address _baseToken,
         address _stakingMaster,
         bool _isERC721
-    ) {
+    ) public initializer {
         require (_baseToken != address(0), "zero baseToken address");
         require (_stakingMaster != address(0), "zero staking master address");
         launchedTime = block.timestamp;
         stakingMaster = _stakingMaster;
         baseToken = _baseToken;
         NFTStaking = _isERC721;
+
+        FIXED_POINT = 1000;
+
+        __Ownable_init();
     }
 
     /// @inheritdoc IHexOneStaking

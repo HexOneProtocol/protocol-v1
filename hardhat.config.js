@@ -12,9 +12,17 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
-        blockNumber: 16589147
+        // url: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+        // blockNumber: 16589147
+        url: "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+        blockNumber: 8611771
       },
+    },
+    goerli: {
+      url: "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+      chainId: 5,
+      gasPrice: utils.parseUnits("100", "gwei").toNumber(),
+      accounts: [process.env.DEPLOYER_WALLET]
     },
   },
   solidity: {
@@ -30,4 +38,13 @@ module.exports = {
       },
     ],
   },
+  etherscan: {
+    apiKey: {
+      mainnet: process.env.ETH_API_KEY,
+      goerli: process.env.ETH_API_KEY
+    }
+  },
+  mocha: {
+    timeout: 2000000000
+  }
 };

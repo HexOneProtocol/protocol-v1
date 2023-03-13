@@ -6,12 +6,11 @@ const { uniswap_abi } = require('../external_abi/uniswap.abi.json');
 const { erc20_abi } = require('../external_abi/erc20.abi.json');
 const { hex_abi } = require('../external_abi/hex.abi.json');
 
-const { deploy, bigNum, getCurrentTimestamp, smallNum, spendTime, day, deployProxy, hour } = require('../scripts/utils');
+const { deploy, deployProxy, getCurrentTimestamp, spendTime, bigNum, smallNum, day, hour } = require('../scripts/utils');
 
-describe ("HexOne Protocol", function () {
-    let usdcAddress = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-    let usdcPriceFeed = "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6";
-    let hexTokenAddress = "0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39";
+describe ("Hex Mock token test", function () {
+    let usdcAddress = "0x07865c6E87B9F70255377e024ace6630C1Eaa37F";
+    let usdcPriceFeed = "0xAb5c49580294Aff77670F839ea425f5b78ab3Ae7";
     let uniswapRouterAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 
     before (async function () {
@@ -27,10 +26,9 @@ describe ("HexOne Protocol", function () {
             this.hex_staker
         ] = await ethers.getSigners();
 
+        this.hexToken = await deploy("HexMockToken", "HexMockToken");
         this.uniswapRouter = new ethers.Contract(uniswapRouterAddress, uniswap_abi, this.deployer);
-        this.hexToken = new ethers.Contract(hexTokenAddress, hex_abi, this.deployer);
         this.USDC = new ethers.Contract(usdcAddress, erc20_abi, this.deployer);
-
         this.hexOneToken = await deploy("HexOneToken", "HexOneToken", "HexOne", "HEXONE");
         this.hexOnePriceFeed = await deployProxy(
             "HexOnePriceFeedTest", 
@@ -42,6 +40,7 @@ describe ("HexOne Protocol", function () {
                 this.uniswapRouter.address
             ]
         );
+
         this.hexOneVault = await deployProxy(
             "HexOneVault",
             "HexOneVault",
@@ -147,35 +146,8 @@ describe ("HexOne Protocol", function () {
             await this.stakingMaster.setRewardsRate([this.hexToken.address], [600]);        // 60% for hexToken
         })
 
-        it ("buy hex token", async function () {
-            let ethAmountForBuy = bigNum(2, 18);
-            let WETHAddress = await this.uniswapRouter.WETH();
-
-            let amounts = await this.uniswapRouter.getAmountsOut(
-                BigInt(ethAmountForBuy),
-                [WETHAddress, this.hexToken.address]
-            );
-            let expectHexTokenAmount = amounts[1];
-
-            let beforeBal = await this.hexToken.balanceOf(this.deployer.address);
-            await this.uniswapRouter.swapExactETHForTokens(
-                0,
-                [WETHAddress, this.hexToken.address],
-                this.deployer.address,
-                BigInt(await getCurrentTimestamp()) + BigInt(100),
-                {value: ethAmountForBuy}
-            );
-            let afterBal = await this.hexToken.balanceOf(this.deployer.address);
-
-            expect (smallNum(afterBal, 8) - smallNum(beforeBal, 8)).to.be.equal(smallNum(expectHexTokenAmount, 8));
-
-            let transferAmount = BigInt(expectHexTokenAmount) / BigInt(6);
-            await this.hexToken.transfer(this.staker_1.address, BigInt(transferAmount));
-            await this.hexToken.transfer(this.staker_2.address, BigInt(transferAmount));
-        })
-
-        it ("buy USDC token", async function () {
-            let ethAmountForBuy = bigNum(10, 18);
+        it ("buy USDC token and add liquidity", async function () {
+            let ethAmountForBuy = ethers.utils.parseEther("0.1");
             let WETHAddress = await this.uniswapRouter.WETH();
 
             let amounts = await this.uniswapRouter.getAmountsOut(
@@ -193,12 +165,28 @@ describe ("HexOne Protocol", function () {
                 {value: ethAmountForBuy}
             );
             let afterBal = await this.USDC.balanceOf(this.deployer.address);
+            let swappedUSDCAmount = BigInt(afterBal) - BigInt(beforeBal);
+            swappedUSDCAmount = BigInt(swappedUSDCAmount) * BigInt(4) / BigInt(5);
+            let hexAmountForLiquidity = await this.hexToken.balanceOf(this.deployer.address);
+            hexAmountForLiquidity = BigInt(hexAmountForLiquidity) / BigInt(2);
+            
+            await this.USDC.approve(this.uniswapRouter.address, BigInt(swappedUSDCAmount));
+            await this.hexToken.approve(this.uniswapRouter.address, BigInt(hexAmountForLiquidity));
+            await this.uniswapRouter.addLiquidity(
+                this.USDC.address,
+                this.hexToken.address,
+                BigInt(swappedUSDCAmount),
+                BigInt(hexAmountForLiquidity),
+                0,
+                0,
+                this.deployer.address,
+                BigInt(await getCurrentTimestamp()) + BigInt(100)
+            );
 
-            expect (smallNum(afterBal, 8) - smallNum(beforeBal, 8)).to.be.closeTo(smallNum(expectUSDCTokenAmount, 8), 0.0001);
-
-            let transferAmount = BigInt(expectUSDCTokenAmount) / BigInt(6);
-            await this.USDC.transfer(this.staker_1.address, BigInt(transferAmount));
-            await this.USDC.transfer(this.staker_2.address, BigInt(transferAmount));
+            let transferAmount = await this.hexToken.balanceOf(this.deployer.address);
+            transferAmount = BigInt(transferAmount) / BigInt(3);
+            await this.hexToken.transfer(this.staker_1.address, BigInt(transferAmount));
+            await this.hexToken.transfer(this.staker_2.address, BigInt(transferAmount));
         })
     })
 

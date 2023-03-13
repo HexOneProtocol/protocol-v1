@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.17;
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
@@ -9,29 +9,35 @@ import "./interfaces/IHexOnePriceFeed.sol";
 import "./interfaces/IUniswapV2Factory.sol";
 import "./interfaces/IUniswapV2Router.sol";
 
-contract HexOnePriceFeed is Ownable, IHexOnePriceFeed {
+contract HexOnePriceFeed is OwnableUpgradeable, IHexOnePriceFeed {
     mapping(address => address) private priceFeeds;
-    uint256 public constant FIXED_POINT_SCALAR = 1e18;
+    uint256 public FIXED_POINT_SCALAR;
 
     address private hexToken;
     address private pairToken;
     IUniswapV2Router02 public dexRouter;
 
-    constructor (
+    constructor () {
+        _disableInitializers();
+    }
+
+    function initialize (
         address _hexToken,
         address _pairToken,
         address _pairTokenPriceFeed,
         address _dexRouter
-    ) {
+    ) public initializer {
         require (_hexToken != address(0), "zero hex Token address");
         require (_pairToken != address(0), "zero pair token address");
         require (_pairTokenPriceFeed != address(0), "zero pairTokenPriceFeed address");
         require (_dexRouter != address(0), "zero dexRouter address");
 
+        FIXED_POINT_SCALAR = 1e18;
         priceFeeds[_pairToken] = _pairTokenPriceFeed;
         hexToken = _hexToken;
         pairToken = _pairToken;
         dexRouter = IUniswapV2Router02(_dexRouter);
+        __Ownable_init();
     }
 
     /// @inheritdoc IHexOnePriceFeed
@@ -49,11 +55,18 @@ contract HexOnePriceFeed is Ownable, IHexOnePriceFeed {
         address _baseToken,
         uint256 _amount
     ) external view override returns (uint256) {
+        if (_baseToken == hexToken) {
+            return getHexTokenPrice(_amount);
+        }
+
+        if (_baseToken == address(0)) {     /// native token
+            _baseToken = dexRouter.WETH();
+        }
         return _convertToUSD(_baseToken, _amount);
     }
 
     /// @inheritdoc IHexOnePriceFeed
-    function getHexTokenPrice(uint256 _amount) external view override returns (uint256) {
+    function getHexTokenPrice(uint256 _amount) public view override returns (uint256) {
         uint256 pairTokenAmount = _convertHexToPairToken(_amount);
         if (pairTokenAmount == 0) return 0;
         return _convertToUSD(pairToken, pairTokenAmount);
@@ -99,8 +112,12 @@ contract HexOnePriceFeed is Ownable, IHexOnePriceFeed {
         uint256 tokenPrice = uint256(price);
 
         uint8 decimals = priceFeed.decimals();
-        uint8 additionDecimals = 18 - decimals;
-        return tokenPrice * 10**additionDecimals;
+        if (decimals > 18) {
+            return tokenPrice / 10**(decimals - 18);
+        } else {
+            uint8 additionDecimals = 18 - decimals;
+            return tokenPrice * 10**additionDecimals;
+        }
     }
 
     function _convertHexToPairToken(uint256 _amount) internal view returns(uint256) {

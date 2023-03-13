@@ -1,25 +1,28 @@
 {
-  "name": "realfevr-fusion-sc",
+  "name": "hexoneprotocol",
   "version": "1.0.0",
-  "description": "NFT Fusion smart contract",
-  "main": "index.js",
+  "description": "Hex One Protocol is a stablecoin backed by t-shares",
+  "main": "hardhat.config.js",
+  "directories": {
+    "test": "test"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RealFevr/realfevr-fusion-sc.git"
+    "url": "git+https://github.com/CinDrallig/hex1.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/RealFevr/realfevr-fusion-sc/issues"
-  },
-  "homepage": "https://github.com/RealFevr/realfevr-fusion-sc#readme",
   "resolutions": {
     "hardhat/**/@ethereumjs/tx": "3.5.0"
   },
+  "bugs": {
+    "url": "https://github.com/CinDrallig/hex1/issues"
+  },
+  "homepage": "https://github.com/CinDrallig/hex1#readme",
   "devDependencies": {
     "@chainlink/contracts": "^0.6.0",
     "@ethereumjs/tx": "3.5.0",
