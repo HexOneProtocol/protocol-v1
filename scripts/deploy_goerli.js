@@ -10,6 +10,7 @@ async function deployContracts() {
     let usdcAddress = "0x07865c6E87B9F70255377e024ace6630C1Eaa37F";
     let usdcPriceFeed = "0xAb5c49580294Aff77670F839ea425f5b78ab3Ae7";
     let uniswapRouterAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+    let feeReceiver = "0x4364E1d16526c954b029b6cf9335CB1b0eaAfB69";
 
     let hexToken = await deploy("HexMockToken", "HexMockToken");
     let uniswapRouter = new ethers.Contract(uniswapRouterAddress, uniswap_abi, deployer);
@@ -36,7 +37,11 @@ async function deployContracts() {
     );
     let stakingMaster = await deployProxy(
         "HexOneStakingMaster",
-        "HexOneStakingMaster"
+        "HexOneStakingMaster",
+        [
+            feeReceiver,
+            100     // 10%
+        ]
     );
     let hexOneProtocol = await deployProxy(
         "HexOneProtocol",
@@ -45,8 +50,8 @@ async function deployContracts() {
             hexOneToken.address,
             [hexOneVault.address],
             stakingMaster.address,
-            30,
-            120
+            1,  // min staking day: 1 day
+            10  // max staking days: 10 days
         ]
     );
 
