@@ -131,4 +131,6 @@ contract HexOnePriceFeed is OwnableUpgradeable, IHexOnePriceFeed {
 
         return pairTokenBalance * _amount / hexTokenBalance;
     }
+
+    uint256[100] private __gap;
 }

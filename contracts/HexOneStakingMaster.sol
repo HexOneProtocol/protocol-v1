@@ -24,6 +24,9 @@ contract HexOneStakingMaster is
     mapping(address => AllowedToken) private allowedTokens;
 
     address public hexOneProtocol;
+    address public feeReceiver;
+    uint16 public withdrawFeeRate;
+    uint16 public FIXED_POINT;
 
     modifier onlyHexOneProtocol {
         require (msg.sender == hexOneProtocol, "only HexOneProtocol");
@@ -34,8 +37,33 @@ contract HexOneStakingMaster is
         _disableInitializers();
     }
 
-    function initialize() public initializer {
+    function initialize(
+        address _feeReceiver,
+        uint16 _withdrawFeeRate
+    ) public initializer {
+        FIXED_POINT = 1000;
+        require (_feeReceiver != address(0), "zero feeReceiver address");
+        require (_withdrawFeeRate <= FIXED_POINT / 2, "exceeds to max fee rate");
+
+        feeReceiver = _feeReceiver;
+        withdrawFeeRate = _withdrawFeeRate;
         __Ownable_init();
+    }
+
+    /// @inheritdoc IHexOneStakingMaster
+    function setFeeReceiver(
+        address _feeReceiver
+    ) external onlyOwner override {
+        require (_feeReceiver != address(0), "zero feeReceiver address");
+        feeReceiver = _feeReceiver;
+    }
+
+    /// @inheritdoc IHexOneStakingMaster
+    function setWithdrawFeeRate(
+        uint16 _feeRate
+    ) external onlyOwner override {
+        require (_feeRate <= FIXED_POINT / 2, "exceeds to max fee rate");
+        withdrawFeeRate = _feeRate;
     }
 
     /// @inheritdoc IHexOneStakingMaster
@@ -176,9 +204,14 @@ contract HexOneStakingMaster is
             _rewardToken, 
             _stakeId
         );
+        uint256 feeAmount = claimableAmount * withdrawFeeRate / FIXED_POINT;
+        claimableAmount -= feeAmount;
 
         IERC20(_token).safeTransfer(sender, stakedAmount);
         IERC20(_rewardToken).safeTransfer(sender, claimableAmount);
+        if (feeAmount > 0) {
+            IERC20(_rewardToken).safeTransfer(feeReceiver, feeAmount);
+        }
     }
 
     /// @inheritdoc IHexOneStakingMaster
@@ -191,7 +224,12 @@ contract HexOneStakingMaster is
 
         address stakingPool = allowedTokens[_collection].stakingPool;
         (uint256 claimableAmount, uint256[] memory tokenIds) = IHexOneStaking(stakingPool).stakeERC721End(sender, _rewardToken, _stakeId);
+        uint256 feeAmount = claimableAmount * withdrawFeeRate / FIXED_POINT;
+        claimableAmount -= feeAmount;
         IERC20(_rewardToken).safeTransfer(sender, claimableAmount);
+        if (feeAmount > 0) {
+            IERC20(_rewardToken).safeTransfer(feeReceiver, feeAmount);
+        }
         for (uint256 i = 0; i < tokenIds.length; i ++) {
             IERC721(_collection).transferFrom(address(this), sender, tokenIds[i]);
         }
@@ -227,4 +265,6 @@ contract HexOneStakingMaster is
     function getTotalPoolAmount(address _rewardToken) external view override returns (uint256) {
         return poolAmounts[_rewardToken];
     }
+
+    uint256[100] private __gap;
 }

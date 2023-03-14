@@ -539,4 +539,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
 
         return supplyAmount * userInfo.balance / requestedAmount;
     }
+
+    uint256[100] private __gap;
 }

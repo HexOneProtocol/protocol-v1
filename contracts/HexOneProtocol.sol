@@ -270,4 +270,6 @@ contract HexOneProtocol is OwnableUpgradeable, IHexOneProtocol {
 
         return realAmount;
     }
+
+    uint256[100] private __gap;
 }

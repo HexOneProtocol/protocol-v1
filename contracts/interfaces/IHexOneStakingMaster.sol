@@ -23,6 +23,18 @@ interface IHexOneStakingMaster {
         bool _isAllow
     ) external;
 
+    /// @notice Set fee receiver address.
+    /// @dev Only owner can call this function.
+    function setFeeReceiver(
+        address _feeReceiver
+    ) external;
+
+    /// @notice Set withdraw fee rate.
+    /// @dev Only owner can call this function.
+    function setWithdrawFeeRate(
+        uint16 _feeRate
+    ) external;
+
     /// @notice Enable/Disable allow tokens.
     /// @dev Only owner can call this function.
     /// @param _tokens The address of tokens.

@@ -118,4 +118,6 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
             }
         }
     }
+
+    uint256[100] private __gap;
 }

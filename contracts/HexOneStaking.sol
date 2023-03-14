@@ -235,4 +235,6 @@ contract HexOneStaking is OwnableUpgradeable, IHexOneStaking {
 
         return claimableAmount;
     }
+
+    uint256[100] private __gap;
 }

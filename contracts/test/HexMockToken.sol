@@ -99,7 +99,7 @@ contract HexMockToken is ERC20, IHexToken {
     }
 
     function currentDay() public view returns (uint256) {
-        return (block.timestamp - launchedTime) / 1 days;
+        return ((block.timestamp - launchedTime) / 1 days) + 1;
     }
 
     function mint() external {

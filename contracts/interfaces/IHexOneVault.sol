@@ -11,10 +11,11 @@ interface IHexOneVault {
         uint256 mintAmount;
         uint256 borrowedAmount;
         uint256 depositedHexDay;
-        uint256 duration;
-        uint256 restakeDuration;
         uint256 liquidateAmount;
         uint256 initHexPrice;
+        uint16 duration;
+        uint16 restakeDuration;
+        uint16 graceDay;
         bool isCommitType;
         bool exist;
     }
@@ -34,6 +35,7 @@ interface IHexOneVault {
         uint256 mintAmount;
         uint256 liquidateAmount;
         uint256 borrowableAmount;
+        uint256 effectiveAmount;
         uint256 initialHexPrice;
         uint256 lockedHexDay;
         uint256 endHexDay;
@@ -52,12 +54,22 @@ interface IHexOneVault {
     }
 
     struct LiquidateInfo {
-        uint256 depositId;
         address depositor;
-        uint256 hexOneTokenAmount;
-        uint256 hexTokenAmount;
+        uint256 depositId;
+        uint256 curHexDay;
+        uint256 endDay;
+        uint256 effectiveHex;
+        uint256 borrowedHexOne;
+        uint256 initHexPrice;
+        uint256 currentHexPrice;
+        uint256 depositedHexAmount;
+        uint256 currentValue;
         uint256 liquidateAmount;
         uint256 maxLiquidateHexAmount;
+        uint256 initUSDValue;
+        uint256 currentUSDValue;
+        uint16 graceDay;
+        bool liquidable;
     }
 
     function baseToken() external view returns (address baseToken);
@@ -97,8 +109,8 @@ interface IHexOneVault {
     function depositCollateral(
         address _depositor, 
         uint256 _amount, 
-        uint256 _duration, 
-        uint256 _restakeDuration,
+        uint16 _duration, 
+        uint16 _restakeDuration,
         bool _isCommitType
     ) external returns (uint256 mintAmount);
 
@@ -113,7 +125,7 @@ interface IHexOneVault {
         address _depositor,
         uint256 _amount,
         uint256 _vaultDepositId,
-        uint256 _duration
+        uint16 _duration
     ) external returns (uint256 burnAmount);
 
     /// @notice Retrieve collateral after maturity.
@@ -142,9 +154,9 @@ interface IHexOneVault {
 
     /// @notice Set limit claim duration.
     /// @dev Only owner can call this function.
-    function setLimitClaimDuration(uint256 _duration) external;
+    function setLimitClaimDuration(uint16 _duration) external;
 
     event CollateralClaimed(address indexed claimer, uint256 claimedAmount);
 
-    event CollateralRestaked(address indexed staker, uint256 restakedAmount, uint256 restakeDuration);
+    event CollateralRestaked(address indexed staker, uint256 restakedAmount, uint16 restakeDuration);
 }
