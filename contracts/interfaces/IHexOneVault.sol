@@ -9,14 +9,10 @@ interface IHexOneVault {
         uint256 amount;
         uint256 shares;
         uint256 mintAmount;
-        uint256 borrowedAmount;
         uint256 depositedHexDay;
-        uint256 liquidateAmount;
         uint256 initHexPrice;
         uint16 duration;
-        uint16 restakeDuration;
         uint16 graceDay;
-        bool isCommitType;
         bool exist;
     }
 
@@ -33,14 +29,12 @@ interface IHexOneVault {
         uint256 depositAmount;
         uint256 shareAmount;
         uint256 mintAmount;
-        uint256 liquidateAmount;
         uint256 borrowableAmount;
         uint256 effectiveAmount;
         uint256 initialHexPrice;
         uint256 lockedHexDay;
         uint256 endHexDay;
         uint256 curHexDay;
-        bool commitType;
     }
 
     struct BorrowableInfo {
@@ -64,8 +58,6 @@ interface IHexOneVault {
         uint256 currentHexPrice;
         uint256 depositedHexAmount;
         uint256 currentValue;
-        uint256 liquidateAmount;
-        uint256 maxLiquidateHexAmount;
         uint256 initUSDValue;
         uint256 currentUSDValue;
         uint16 graceDay;
@@ -103,40 +95,22 @@ interface IHexOneVault {
     /// @param _depositor The address of depositor.
     /// @param _amount The amount of collateral.
     /// @param _duration The maturity duration.
-    /// @param _restakeDuration If commitType is ture, then restakeDuration is necessary.
-    /// @param _isCommitType Type of deposit. true/false = commit/uncommit.
     /// @return mintAmount The amount of $HEX1 to mint.
     function depositCollateral(
         address _depositor, 
         uint256 _amount, 
-        uint16 _duration, 
-        uint16 _restakeDuration,
-        bool _isCommitType
-    ) external returns (uint256 mintAmount);
-
-    /// @notice Add collateral to certain deposit Id to cover loss.
-    /// @dev Depositors only add collateral and don't receive $HEX1 token as compensation.
-    /// @param _depositor The address of depositor.
-    /// @param _amount The amount of collateral.
-    /// @param _vaultDepositId The certain deposit id to cover loss.
-    /// @param _duration The maturity duration.
-    /// @return burnAmount The amount of $HEX1 to burn.
-    function addCollateralForLiquidate(
-        address _depositor,
-        uint256 _amount,
-        uint256 _vaultDepositId,
         uint16 _duration
-    ) external returns (uint256 burnAmount);
+    ) external returns (uint256 mintAmount);
 
     /// @notice Retrieve collateral after maturity.
     /// @dev Users can claim collateral after maturity.
-    /// @return mintAmount If depositor's commitType is true then 
-    ///         calculate shareAmount based on restake amount and duration.
-    /// @return burnAmount The amount of $HEX1 should be burn.
+    /// @return burnAmount Amount of $HEX1 token to burn.
+    /// @return mintAmount Amount of $HEX1 token to mint.
     function claimCollateral(
         address _claimer,
-        uint256 _vaultDepositId
-    ) external returns (uint256 mintAmount, uint256 burnAmount, uint256 liquidateAmount);
+        uint256 _vaultDepositId,
+        bool _restake
+    ) external returns (uint256 burnAmount, uint256 mintAmount);
 
     /// @notice Get liquidable vault deposit Ids.
     function getLiquidableDeposits() external view returns (LiquidateInfo[] memory);
@@ -145,12 +119,6 @@ interface IHexOneVault {
     function getShareBalance(address _account) external view returns (uint256);
 
     function getUserInfos(address _account) external view returns (DepositShowInfo[] memory);
-
-    /// @notice Set new limitPricePercent.
-    ///         If total locked USD value is below that, emergencyWithdraw will occur.
-    /// @dev Only owne can call this function.
-    /// @param _percent New limitPricePercent.
-    function setLimitPricePercent(uint16 _percent) external;
 
     /// @notice Set limit claim duration.
     /// @dev Only owner can call this function.
