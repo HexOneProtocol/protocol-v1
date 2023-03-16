@@ -26,7 +26,8 @@ describe ("HexOne Protocol", function () {
             this.sacrificer_2,
             this.hex_staker,
             this.feeReceiver,
-            this.liquidator
+            this.liquidator,
+            this.teamFinance
         ] = await ethers.getSigners();
 
         this.uniswapRouter = new ethers.Contract(uniswapRouterAddress, uniswap_abi, this.deployer);
@@ -91,6 +92,8 @@ describe ("HexOne Protocol", function () {
             hexToken: this.hexToken.address,
             pairToken: usdcAddress,
             hexitToken: this.HEXIT.address,
+            stakingContract: this.stakingMaster.address,
+            teamWallet: this.teamFinance.address,
             sacrificeStartTime: sacrificeStartTime,
             airdropStartTime: airdropStarTime,
             sacrificeDuration: sacrificeDuration,
@@ -377,6 +380,33 @@ describe ("HexOne Protocol", function () {
                     smallNum(receivedAmount, 18)
                 );
                 expect (smallNum(receivedAmount, 18)).to.be.greaterThan(0);
+            })
+
+            it ("after duration, check additional HEXIT generation", async function () {
+                /// reverts if before airdrop end time
+                await expect (
+                    this.hexOneBootstrap.generateAdditionalTokens()
+                ).to.be.revertedWith("before airdrop ends");
+
+                await spendTime(100 * day);
+
+                let hexitForAirdrop = await this.hexOneBootstrap.airdropHEXITAmount();
+                let beforeStakingBal = await this.HEXIT.balanceOf(this.stakingMaster.address);
+                let beforeTeamBal = await this.HEXIT.balanceOf(this.teamFinance.address);
+                await this.hexOneBootstrap.generateAdditionalTokens();
+                let afterStakingBal = await this.HEXIT.balanceOf(this.stakingMaster.address);
+                let afterTeamBal = await this.HEXIT.balanceOf(this.teamFinance.address);
+
+                let expectStakingAmount = BigInt(hexitForAirdrop) * BigInt(33) / BigInt(100);
+                let expectTeamAmount = BigInt(hexitForAirdrop) * BigInt(50) / BigInt(100);
+
+                expect (
+                    smallNum(BigInt(afterTeamBal) - BigInt(beforeTeamBal), 18)
+                ).to.be.equal(smallNum(expectTeamAmount, 18));
+
+                expect (
+                    smallNum(BigInt(afterStakingBal) - BigInt(beforeStakingBal), 18)
+                ).to.be.equal(smallNum(expectStakingAmount, 18))
             })
         })
 

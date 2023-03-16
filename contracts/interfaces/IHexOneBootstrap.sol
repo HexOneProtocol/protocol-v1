@@ -31,6 +31,8 @@ interface IHexOneBootstrap {
         address hexToken;
         address pairToken;
         address hexitToken;
+        address stakingContract;
+        address teamWallet;
         uint256 sacrificeStartTime;
         uint256 airdropStartTime;
         uint16 sacrificeDuration;
@@ -103,12 +105,16 @@ interface IHexOneBootstrap {
     /// @dev If users have requests that didn't claim yet, they can request claim.
     function claimAirdrop() external;
 
+    /// @notice Generate additional HEXIT tokens and send it to staking contract and team wallet.
+    /// @dev it can be called by only owner and also only after airdrop ends.
+    function generateAdditionalTokens() external;
+
     /// @notice Withdraw token to owner address.
     /// @dev This can be called by only owner and also when only after sacrifice finished.
     function withdrawToken(address _token) external;
 
     /// @notice Ditribute reward token(HEXIT) to sacrifice participants.
-    /// @dev This can be called by only owner and also when only after sacrifice finished.
+    /// @dev This can be called by only after sacrifice finished.
     function distributeRewardsForSacrifice() external;
 
     event AllowedTokensSet(address[] tokens, bool enable);

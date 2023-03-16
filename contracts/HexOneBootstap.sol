@@ -45,6 +45,12 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     /// @notice Percent that will be supplied daily.
     uint16 public supplyCropRateForSacrifice;    // 4.7%
 
+    /// @notice HEXIT token rate will be generated additionally for Staking.
+    uint16 public additionalRateForStaking;
+
+    /// @notice HEXIT token rate will be generated addtionally for Team.
+    uint16 public additionalRateForTeam;
+
     /// @notice Allowed token info.
     mapping(address => Token) public allowedTokens;
 
@@ -74,8 +80,10 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     address public hexToken;
     address public pairToken;
     address public escrowCA;
-    uint256 public sacrificeInitialSupply;
+    address public stakingContract;
+    address public teamWallet;
 
+    uint256 public sacrificeInitialSupply;
     uint256 public sacrificeStartTime;
     uint256 public sacrificeEndTime;
     uint256 public airdropStartTime;
@@ -121,6 +129,8 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         distRateForDailyAirdrop = 500;  // 50%
         supplyCropRateForSacrifice = 47;    // 4.7%
         sacrificeInitialSupply = 5_555_555 * 1e18;
+        additionalRateForStaking = 330; // 33%
+        additionalRateForTeam = 500;    // 50%
 
         require (_param.hexOnePriceFeed != address(0), "zero hexOnePriceFeed address");
         hexOnePriceFeed = _param.hexOnePriceFeed;
@@ -165,6 +175,11 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         );
         airdropDistRateForHexHolder = _param.airdropDistRateforHexHolder;
         airdropDistRateForHEXITHolder = _param.airdropDistRateforHEXITHolder;
+
+        require (_param.stakingContract != address(0), "zero staking contract address");
+        require (_param.teamWallet != address(0), "zero team wallet address");
+        stakingContract = _param.stakingContract;
+        teamWallet = _param.teamWallet;
 
         __Ownable_init();
     }
@@ -296,6 +311,16 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     }
 
     /// @inheritdoc IHexOneBootstrap
+    function generateAdditionalTokens() external onlyOwner {
+        require (block.timestamp > airdropEndTime, "before airdrop ends");
+        uint256 amountForStaking = airdropHEXITAmount * additionalRateForStaking / FIXED_POINT;
+        uint256 amountForTeam = airdropHEXITAmount * additionalRateForTeam / FIXED_POINT;
+        
+        IHEXIT(hexitToken).mintToken(amountForStaking, stakingContract);
+        IHEXIT(hexitToken).mintToken(amountForTeam, teamWallet);
+    }
+
+    /// @inheritdoc IHexOneBootstrap
     function withdrawToken(address _token) external onlyOwner override {
         require (block.timestamp > sacrificeEndTime, "sacrifice duration");
 
@@ -315,7 +340,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     }
 
     /// @inheritdoc IHexOneBootstrap
-    function distributeRewardsForSacrifice() external onlyOwner override {
+    function distributeRewardsForSacrifice() external override {
         require (block.timestamp > sacrificeEndTime, "sacrifice duration");
 
         address[] memory participants = sacrificeParticipants.values();
