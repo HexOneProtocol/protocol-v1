@@ -43,16 +43,14 @@ async function deployContracts() {
             100     // 10%
         ]
     );
-    let hexOneProtocol = await deployProxy(
+    let hexOneProtocol = await deploy(
         "HexOneProtocol",
         "HexOneProtocol",
-        [
-            hexOneToken.address,
-            [hexOneVault.address],
-            stakingMaster.address,
-            1,  // min staking day: 1 day
-            10  // max staking days: 10 days
-        ]
+        hexOneToken.address,
+        [hexOneVault.address],
+        stakingMaster.address,
+        1,  // min staking day: 1 day
+        10  // max staking days: 10 days
     );
 
     let HEXIT = await deploy(
