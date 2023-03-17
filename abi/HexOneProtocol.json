@@ -1,6 +1,32 @@
   "Protocol_abi": [
     {
-      "inputs": [],
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_hexOneToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address[]",
+          "name": "_vaults",
+          "type": "address[]"
+        },
+        {
+          "internalType": "address",
+          "name": "_stakingMaster",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_minDuration",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_maxDuration",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "constructor"
     },
@@ -21,19 +47,6 @@
         }
       ],
       "name": "HexOneMint",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint8",
-          "name": "version",
-          "type": "uint8"
-        }
-      ],
-      "name": "Initialized",
       "type": "event"
     },
     {
@@ -116,34 +129,6 @@
         },
         {
           "internalType": "uint256",
-          "name": "_amount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_depositId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint16",
-          "name": "_duration",
-          "type": "uint16"
-        }
-      ],
-      "name": "addCollateralForLiquidate",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_token",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
           "name": "_depositId",
           "type": "uint256"
         },
@@ -192,11 +177,6 @@
           "internalType": "uint16",
           "name": "_duration",
           "type": "uint16"
-        },
-        {
-          "internalType": "bool",
-          "name": "_isCommit",
-          "type": "bool"
         }
       ],
       "name": "depositCollateral",
@@ -249,7 +229,7 @@
     },
     {
       "inputs": [],
-      "name": "hexOneToken",
+      "name": "hexOneEscrow",
       "outputs": [
         {
           "internalType": "address",
@@ -261,36 +241,16 @@
       "type": "function"
     },
     {
-      "inputs": [
+      "inputs": [],
+      "name": "hexOneToken",
+      "outputs": [
         {
           "internalType": "address",
-          "name": "_hexOneToken",
+          "name": "",
           "type": "address"
-        },
-        {
-          "internalType": "address[]",
-          "name": "_vaults",
-          "type": "address[]"
-        },
-        {
-          "internalType": "address",
-          "name": "_stakingMaster",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_minDuration",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_maxDuration",
-          "type": "uint256"
         }
       ],
-      "name": "initialize",
-      "outputs": [],
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -364,6 +324,19 @@
         }
       ],
       "name": "setDepositFeeEnable",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_escrowCA",
+          "type": "address"
+        }
+      ],
+      "name": "setEscrowContract",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

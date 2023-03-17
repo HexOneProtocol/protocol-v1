@@ -129,7 +129,7 @@
     },
     {
       "inputs": [],
-      "name": "LIMIT_CLAIM_DURATION",
+      "name": "GRACE_DURATION",
       "outputs": [
         {
           "internalType": "uint16",
@@ -138,53 +138,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "LIMIT_PRICE_PERCENT",
-      "outputs": [
-        {
-          "internalType": "uint16",
-          "name": "",
-          "type": "uint16"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_depositor",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_amount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_vaultDepositId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint16",
-          "name": "_duration",
-          "type": "uint16"
-        }
-      ],
-      "name": "addCollateralForLiquidate",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "burnAmount",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -234,15 +187,15 @@
           "internalType": "uint256",
           "name": "_vaultDepositId",
           "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "_restake",
+          "type": "bool"
         }
       ],
       "name": "claimCollateral",
       "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
         {
           "internalType": "uint256",
           "name": "",
@@ -273,23 +226,13 @@
           "internalType": "uint16",
           "name": "_duration",
           "type": "uint16"
-        },
-        {
-          "internalType": "uint16",
-          "name": "_restakeDuration",
-          "type": "uint16"
-        },
-        {
-          "internalType": "bool",
-          "name": "_isCommit",
-          "type": "bool"
         }
       ],
       "name": "depositCollateral",
       "outputs": [
         {
           "internalType": "uint256",
-          "name": "mintAmount",
+          "name": "",
           "type": "uint256"
         }
       ],
@@ -417,16 +360,6 @@
             },
             {
               "internalType": "uint256",
-              "name": "liquidateAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "maxLiquidateHexAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
               "name": "initUSDValue",
               "type": "uint256"
             },
@@ -507,11 +440,6 @@
             },
             {
               "internalType": "uint256",
-              "name": "liquidateAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
               "name": "borrowableAmount",
               "type": "uint256"
             },
@@ -539,11 +467,6 @@
               "internalType": "uint256",
               "name": "curHexDay",
               "type": "uint256"
-            },
-            {
-              "internalType": "bool",
-              "name": "commitType",
-              "type": "bool"
             }
           ],
           "internalType": "struct IHexOneVault.DepositShowInfo[]",
@@ -653,19 +576,6 @@
         }
       ],
       "name": "setLimitClaimDuration",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint16",
-          "name": "_percent",
-          "type": "uint16"
-        }
-      ],
-      "name": "setLimitPricePercent",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
