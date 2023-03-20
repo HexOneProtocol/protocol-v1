@@ -60,46 +60,58 @@ async function deployContracts() {
         "HEXIT"
     );
 
-    let sacrificeStartTime = await getCurrentTimestamp();
-    sacrificeStartTime = BigInt(sacrificeStartTime) + BigInt(hour);
-    let sacrificeDuration = 100;    // 100 days.
+    // let sacrificeStartTime = await getCurrentTimestamp();
+    // sacrificeStartTime = BigInt(sacrificeStartTime) + BigInt(hour);
+    // let sacrificeDuration = 100;    // 100 days.
     
-    let airdropStarTime = BigInt(sacrificeStartTime) + BigInt(day) * BigInt(sacrificeDuration) + BigInt(day);
-    let airdropDuration = 100;      // 100 days.
+    // let airdropStarTime = BigInt(sacrificeStartTime) + BigInt(day) * BigInt(sacrificeDuration) + BigInt(day);
+    // let airdropDuration = 100;      // 100 days.
 
-    let bootstrapParam = {
-        hexOnePriceFeed: hexOnePriceFeed.address,
-        dexRouter: uniswapRouter.address,
-        hexToken: hexToken.address,
-        pairToken: usdcAddress,
-        hexitToken: HEXIT.address,
-        sacrificeStartTime: sacrificeStartTime,
-        airdropStartTime: airdropStarTime,
-        sacrificeDuration: sacrificeDuration,
-        airdropDuration: airdropDuration,
-        rateForSacrifice: 800,              // 80%
-        rateforAirdrop: 200,                // 20%
-        sacrificeDistRate: 750,             // 75%
-        sacrificeLiquidityRate: 250,        // 25%
-        airdropDistRateforHexHolder: 700,   // 70%
-        airdropDistRateforHEXITHolder: 300  // 30%
-    };
+    // let bootstrapParam = {
+    //     hexOnePriceFeed: hexOnePriceFeed.address,
+    //     dexRouter: uniswapRouter.address,
+    //     hexToken: hexToken.address,
+    //     pairToken: usdcAddress,
+    //     hexitToken: HEXIT.address,
+    //     sacrificeStartTime: sacrificeStartTime,
+    //     airdropStartTime: airdropStarTime,
+    //     sacrificeDuration: sacrificeDuration,
+    //     airdropDuration: airdropDuration,
+    //     rateForSacrifice: 800,              // 80%
+    //     rateforAirdrop: 200,                // 20%
+    //     sacrificeDistRate: 750,             // 75%
+    //     sacrificeLiquidityRate: 250,        // 25%
+    //     airdropDistRateforHexHolder: 700,   // 70%
+    //     airdropDistRateforHEXITHolder: 300  // 30%
+    // };
 
-    let hexOneBootstrap = await deployProxy(
+    // let hexOneBootstrap = await deployProxy(
+    //     "HexOneBootstrap",
+    //     "HexOneBootstrap",
+    //     [bootstrapParam]
+    // );
+
+    // let hexOneEscrow = await deployProxy(
+    //     "HexOneEscrow",
+    //     "HexOneEscrow",
+    //     [
+    //         hexOneBootstrap.address,
+    //         hexToken.address,
+    //         hexOneToken.address,
+    //         hexOneProtocol.address
+    //     ]
+    // );
+
+    let hexOneBootstrap = await getContract(
         "HexOneBootstrap",
         "HexOneBootstrap",
-        [bootstrapParam]
+        "goerli"
     );
 
-    let hexOneEscrow = await deployProxy(
+    let hexOneEscrow = await getContract(
         "HexOneEscrow",
         "HexOneEscrow",
-        [
-            hexOneBootstrap.address,
-            hexToken.address,
-            hexOneToken.address,
-            hexOneProtocol.address
-        ]
+        "goerli"
     );
 
     return [
@@ -202,9 +214,9 @@ async function initialize(
     tx = await stakingMaster.setHexOneProtocol(hexOneProtocol.address);
     await tx.wait();
 
-    console.log("hexOneBootstrap.setEscrowContract");
-    tx = await hexOneBootstrap.setEscrowContract(hexOneEscrow.address);
-    await tx.wait();
+    // console.log("hexOneBootstrap.setEscrowContract");
+    // tx = await hexOneBootstrap.setEscrowContract(hexOneEscrow.address);
+    // await tx.wait();
 
     console.log("HEXIT.setBootstrap");
     tx = await HEXIT.setBootstrap(hexOneBootstrap.address);

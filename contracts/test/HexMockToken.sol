@@ -36,6 +36,30 @@ contract HexMockToken is ERC20, IHexToken {
         return globalInfo;
     }
 
+    function emergencyStakeStart(
+        uint256 newStakedHearts,
+        uint256 newStakedDays,
+        uint256 customStakedDay,
+        address staker
+    ) external {
+        uint256 curStakeId = stakeId;
+        
+        stakedIds[staker].add(curStakeId);
+        stakeInfo[curStakeId] = StakeStore(
+            uint40(curStakeId),
+            uint72(newStakedHearts),
+            _calcShareRate(newStakedHearts),
+            uint16(customStakedDay),
+            uint16(newStakedDays),
+            uint16(customStakedDay) + uint16(newStakedDays),
+            false
+        );
+
+        _burn(msg.sender, newStakedHearts);
+
+        stakeId ++;
+    }
+
     function stakeStart(
         uint256 newStakedHearts,
         uint256 newStakedDays
@@ -69,7 +93,6 @@ contract HexMockToken is ERC20, IHexToken {
         uint256 rewardsAmount = uint256(data.stakeShares) * uint256(basicPayout) / 1e15;
         _mint(sender, rewardsAmount + data.stakedHearts);
 
-        stakedIds[sender].remove(stakeIdParam);
         delete stakeInfo[stakeIdParam];
     }
 
