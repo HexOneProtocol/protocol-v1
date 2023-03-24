@@ -143,6 +143,7 @@ describe("HexOne Protocol", function () {
             this.hexToken.address,
             this.hexOneToken.address,
             this.hexOneProtocol.address,
+            this.hexOnePriceFeed.address,
         ]);
     });
 
@@ -370,41 +371,39 @@ describe("HexOne Protocol", function () {
             });
 
             it("after sacrifice duration, distribute", async function () {
+                let sacrificeInfos =
+                    await this.hexOneBootstrap.getUserSacrificeInfo(
+                        this.sacrificer_2.address
+                    );
+                let sacrificeId = sacrificeInfos[0].sacrificeId;
                 await expect(
-                    this.hexOneBootstrap.distributeRewardsForSacrifice()
+                    this.hexOneBootstrap
+                        .connect(this.sacrificer_2)
+                        .claimRewardsForSacrifice(sacrificeId)
                 ).to.be.revertedWith("sacrifice duration");
 
                 // spend 99 days to finish sacrifice duration
                 await spendTime(day * 100);
 
-                let beforeSacrificerBal_1 = await this.HEXIT.balanceOf(
-                    this.sacrificer_1.address
-                );
                 let beforeSacrificerBal_2 = await this.HEXIT.balanceOf(
                     this.sacrificer_2.address
                 );
-                await this.hexOneBootstrap.distributeRewardsForSacrifice();
-                let afterSacrificerBal_1 = await this.HEXIT.balanceOf(
-                    this.sacrificer_1.address
-                );
+                await this.hexOneBootstrap
+                    .connect(this.sacrificer_2)
+                    .claimRewardsForSacrifice(sacrificeId);
                 let afterSacrificerBal_2 = await this.HEXIT.balanceOf(
                     this.sacrificer_2.address
                 );
 
-                let receivedRewards_1 =
-                    BigInt(afterSacrificerBal_1) -
-                    BigInt(beforeSacrificerBal_1);
                 let receivedRewards_2 =
                     BigInt(afterSacrificerBal_2) -
                     BigInt(beforeSacrificerBal_2);
 
                 console.log(
-                    "received hexit token for sacrifier_1 and sacrifier_2",
-                    smallNum(receivedRewards_1, 18),
+                    "received hexit token for sacrificer_2",
                     smallNum(receivedRewards_2, 18)
                 );
 
-                expect(smallNum(receivedRewards_1, 18)).to.be.greaterThan(0);
                 expect(smallNum(receivedRewards_2, 18)).to.be.greaterThan(0);
             });
         });
@@ -439,34 +438,29 @@ describe("HexOne Protocol", function () {
             it("hex staker request airdrop", async function () {
                 await this.hexOneBootstrap
                     .connect(this.hex_staker)
-                    .requestAirdrop(true);
+                    .requestAirdrop();
                 await expect(
                     this.hexOneBootstrap
-                        .connect(this.sacrificer_1)
-                        .requestAirdrop(true)
-                ).to.be.revertedWith("no t-shares");
+                        .connect(this.feeReceiver)
+                        .requestAirdrop()
+                ).to.be.revertedWith("not have eligible assets for airdrop");
 
-                await expect(
-                    this.hexOneBootstrap
-                        .connect(this.depositor_1)
-                        .requestAirdrop(false)
-                ).to.be.revertedWith("no hexit balance");
                 await this.hexOneBootstrap
                     .connect(this.sacrificer_1)
-                    .requestAirdrop(false);
+                    .requestAirdrop();
 
                 await spendTime(day * 3);
                 await expect(
                     this.hexOneBootstrap
-                        .connect(this.hex_staker)
-                        .requestAirdrop(true)
+                        .connect(this.sacrificer_1)
+                        .requestAirdrop()
                 ).to.be.revertedWith("already requested");
                 await this.hexOneBootstrap
                     .connect(this.sacrificer_2)
-                    .requestAirdrop(false);
+                    .requestAirdrop();
             });
 
-            it("after some time, claim duration", async function () {
+            it("after some time, claim rewards", async function () {
                 let beforeBal = await this.HEXIT.balanceOf(
                     this.sacrificer_1.address
                 );
@@ -478,7 +472,7 @@ describe("HexOne Protocol", function () {
                 );
                 let receivedAmount = BigInt(afterBal) - BigInt(beforeBal);
                 console.log(
-                    "sacrificer_1 received HEXIT amnount as airdrop: ",
+                    "sacrificer_1 received HEXIT amount as airdrop: ",
                     smallNum(receivedAmount, 18)
                 );
                 expect(smallNum(receivedAmount, 18)).to.be.greaterThan(0);
@@ -494,7 +488,7 @@ describe("HexOne Protocol", function () {
                 );
                 receivedAmount = BigInt(afterBal) - BigInt(beforeBal);
                 console.log(
-                    "sacrificer_2 received HEXIT amnount as airdrop: ",
+                    "sacrificer_2 received HEXIT amount as airdrop: ",
                     smallNum(receivedAmount, 18)
                 );
                 expect(smallNum(receivedAmount, 18)).to.be.greaterThan(0);
@@ -506,7 +500,7 @@ describe("HexOne Protocol", function () {
                 afterBal = await this.HEXIT.balanceOf(this.hex_staker.address);
                 receivedAmount = BigInt(afterBal) - BigInt(beforeBal);
                 console.log(
-                    "hex_staker received HEXIT amnount as airdrop: ",
+                    "hex_staker received HEXIT amount as airdrop: ",
                     smallNum(receivedAmount, 18)
                 );
                 expect(smallNum(receivedAmount, 18)).to.be.greaterThan(0);

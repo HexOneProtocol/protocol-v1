@@ -14,15 +14,39 @@ interface IHexOneBootstrap {
     }
 
     struct RequestAirdrop {
-        uint256 requestDay;
-        uint256 balance;
-        bool isShareHolder;
+        uint256 airdropId;
+        uint256 requestedDay;
+        uint256 sacrificeUSD;
+        uint256 sacrificeMultiplier;
+        uint256 hexShares;
+        uint256 hexShareMultiplier;
+        uint256 totalUSD;
+        uint256 claimedAmount;
         bool claimed;
     }
 
-    struct RequestAmount {
-        uint256 amountByHexHolder;
-        uint256 amountByHEXITHolder;
+    struct AirdropClaimHistory {
+        uint256 stakingId;
+        uint256 requestedDay;
+        uint256 sacrificeUSD;
+        uint256 sacrificeMultiplier;
+        uint256 hexShares;
+        uint256 hexShareMultiplier;
+        uint256 totalUSD;
+        uint256 dailySupplyAmount;
+        uint256 claimedAmount;
+        uint16 shareOfPool;
+    }
+
+    struct SacrificeInfo {
+        uint256 sacrificeId;
+        uint256 day;
+        uint256 supplyAmount;
+        uint256 sacrificedAmount;
+        uint256 sacrificedWeight;
+        uint256 usdValue;
+        address sacrificeToken;
+        uint16 multiplier;
     }
 
     struct Param {
@@ -72,6 +96,10 @@ interface IHexOneBootstrap {
     /// @notice Check if user is sacrifice participant.
     function isSacrificeParticipant(address _user) external view returns (bool);
 
+    function getUserSacrificeInfo(
+        address _user
+    ) external view returns (SacrificeInfo[] memory);
+
     /// @notice Get left airdrop requestors.
     function getAirdropRequestors() external view returns (address[] memory);
 
@@ -104,7 +132,7 @@ interface IHexOneBootstrap {
     /// @notice Request airdrop.
     /// @dev It can be called in airdrop duration and
     ///      each person can call this function only one time.
-    function requestAirdrop(bool _isShareHolder) external;
+    function requestAirdrop() external;
 
     /// @notice Claim HEXIT token as airdrop.
     /// @dev If users have requests that didn't claim yet, they can request claim.
@@ -118,9 +146,21 @@ interface IHexOneBootstrap {
     /// @dev This can be called by only owner and also when only after sacrifice finished.
     function withdrawToken(address _token) external;
 
-    /// @notice Ditribute reward token(HEXIT) to sacrifice participants.
-    /// @dev This can be called by only after sacrifice finished.
-    function distributeRewardsForSacrifice() external;
+    /// @notice Claim HEXIT as rewards for sacrifice.
+    function claimRewardsForSacrifice(uint256 _sacrificeId) external;
+
+    /// @notice Get HEXIT amount for sacrifice by day index.
+    function getAmountForSacrifice(
+        uint256 _dayIndex
+    ) external view returns (uint256);
+
+    /// @notice Get current sacrifice day index.
+    function getCurrentSacrificeDay() external view returns (uint256);
+
+    /// @notice Get current airdrop day index.
+    function getCurrentAirdropDay() external view returns (uint256);
+
+    // function getAirdropClaimHistory() external view returns ()
 
     event AllowedTokensSet(address[] tokens, bool enable);
 

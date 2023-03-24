@@ -25,8 +25,8 @@ const DEPLOYMENT_PARAM = {
         rateForAirdrop: 200,
         sacrificeDistRate: 750,
         sacrificeLiquidityRate: 250,
-        airdropDistRateForHexHolder: 700,
-        airdropDistRateForHEXITHolder: 300,
+        airdropDistRateForHexHolder: 100,
+        airdropDistRateForHEXITHolder: 900,
     },
 };
 
