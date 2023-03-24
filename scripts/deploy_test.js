@@ -34,6 +34,12 @@ async function deployBootstrap() {
 
     let HEXIT = await getContract("HEXIT", "HEXIT", "goerli");
 
+    let stakingMaster = await getContract(
+        "HexOneStakingMaster",
+        "HexOneStakingMaster",
+        "goerli"
+    );
+
     let sacrificeStartTime =
         BigInt(await getCurrentTimestamp()) + BigInt(param.sacrificeStartTime);
 
@@ -48,6 +54,8 @@ async function deployBootstrap() {
         hexToken: param.hexToken,
         pairToken: param.usdcAddress,
         hexitToken: HEXIT.address,
+        stakingContract: stakingMaster.address,
+        teamWallet: param.teamWallet,
         sacrificeStartTime: sacrificeStartTime,
         airdropStartTime: airdropStartTime,
         sacrificeDuration: param.sacrificeDuration,
@@ -71,6 +79,7 @@ async function deployBootstrap() {
         param.hexToken,
         hexOneToken.address,
         hexOneProtocol.address,
+        hexOnePriceFeed.address,
     ]);
 
     return [hexOneBootstrap, hexOneEscrow];
@@ -85,6 +94,7 @@ async function deployProtocol() {
         "HexOne",
         "HEXONE"
     );
+
     let hexOnePriceFeed = await deployProxy(
         "HexOnePriceFeedTest",
         "HexOnePriceFeedTest",
@@ -98,7 +108,7 @@ async function deployProtocol() {
 
     let hexOneVault = await deployProxy("HexOneVault", "HexOneVault", [
         param.hexToken,
-        param.hexOnePriceFeed,
+        hexOnePriceFeed.address,
     ]);
 
     let stakingMaster = await deployProxy(
@@ -118,18 +128,6 @@ async function deployProtocol() {
     );
 
     let HEXIT = await deploy("HEXIT", "HEXIT", "Hex Incentive Token", "HEXIT");
-
-    return [
-        hexToken,
-        uniswapRouter,
-        USDC,
-        hexOneToken,
-        hexOnePriceFeed,
-        hexOneVault,
-        stakingMaster,
-        hexOneProtocol,
-        HEXIT,
-    ];
 }
 
 async function getContracts() {
@@ -266,6 +264,18 @@ async function addLiquidity() {
 async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
+
+    console.log("deploy protocol");
+    await deployProtocol();
+
+    console.log("deploy Bootstrap");
+    await deployBootstrap();
+
+    console.log("initialize contracts");
+    await initialize();
+
+    console.log("add liquidity");
+    await addLiquidity();
 
     console.log("Deployed successfully");
 }

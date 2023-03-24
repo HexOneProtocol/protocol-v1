@@ -1,4 +1,5 @@
 const { network } = require("hardhat");
+const { hour } = require("./utils");
 
 const DEPLOYMENT_PARAM = {
     mainnet: {
@@ -9,18 +10,19 @@ const DEPLOYMENT_PARAM = {
         feeReceiver: "",
     },
     goerli: {
-        dexRouter: "",
+        dexRouter: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
         hexToken: "0xdF1906df64C5f3b13eFAA25729F5EA4b469db805",
         usdcAddress: "0x07865c6E87B9F70255377e024ace6630C1Eaa37F",
         usdcPriceFeed: "0xAb5c49580294Aff77670F839ea425f5b78ab3Ae7",
         feeReceiver: "0x4364E1d16526c954b029b6cf9335CB1b0eaAfB69",
-        feeRate: 100, // 100%
+        teamWallet: "0x4364E1d16526c954b029b6cf9335CB1b0eaAfB69",
+        feeRate: 100, // 10%
         minStakingDuration: 1, // 1 day
         maxStakingDuration: 10, // 10 days
-        sacrificeStartTime: 0, // means after 0 seconds
-        sacrificeDuration: 30, // 30 days
-        airdropStartTime: 0, // means after 0 seconds
-        airdropDuration: 30, // 30 days
+        sacrificeStartTime: hour, // means after 0 seconds
+        sacrificeDuration: 2, // 2 days
+        airdropStartTime: hour, // means after 0 seconds
+        airdropDuration: 2, // 2 days
         rateForSacrifice: 800,
         rateForAirdrop: 200,
         sacrificeDistRate: 750,
