@@ -39,21 +39,26 @@ interface IHexOneBootstrap {
         uint16 airdropDuration;
         // rate information
         uint16 rateForSacrifice;
-        uint16 rateforAirdrop;
+        uint16 rateForAirdrop;
         uint16 sacrificeDistRate;
         uint16 sacrificeLiquidityRate;
-        uint16 airdropDistRateforHexHolder;
-        uint16 airdropDistRateforHEXITHolder;
+        uint16 airdropDistRateForHexHolder;
+        uint16 airdropDistRateForHEXITHolder;
     }
 
     /// @notice Check if now is after sacrificeEndTime.
     function afterSacrificeDuration() external view returns (bool);
 
     /// @notice minted HEXIT amount for sacrifice.
-    function sacrificeHEXITAmount() external view returns (uint256 sacrificeHEXITAmount);
+    function sacrificeHEXITAmount()
+        external
+        view
+        returns (uint256 sacrificeHEXITAmount);
 
     /// @notice received HEXIT token amount of _user for sacrifice.
-    function userRewardsForSacrifice(address _user) external view returns (uint256);
+    function userRewardsForSacrifice(
+        address _user
+    ) external view returns (uint256);
 
     /// @notice Set escrow contract address.
     /// @dev Only owner can call this function.
@@ -71,16 +76,16 @@ interface IHexOneBootstrap {
     function getAirdropRequestors() external view returns (address[] memory);
 
     /// @notice Get sacrifice participants.
-    function getSacrificeParticipants() external view returns (address[] memory);
+    function getSacrificeParticipants()
+        external
+        view
+        returns (address[] memory);
 
     /// @notice Add/Remove allowed tokens for sacrifice.
     /// @dev Only owner can call this function.
     /// @param _tokens The address of tokens.
     /// @param _enable Add/Remove = true/false.
-    function setAllowedTokens(
-        address[] memory _tokens, 
-        bool _enable
-    ) external;
+    function setAllowedTokens(address[] memory _tokens, bool _enable) external;
 
     /// @notice Set tokens weight.
     /// @dev Only owner can call this function.
@@ -97,7 +102,7 @@ interface IHexOneBootstrap {
     function sacrificeToken(address _token, uint256 _amount) external;
 
     /// @notice Request airdrop.
-    /// @dev It can be called in airdrop duration and 
+    /// @dev It can be called in airdrop duration and
     ///      each person can call this function only one time.
     function requestAirdrop(bool _isShareHolder) external;
 

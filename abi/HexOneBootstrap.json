@@ -414,7 +414,7 @@
             },
             {
               "internalType": "uint16",
-              "name": "rateforAirdrop",
+              "name": "rateForAirdrop",
               "type": "uint16"
             },
             {
@@ -429,12 +429,12 @@
             },
             {
               "internalType": "uint16",
-              "name": "airdropDistRateforHexHolder",
+              "name": "airdropDistRateForHexHolder",
               "type": "uint16"
             },
             {
               "internalType": "uint16",
-              "name": "airdropDistRateforHEXITHolder",
+              "name": "airdropDistRateForHEXITHolder",
               "type": "uint16"
             }
           ],
