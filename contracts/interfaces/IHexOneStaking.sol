@@ -29,14 +29,12 @@ interface IHexOneStaking {
     /// @notice Stake ERC20 tokens.
     function stakeERC20Start(
         address _staker,
-        address _rewardToken,
         uint256 _amount
     ) external;
 
     /// @notice Stake ERC721 tokens.
     function stakeERC721Start(
         address _staker,
-        address _rewardToken,
         uint256[] memory _tokenIds
     ) external;
 
@@ -44,16 +42,14 @@ interface IHexOneStaking {
     /// @return staked amount and claimable rewards info.
     function stakeERC20End(
         address _staker,
-        address _rewardToken, 
         uint256 _stakeId
-    ) external returns (uint256, uint256);
+    ) external returns (uint256, uint256[] memory);
 
     /// @notice Unstake ERC721 tokens.
     function stakeERC721End(
         address _staker,
-        address _rewardToken, 
         uint256 _stakeId
-    ) external returns (uint256, uint256[] memory);
+    ) external returns (uint256[] memory, uint256[] memory);
 
     /// @notice Get claimable rewards.
     function claimableRewards(
