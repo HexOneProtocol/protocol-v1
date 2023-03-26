@@ -26,7 +26,7 @@ interface IHexOneBootstrap {
     }
 
     struct AirdropClaimHistory {
-        uint256 stakingId;
+        uint256 airdropId;
         uint256 requestedDay;
         uint256 sacrificeUSD;
         uint256 sacrificeMultiplier;
@@ -102,6 +102,9 @@ interface IHexOneBootstrap {
 
     /// @notice Get left airdrop requestors.
     function getAirdropRequestors() external view returns (address[] memory);
+
+    /// @notice Get airdrop claim history
+    function getAirdropClaimHistory(address _user) external view returns (AirdropClaimHistory memory);
 
     /// @notice Get sacrifice participants.
     function getSacrificeParticipants()

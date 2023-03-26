@@ -416,6 +416,33 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     }
 
     /// @inheritdoc IHexOneBootstrap
+    function getAirdropClaimHistory(
+        address _user
+    ) external view override returns (AirdropClaimHistory memory) {
+        AirdropClaimHistory memory history;
+        RequestAirdrop memory info = requestAirdropInfo[_user];
+        if (!info.claimed) {
+            return history;
+        }
+
+        uint256 dayIndex = info.requestedDay;
+        history = AirdropClaimHistory({
+            airdropId: info.airdropId,
+            requestedDay: dayIndex,
+            sacrificeUSD: info.sacrificeUSD,
+            sacrificeMultiplier: info.sacrificeMultiplier,
+            hexShares: info.hexShares,
+            hexShareMultiplier: info.hexShareMultiplier,
+            totalUSD: info.totalUSD,
+            dailySupplyAmount: _calcAmountForAirdrop(dayIndex),
+            claimedAmount: info.claimedAmount,
+            shareOfPool: uint16((info.totalUSD * 1000) / requestedAmountInfo[dayIndex])
+        });
+
+        return history;
+    }
+
+    /// @inheritdoc IHexOneBootstrap
     function generateAdditionalTokens() external onlyOwner {
         require(block.timestamp > airdropEndTime, "before airdrop ends");
         uint256 amountForStaking = (airdropHEXITAmount *
