@@ -128,7 +128,7 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
                 .getUserInfos(address(this));
             IHexOneVault.DepositShowInfo memory singleInfo = showInfo[0];
             uint256 totalAmount = IHexOneBootstrap(hexOneBootstrap)
-                .sacrificeHEXITAmount();
+                .HEXITAmountForSacrifice();
             uint256 participantAmount = IHexOneBootstrap(hexOneBootstrap)
                 .userRewardsForSacrifice(_user);
             overview = EscrowOverview({
@@ -161,7 +161,7 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
         require(length > 0, "no sacrifice participants");
 
         uint256 totalAmount = IHexOneBootstrap(hexOneBootstrap)
-            .sacrificeHEXITAmount();
+            .HEXITAmountForSacrifice();
         for (uint256 i = 0; i < length; i++) {
             address participant = participants[i];
             uint256 participantAmount = IHexOneBootstrap(hexOneBootstrap)

@@ -1312,7 +1312,7 @@
             "src": "contracts\\HexOneBootstap.sol:83"
           },
           {
-            "label": "sacrificeHEXITAmount",
+            "label": "HEXITAmountForSacrifice",
             "offset": 0,
             "slot": "121",
             "type": "t_uint256",
@@ -3742,7 +3742,7 @@
             "src": "contracts\\HexOneBootstap.sol:99"
           },
           {
-            "label": "sacrificeHEXITAmount",
+            "label": "HEXITAmountForSacrifice",
             "offset": 0,
             "slot": "126",
             "type": "t_uint256",

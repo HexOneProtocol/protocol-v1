@@ -807,7 +807,7 @@
     },
     {
       "inputs": [],
-      "name": "sacrificeHEXITAmount",
+      "name": "HEXITAmountForSacrifice",
       "outputs": [
         {
           "internalType": "uint256",

@@ -12,6 +12,7 @@ import "./interfaces/IHexOnePriceFeed.sol";
 import "./interfaces/IUniswapV2Router.sol";
 import "./interfaces/IHEXIT.sol";
 import "./interfaces/IHexToken.sol";
+import "./interfaces/IToken.sol";
 
 /// @notice For sacrifice and airdrop
 contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
@@ -97,7 +98,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     uint256 public airdropStartTime;
     uint256 public airdropEndTime;
     uint256 public airdropHEXITAmount;
-    uint256 public override sacrificeHEXITAmount;
+    uint256 public override HEXITAmountForSacrifice;
     uint256 public sacrificeId;
     uint256 public airdropId;
 
@@ -222,7 +223,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         __Ownable_init();
     }
 
-    /// @inheritdoc IHexOneBootstrap
+    /// @inheritdoc IHexOneSacrifice
     function afterSacrificeDuration() external view override returns (bool) {
         return block.timestamp > sacrificeEndTime;
     }
@@ -239,19 +240,19 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         hexOnePriceFeed = _priceFeed;
     }
 
-    /// @inheritdoc IHexOneBootstrap
+    /// @inheritdoc IHexOneSacrifice
     function isSacrificeParticipant(
         address _user
     ) external view returns (bool) {
         return sacrificeParticipants.contains(_user);
     }
 
-    /// @inheritdoc IHexOneBootstrap
+    /// @inheritdoc IHexOneAirdrop
     function getAirdropRequestors() external view returns (address[] memory) {
         return airdropRequestors.values();
     }
 
-    /// @inheritdoc IHexOneBootstrap
+    /// @inheritdoc IHexOneSacrifice
     function getSacrificeParticipants()
         external
         view
@@ -295,7 +296,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     }
 
     //! Sacrifice Logic
-    /// @inheritdoc IHexOneBootstrap
+    /// @inheritdoc IHexOneSacrifice
     function getAmountForSacrifice(
         uint256 _dayIndex
     ) public view override returns (uint256) {
@@ -305,13 +306,13 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         return _calcSupplyAmountForSacrifice(_dayIndex);
     }
 
-    /// @inheritdoc IHexOneBootstrap
+    /// @inheritdoc IHexOneSacrifice
     function getCurrentSacrificeDay() public view override returns (uint256) {
         uint256 elapsedTime = block.timestamp - sacrificeStartTime;
         return elapsedTime / 1 days;
     }
 
-    /// @inheritdoc IHexOneBootstrap
+    /// @inheritdoc IHexOneSacrifice
     function sacrificeToken(
         address _token,
         uint256 _amount
@@ -325,7 +326,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         _updateSacrificeInfo(sender, _token, _amount);
     }
 
-    /// @inheritdoc IHexOneBootstrap
+    /// @inheritdoc IHexOneSacrifice
     function getUserSacrificeInfo(
         address _user
     ) external view override returns (SacrificeInfo[] memory) {
@@ -340,7 +341,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         return info;
     }
 
-    /// @inheritdoc IHexOneBootstrap
+    /// @inheritdoc IHexOneSacrifice
     function claimRewardsForSacrifice(uint256 _sacrificeId) external override {
         address sender = msg.sender;
         SacrificeInfo memory info = sacrificeInfos[_sacrificeId];
@@ -368,12 +369,40 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     }
 
     //! Airdrop logic
-    /// @inheritdoc IHexOneBootstrap
+    /// @inheritdoc IHexOneAirdrop
     function getCurrentAirdropDay() public view override returns (uint256) {
         return (block.timestamp - airdropStartTime) / 1 days;
     }
 
-    /// @inheritdoc IHexOneBootstrap
+    /// @inheritdoc IHexOneAirdrop
+    function getCurrentAirdropInfo(
+        address _user
+    ) external view override returns (AirdropPoolInfo memory) {
+        uint256 curDay = getCurrentAirdropDay();
+        uint256 curPoolAmount = requestedAmountInfo[curDay];
+        uint256 sacrificeAmount = userSacrificedUSD[_user];
+        uint256 shareAmount = _getTotalShareUSD(_user);
+        uint256 userWeight = (sacrificeAmount * airdropDistRateForHEXITHolder) /
+            FIXED_POINT +
+            (shareAmount * airdropDistRateForHexHolder) /
+            FIXED_POINT;
+        uint16 shareOfPool = uint16(
+            (userWeight * FIXED_POINT) / (curPoolAmount + userWeight)
+        );
+        return
+            AirdropPoolInfo({
+                sacrificedAmount: sacrificeAmount,
+                stakingShareAmount: shareAmount,
+                curAirdropDay: curDay,
+                curDayPoolAmount: curPoolAmount,
+                curDaySupplyHEXIT: _calcAmountForAirdrop(curDay),
+                sacrificeDistRate: airdropDistRateForHEXITHolder,
+                stakingDistRate: airdropDistRateForHexHolder,
+                shareOfPool: shareOfPool
+            });
+    }
+
+    /// @inheritdoc IHexOneAirdrop
     function requestAirdrop() external override whenAirdropDuration {
         address sender = msg.sender;
         RequestAirdrop storage userInfo = requestAirdropInfo[sender];
@@ -397,7 +426,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         airdropRequestors.add(sender);
     }
 
-    /// @inheritdoc IHexOneBootstrap
+    /// @inheritdoc IHexOneAirdrop
     function claimAirdrop() external override {
         address sender = msg.sender;
         RequestAirdrop storage userInfo = requestAirdropInfo[sender];
@@ -415,7 +444,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         airdropRequestors.remove(sender);
     }
 
-    /// @inheritdoc IHexOneBootstrap
+    /// @inheritdoc IHexOneAirdrop
     function getAirdropClaimHistory(
         address _user
     ) external view override returns (AirdropClaimHistory memory) {
@@ -436,7 +465,9 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             totalUSD: info.totalUSD,
             dailySupplyAmount: _calcAmountForAirdrop(dayIndex),
             claimedAmount: info.claimedAmount,
-            shareOfPool: uint16((info.totalUSD * 1000) / requestedAmountInfo[dayIndex])
+            shareOfPool: uint16(
+                (info.totalUSD * FIXED_POINT) / requestedAmountInfo[dayIndex]
+            )
         });
 
         return history;
@@ -514,6 +545,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             sacrificeWeight,
             usdValue,
             _token,
+            IToken(_token).symbol(),
             weight
         );
         userSacrificedIds[_participant].add(sacrificeId++);
@@ -557,7 +589,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         uint256 supplyAmount = sacrificeInitialSupply;
         for (uint256 i = 0; i < _dayIndex; i++) {
             supplyAmount =
-                (supplyAmount * supplyCropRateForSacrifice) /
+                (supplyAmount * (FIXED_POINT - supplyCropRateForSacrifice)) /
                 FIXED_POINT;
         }
 
@@ -663,7 +695,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
                 FIXED_POINT;
             uint256 airdropAmount = supplyAmount - sacrificeRewardsAmount;
             airdropHEXITAmount += airdropAmount;
-            sacrificeHEXITAmount += sacrificeRewardsAmount;
+            HEXITAmountForSacrifice += sacrificeRewardsAmount;
         }
     }
 
