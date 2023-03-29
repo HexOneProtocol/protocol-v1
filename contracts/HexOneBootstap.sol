@@ -486,9 +486,10 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     /// @inheritdoc IHexOneBootstrap
     function generateAdditionalTokens() external onlyOwner {
         require(block.timestamp > airdropEndTime, "before airdrop ends");
-        uint256 amountForStaking = (airdropHEXITAmount *
-            additionalRateForStaking) / FIXED_POINT;
-        uint256 amountForTeam = (airdropHEXITAmount * additionalRateForTeam) /
+        uint256 totalAmount = airdropHEXITAmount + HEXITAmountForSacrifice;
+        uint256 amountForStaking = (totalAmount * additionalRateForStaking) /
+            FIXED_POINT;
+        uint256 amountForTeam = (totalAmount * additionalRateForTeam) /
             FIXED_POINT;
 
         IHEXIT(hexitToken).mintToken(amountForStaking, address(this));

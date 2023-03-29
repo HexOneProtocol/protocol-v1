@@ -88,38 +88,43 @@ async function deployBootstrap() {
 async function deployProtocol() {
     let param = getDeploymentParam();
 
-    // let hexOneToken = await deploy(
-    //     "HexOneToken",
-    //     "HexOneToken",
-    //     "HexOne",
-    //     "HEXONE"
-    // );
-
-    let hexOneToken = await getContract("HexOneToken", "HexOneToken", "goerli");
-
-    // let hexOnePriceFeed = await deployProxy(
-    //     "HexOnePriceFeedTest",
-    //     "HexOnePriceFeedTest",
-    //     [
-    //         param.hexToken,
-    //         param.usdcAddress,
-    //         param.usdcPriceFeed,
-    //         param.dexRouter,
-    //     ]
-    // );
-    let hexOnePriceFeed = await getContract(
-        "HexOnePriceFeedTest",
-        "HexOnePriceFeedTest",
-        "goerli"
+    let hexOneToken = await deploy(
+        "HexOneToken",
+        "HexOneToken",
+        "HexOne",
+        "HEXONE"
     );
+
+    // let hexOneToken = await getContract("HexOneToken", "HexOneToken", "goerli");
+
+    let hexOnePriceFeed = await deployProxy(
+        "HexOnePriceFeedTest",
+        "HexOnePriceFeedTest",
+        [
+            param.hexToken,
+            param.usdcAddress,
+            param.usdcPriceFeed,
+            param.dexRouter,
+        ]
+    );
+    // let hexOnePriceFeed = await getContract(
+    //     "HexOnePriceFeedTest",
+    //     "HexOnePriceFeedTest",
+    //     "goerli"
+    // );
 
     let hexOneVault = await deployProxy("HexOneVault", "HexOneVault", [
         param.hexToken,
         hexOnePriceFeed.address,
     ]);
 
-    // let HEXIT = await deploy("HEXIT", "HEXIT", "Hex Incentive Token", "HEXIT");
-    let hexitToken = await getContract("HEXIT", "HEXIT", "goerli");
+    let hexitToken = await deploy(
+        "HEXIT",
+        "HEXIT",
+        "Hex Incentive Token",
+        "HEXIT"
+    );
+    // let hexitToken = await getContract("HEXIT", "HEXIT", "goerli");
 
     let hexOneStaking = await deploy(
         "HexOneStaking",
@@ -280,14 +285,16 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
 
-    console.log("deploy protocol");
-    await deployProtocol();
+    await deploy("HexMockToken", "HexMockToken");
 
-    console.log("deploy Bootstrap");
-    await deployBootstrap();
+    // console.log("deploy protocol");
+    // await deployProtocol();
 
-    console.log("initialize contracts");
-    await initialize();
+    // console.log("deploy Bootstrap");
+    // await deployBootstrap();
+
+    // console.log("initialize contracts");
+    // await initialize();
 
     // console.log("add liquidity");
     // await addLiquidity();
