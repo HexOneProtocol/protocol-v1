@@ -31,16 +31,6 @@ module.exports = {
             gasPrice: utils.parseUnits("100", "gwei").toNumber(),
             accounts: [process.env.DEPLOYER_WALLET],
         },
-        fuji: {
-            url: "https://api.avax-test.network/ext/bc/C/rpc",
-            chainId: 43113,
-            accounts: [
-                process.env.TESTNET_DEPLOYER_PK,
-                process.env.SAVVY_DAO_DEV_PK,
-                process.env.PERSONAL_PK,
-            ],
-            gasPrice: utils.parseUnits("100", "gwei").toNumber(),
-        },
     },
     solidity: {
         compilers: [
