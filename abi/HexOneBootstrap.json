@@ -135,6 +135,19 @@
     },
     {
       "inputs": [],
+      "name": "HEXITAmountForSacrifice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "additionalRateForStaking",
       "outputs": [
         {
@@ -346,6 +359,77 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_user",
+          "type": "address"
+        }
+      ],
+      "name": "getAirdropClaimHistory",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "airdropId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "requestedDay",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sacrificeUSD",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sacrificeMultiplier",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "hexShares",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "hexShareMultiplier",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalUSD",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "dailySupplyAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "claimedAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint16",
+              "name": "shareOfPool",
+              "type": "uint16"
+            }
+          ],
+          "internalType": "struct IHexOneAirdrop.AirdropClaimHistory",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "getAirdropRequestors",
       "outputs": [
@@ -353,6 +437,25 @@
           "internalType": "address[]",
           "name": "",
           "type": "address[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_dayIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "getAirdropSupplyAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -385,6 +488,67 @@
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_user",
+          "type": "address"
+        }
+      ],
+      "name": "getCurrentAirdropInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "sacrificedAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "stakingShareAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "curAirdropDay",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "curDayPoolAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "curDaySupplyHEXIT",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint16",
+              "name": "sacrificeDistRate",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint16",
+              "name": "stakingDistRate",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint16",
+              "name": "shareOfPool",
+              "type": "uint16"
+            }
+          ],
+          "internalType": "struct IHexOneAirdrop.AirdropPoolInfo",
+          "name": "",
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",
@@ -464,12 +628,17 @@
               "type": "address"
             },
             {
+              "internalType": "string",
+              "name": "sacrificeTokenSymbol",
+              "type": "string"
+            },
+            {
               "internalType": "uint16",
               "name": "multiplier",
               "type": "uint16"
             }
           ],
-          "internalType": "struct IHexOneBootstrap.SacrificeInfo[]",
+          "internalType": "struct IHexOneSacrifice.SacrificeInfo[]",
           "name": "",
           "type": "tuple[]"
         }
@@ -807,19 +976,6 @@
     },
     {
       "inputs": [],
-      "name": "HEXITAmountForSacrifice",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
       "name": "sacrificeId",
       "outputs": [
         {
@@ -875,6 +1031,11 @@
           "internalType": "address",
           "name": "sacrificeToken",
           "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "sacrificeTokenSymbol",
+          "type": "string"
         },
         {
           "internalType": "uint16",

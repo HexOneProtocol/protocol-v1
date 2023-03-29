@@ -177,6 +177,24 @@
     {
       "inputs": [
         {
+          "internalType": "address[]",
+          "name": "_baseTokens",
+          "type": "address[]"
+        },
+        {
+          "internalType": "address[]",
+          "name": "_priceFeeds",
+          "type": "address[]"
+        }
+      ],
+      "name": "setMultiPriceFeed",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
           "name": "_baseToken",
           "type": "address"

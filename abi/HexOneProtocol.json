@@ -3,6 +3,11 @@
       "inputs": [
         {
           "internalType": "address",
+          "name": "_hexToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
           "name": "_hexOneToken",
           "type": "address"
         },
@@ -157,7 +162,13 @@
         }
       ],
       "name": "claimCollateral",
-      "outputs": [],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -243,6 +254,19 @@
     {
       "inputs": [],
       "name": "hexOneToken",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "hexToken",
       "outputs": [
         {
           "internalType": "address",
