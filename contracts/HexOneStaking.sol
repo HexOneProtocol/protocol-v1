@@ -297,6 +297,9 @@ contract HexOneStaking is
                 uint256 claimableHexAmount,
                 uint256 claimableHexitAmount
             ) = _calcRewardsAmount(_user, token);
+
+            (uint16 hexAPR, uint16 hexitAPR) = _calcAPR(token);
+
             status[i] = UserStakingStatus({
                 token: token,
                 stakedAmount: info.stakedAmount,
@@ -305,10 +308,13 @@ contract HexOneStaking is
                 claimableHexAmount: claimableHexAmount,
                 claimableHexitAmount: claimableHexitAmount,
                 stakedTime: (block.timestamp - info.stakedAmount) / 1 days,
+                liquidity: 0,
                 shareOfPool: uint16(
                     (info.stakedAmount * FIXED_POINT) /
                         lockedTokenAmounts[token]
                 ),
+                hexAPR: hexAPR,
+                hexitAPR: hexitAPR,
                 hexMultiplier: tokenWeight.hexDistRate,
                 hexitMultiplier: tokenWeight.hexitDistRate
             });
@@ -376,6 +382,26 @@ contract HexOneStaking is
         uint256 afterBal = IERC20(_token).balanceOf(_to);
 
         return afterBal - beforeBal;
+    }
+
+    function _calcAPR(
+        address _token
+    ) internal view returns (uint16 hexAPR, uint16 hexitAPR) {
+        /// total rewards for token / total deposited token %
+        uint256 depositedAmount = lockedTokenAmounts[_token];
+        DistTokenWeight memory tokenWeight = distTokenWeights[_token];
+        uint256 hexShare = (depositedAmount * tokenWeight.hexDistRate) /
+            FIXED_POINT;
+        uint256 hexitShare = (depositedAmount * tokenWeight.hexitDistRate) /
+            FIXED_POINT;
+
+        uint256 distributedHex = rewardsPool.distributedHex;
+        uint256 distributedHexit = rewardsPool.distributedHexit;
+
+        return (
+            uint16((distributedHex * 10 ** 18) / hexShare),
+            uint16((distributedHexit * 10 ** 18) / hexitShare)
+        );
     }
 
     function _convertToShare(
