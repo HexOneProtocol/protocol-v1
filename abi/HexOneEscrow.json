@@ -51,6 +51,19 @@
     },
     {
       "inputs": [],
+      "name": "borrowedAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "collateralDeposited",
       "outputs": [
         {
@@ -76,8 +89,87 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_user",
+          "type": "address"
+        }
+      ],
+      "name": "getOverview",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "totalUSDValue",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "startTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "endTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "curDay",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "hexAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "effectiveAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "borrowedAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "initUSDValue",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint16",
+              "name": "shareOfPool",
+              "type": "uint16"
+            }
+          ],
+          "internalType": "struct IHexOneEscrow.EscrowOverview",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "hexOneBootstrap",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "hexOnePriceFeed",
       "outputs": [
         {
           "internalType": "address",
@@ -148,6 +240,11 @@
           "internalType": "address",
           "name": "_hexOneProtocol",
           "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_hexOnePriceFeed",
+          "type": "address"
         }
       ],
       "name": "initialize",
@@ -180,6 +277,19 @@
       "name": "renounceOwnership",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "stakedHexAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {

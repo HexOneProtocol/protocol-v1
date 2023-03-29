@@ -204,15 +204,21 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     function claimCollateral(
         address _token,
         uint256 _depositId
-    ) external override {
+    ) external override returns (uint256) {
         address sender = msg.sender;
         require(sender != address(0), "zero caller address");
         require(allowedTokens.contains(_token), "not allowed token");
 
         bool restake = (sender == hexOneEscrow);
-        (uint256 burnAmount, uint256 mintAmount) = IHexOneVault(
-            vaultInfos[_token]
-        ).claimCollateral(sender, _depositId, restake);
+        (
+            uint256 burnAmount,
+            uint256 mintAmount,
+            uint256 receivedAmount
+        ) = IHexOneVault(vaultInfos[_token]).claimCollateral(
+                sender,
+                _depositId,
+                restake
+            );
 
         if (burnAmount > 0) {
             IHexOneToken(hexOneToken).burnToken(burnAmount, sender);
@@ -221,6 +227,8 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         if (mintAmount > 0) {
             IHexOneToken(hexOneToken).mintToken(mintAmount, sender);
         }
+
+        return receivedAmount;
     }
 
     /// @notice Add/Remove vault and base token addresses.

@@ -71,7 +71,7 @@ interface IHexOneProtocol {
     function claimCollateral(
         address _token,
         uint256 _depositId
-    ) external;
+    ) external returns (uint256);
 
     /// @notice Check that token is allowed or not.
     function isAllowedToken(

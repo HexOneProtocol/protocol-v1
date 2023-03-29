@@ -117,7 +117,7 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
         address _claimer,
         uint256 _vaultDepositId,
         bool _restake
-    ) external override onlyHexOneProtocol returns (uint256, uint256) {
+    ) external override onlyHexOneProtocol returns (uint256, uint256, uint256) {
         require(
             availableDepositIds.contains(_vaultDepositId),
             "no deposit pool"
@@ -142,6 +142,7 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
         uint256 mintAmount = 0;
         uint256 burnAmount = 0;
 
+        /// retrieve or restake token
         if (_restake) {
             mintAmount = _depositCollateral(
                 _claimer,
@@ -152,7 +153,6 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
                 ? (mintAmount - depositInfo.mintAmount)
                 : 0;
         } else {
-            /// retrieve or restake token
             IERC20(hexToken).safeTransfer(_claimer, receivedAmount);
             burnAmount = depositInfo.mintAmount;
         }
@@ -166,7 +166,7 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
         userInfo.totalBorrowedAmount -= depositInfo.mintAmount;
         userDepositIds[_depositor].remove(_vaultDepositId);
 
-        return (burnAmount, mintAmount);
+        return (burnAmount, mintAmount, receivedAmount);
     }
 
     /// @inheritdoc IHexOneVault
@@ -480,7 +480,7 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
         DepositInfo memory _depositInfo
     ) internal view returns (bool) {
         uint256 curHexDay = IHexToken(hexToken).currentDay();
-        return (curHexDay <=
+        return (curHexDay <
             _depositInfo.depositedHexDay + _depositInfo.duration);
     }
 
