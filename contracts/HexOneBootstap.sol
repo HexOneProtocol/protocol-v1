@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import "./utils/TokenUtils.sol";
 import "./interfaces/IHexOneBootstrap.sol";
+import "./interfaces/IHexOneStaking.sol";
 import "./interfaces/IHexOnePriceFeed.sol";
 import "./interfaces/IUniswapV2Router.sol";
 import "./interfaces/IHEXIT.sol";
@@ -430,6 +431,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     function claimAirdrop() external override {
         address sender = msg.sender;
         RequestAirdrop storage userInfo = requestAirdropInfo[sender];
+
         uint256 dayIndex = userInfo.requestedDay;
         require(sender != address(0), "zero caller address");
         require(userInfo.airdropId > 0, "not requested");
@@ -481,8 +483,10 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         uint256 amountForTeam = (airdropHEXITAmount * additionalRateForTeam) /
             FIXED_POINT;
 
-        IHEXIT(hexitToken).mintToken(amountForStaking, stakingContract);
+        IHEXIT(hexitToken).mintToken(amountForStaking, address(this));
         IHEXIT(hexitToken).mintToken(amountForTeam, teamWallet);
+
+        IHexOneStaking(stakingContract).purchaseHexit(amountForStaking);
     }
 
     /// @inheritdoc IHexOneBootstrap

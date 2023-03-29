@@ -40,7 +40,7 @@
     "ethers": "^5.5.4",
     "hardhat": "^2.9.1",
     "hardhat-contract-sizer": "^2.5.1",
-    "hardhat-gas-reporter": "^1.0.8",
+    "hardhat-gas-reporter": "^1.0.9",
     "solidity-coverage": "^0.7.20"
   }
 }

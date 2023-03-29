@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "./interfaces/IHexOneProtocol.sol";
 import "./interfaces/IHexOneVault.sol";
-import "./interfaces/IHexOneStakingMaster.sol";
+import "./interfaces/IHexOneStaking.sol";
 import "./interfaces/IHexOneToken.sol";
 
 contract HexOneProtocol is Ownable, IHexOneProtocol {
@@ -24,6 +24,9 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
 
     /// @notice Maximum stake duration. (days)
     uint256 public MAX_DURATION;
+
+    /// @notice The address of hex token.
+    address public hexToken;
 
     /// @notice The address of $HEX1.
     address public hexOneToken;
@@ -49,6 +52,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     mapping(address => Fee) public fees;
 
     constructor(
+        address _hexToken,
         address _hexOneToken,
         address[] memory _vaults,
         address _stakingMaster,
@@ -56,6 +60,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint256 _maxDuration
     ) {
         require(_hexOneToken != address(0), "zero $HEX1 token address");
+        require(_hexToken != address(0), "zero hex token address");
         require(
             _maxDuration > _minDuration,
             "max Duration is less min duration"
@@ -66,6 +71,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         hexOneToken = _hexOneToken;
         _setVaults(_vaults, true);
         stakingMaster = _stakingMaster;
+        hexToken = _hexToken;
 
         DEAD = 0x000000000000000000000000000000000000dEaD;
         FIXED_POINT = 1000;
@@ -270,7 +276,9 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         require(vaultAddress != address(0), "proper vault is not set");
         IERC20(_token).safeApprove(vaultAddress, realAmount);
         IERC20(_token).safeApprove(stakingMaster, feeAmount);
-        IHexOneStakingMaster(stakingMaster).updateRewards(_token, feeAmount);
+        if (_token == hexToken) {
+            IHexOneStaking(stakingMaster).purchaseHex(feeAmount);
+        }
 
         return realAmount;
     }

@@ -2,64 +2,46 @@
 pragma solidity ^0.8.17;
 
 interface IHexOneStaking {
+    struct DistTokenWeight {
+        uint16 hexDistRate;
+        uint16 hexitDistRate;
+    }
 
-    struct Rewards {
-        uint256 stakeId;
+    struct StakingInfo {
+        uint256 stakedTime;
+        uint256 claimedHexAmount;
+        uint256 claimedHexitAmount;
         uint256 stakedAmount;
-        uint256 claimableRewards;
-        address rewardToken;
-        address stakeToken;
+        uint256 hexShareAmount;
+        uint256 hexitShareAmount;
+        address stakedToken;
+        address staker;
     }
 
-    struct StakeInfo {
-        uint256 stakedTimestamp;
+    struct RewardsPool {
+        uint256 hexPool;
+        uint256 hexitPool;
+        uint256 distributedHex;
+        uint256 distributedHexit;
+    }
+
+    struct UserStakingStatus {
+        address token;
         uint256 stakedAmount;
-        uint256 currentPoolAmount;
+        uint256 earnedHexAmount;
+        uint256 earnedHexitAmount;
+        uint256 claimableHexAmount;
+        uint256 claimableHexitAmount;
+        uint256 stakedTime;
+        uint256 liquidity;
+        uint16 shareOfPool;
+        uint16 hexAPR;
+        uint16 hexitAPR;
+        uint16 hexMultiplier;
+        uint16 hexitMultiplier;
     }
 
-    struct PoolInfo {
-        uint256 totalStakedAmount;
-        uint256 poolAmount;
-    }
+    function purchaseHex(uint256 _amount) external;
 
-    /// @notice Set StakingMaster address.
-    /// @dev Only ower can call this function.
-    function setStakingMaster(address _stakingMaster) external;
-
-    /// @notice Stake ERC20 tokens.
-    function stakeERC20Start(
-        address _staker,
-        address _rewardToken,
-        uint256 _amount
-    ) external;
-
-    /// @notice Stake ERC721 tokens.
-    function stakeERC721Start(
-        address _staker,
-        address _rewardToken,
-        uint256[] memory _tokenIds
-    ) external;
-
-    /// @notice Unstake ERC20 tokens.
-    /// @return staked amount and claimable rewards info.
-    function stakeERC20End(
-        address _staker,
-        address _rewardToken, 
-        uint256 _stakeId
-    ) external returns (uint256, uint256);
-
-    /// @notice Unstake ERC721 tokens.
-    function stakeERC721End(
-        address _staker,
-        address _rewardToken, 
-        uint256 _stakeId
-    ) external returns (uint256, uint256[] memory);
-
-    /// @notice Get claimable rewards.
-    function claimableRewards(
-        address _staker,
-        address _rewardToken
-    ) external view returns (Rewards[] memory);
-
-    function baseToken() external view returns (address baseToken);
+    function purchaseHexit(uint256 _amount) external;
 }
