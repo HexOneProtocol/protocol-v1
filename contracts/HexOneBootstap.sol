@@ -484,6 +484,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             FIXED_POINT;
 
         IHEXIT(hexitToken).mintToken(amountForStaking, address(this));
+        IHEXIT(hexitToken).approve(stakingContract, amountForStaking);
         IHEXIT(hexitToken).mintToken(amountForTeam, teamWallet);
 
         IHexOneStaking(stakingContract).purchaseHexit(amountForStaking);

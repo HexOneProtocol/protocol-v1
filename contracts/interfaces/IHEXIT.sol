@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-interface IHEXIT {
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+interface IHEXIT is IERC20 {
     /// @notice Mint $HEXIT token to recipient.
     /// @dev Only HexOneProtocol can call this function.
     /// @param _amount The amount of $HEXIT to mint.

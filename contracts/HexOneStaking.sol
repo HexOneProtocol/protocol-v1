@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
+import "hardhat/console.sol";
 import "./interfaces/IHexOneStaking.sol";
 import "./utils/TokenUtils.sol";
 
@@ -228,11 +229,11 @@ contract HexOneStaking is
     }
 
     function unstake(
-        address _user,
         address _token,
         uint256 _unstakeAmount
     ) external nonReentrant {
-        StakingInfo storage info = stakingInfos[_user][_token];
+        address sender = msg.sender;
+        StakingInfo storage info = stakingInfos[sender][_token];
         DistTokenWeight memory tokenWeight = distTokenWeights[_token];
         require(allowedTokens.contains(_token), "not allowed token");
         require(info.stakedTime > 0, "no staking pool");
@@ -247,13 +248,23 @@ contract HexOneStaking is
             tokenWeight.hexitDistRate) / FIXED_POINT;
         hexShareAmount = _convertToShare(_token, hexShareAmount);
 
-        uint256 hexAmount = (hexShareAmount * hexRewardsRatePerShare) /
-            totalHexShareAmount;
-        uint256 hexitAmount = (hexitShareAmount * hexitRewardsRatePerShare) /
-            totalHexitShareAmount;
+        uint256 hexAmount = 0;
+        uint256 hexitAmount = 0;
 
-        hexAmount = hexAmount / 10 ** 10 - info.claimedHexAmount;
-        hexitAmount -= info.claimedHexitAmount;
+        if (totalHexShareAmount > 0) {
+            hexAmount =
+                (hexShareAmount * hexRewardsRatePerShare) /
+                totalHexShareAmount;
+            hexAmount = hexAmount / 10 ** 10 - info.claimedHexAmount;
+        }
+
+        if (totalHexitShareAmount > 0) {
+            hexitAmount =
+                (hexitShareAmount * hexitRewardsRatePerShare) /
+                totalHexitShareAmount;
+
+            hexitAmount -= info.claimedHexitAmount;
+        }
 
         if (hexAmount > 0) {
             IERC20(hexToken).safeTransfer(info.staker, hexAmount);
@@ -276,7 +287,7 @@ contract HexOneStaking is
         }
 
         lockedTokenAmounts[info.stakedToken] -= _unstakeAmount;
-        IERC20(info.stakedToken).safeTransfer(_user, _unstakeAmount);
+        IERC20(info.stakedToken).safeTransfer(sender, _unstakeAmount);
 
         _updateRewardsPerShareRate();
     }
@@ -332,15 +343,19 @@ contract HexOneStaking is
             return (0, 0);
         }
 
-        hexAmount =
-            (info.hexShareAmount * hexRewardsRatePerShare) /
-            totalHexShareAmount;
-        hexitAmount =
-            (info.hexitShareAmount * hexitRewardsRatePerShare) /
-            totalHexitShareAmount;
+        if (totalHexShareAmount > 0) {
+            hexAmount =
+                (info.hexShareAmount * hexRewardsRatePerShare) /
+                totalHexShareAmount;
+            hexAmount = hexAmount / 10 ** 10 - info.claimedHexAmount;
+        }
 
-        hexAmount = hexAmount / 10 ** 10 - info.claimedHexAmount;
-        hexitAmount -= info.claimedHexitAmount;
+        if (totalHexitShareAmount > 0) {
+            hexitAmount =
+                (info.hexitShareAmount * hexitRewardsRatePerShare) /
+                totalHexitShareAmount;
+            hexitAmount -= info.claimedHexitAmount;
+        }
     }
 
     function _updateRewardsPerShareRate() internal {
@@ -348,20 +363,25 @@ contract HexOneStaking is
             return;
         }
 
-        uint256 curHexPool = IERC20(hexToken).balanceOf(address(this));
-        uint256 curHexitPool = IERC20(hexitToken).balanceOf(address(this));
+        uint256 curHexPool = rewardsPool.hexPool;
+        uint256 curHexitPool = rewardsPool.hexitPool;
         curHexitPool -= rewardsPool.distributedHexit;
 
         uint256 hexAmountForDist = curHexPool - rewardsPool.distributedHex;
         uint256 hexitAmountForDist = (curHexitPool * hexitDistRate) /
             FIXED_POINT;
 
-        hexRewardsRatePerShare +=
-            (hexAmountForDist * 10 ** 28) /
-            totalHexShareAmount;
-        hexitRewardsRatePerShare +=
-            (hexitAmountForDist * 10 ** 18) /
-            totalHexitShareAmount;
+        if (totalHexShareAmount > 0) {
+            hexRewardsRatePerShare +=
+                (hexAmountForDist * 10 ** 28) /
+                totalHexShareAmount;
+        }
+
+        if (totalHexitShareAmount > 0) {
+            hexitRewardsRatePerShare +=
+                (hexitAmountForDist * 10 ** 18) /
+                totalHexitShareAmount;
+        }
 
         rewardsPool.distributedHex += hexAmountForDist;
         rewardsPool.distributedHexit += hexitAmountForDist;

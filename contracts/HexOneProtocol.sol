@@ -276,7 +276,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         require(vaultAddress != address(0), "proper vault is not set");
         IERC20(_token).safeApprove(vaultAddress, realAmount);
         IERC20(_token).safeApprove(stakingMaster, feeAmount);
-        if (_token == hexToken) {
+        if (feeAmount > 0 && _token == hexToken) {
             IHexOneStaking(stakingMaster).purchaseHex(feeAmount);
         }
 
