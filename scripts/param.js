@@ -29,6 +29,7 @@ const DEPLOYMENT_PARAM = {
         sacrificeLiquidityRate: 250,
         airdropDistRateForHexHolder: 100,
         airdropDistRateForHEXITHolder: 900,
+        hexitDistRateForStaking: 50, // 5%
     },
 };
 

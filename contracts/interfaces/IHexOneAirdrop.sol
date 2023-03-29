@@ -50,10 +50,9 @@ interface IHexOneAirdrop {
     function getCurrentAirdropDay() external view returns (uint256);
 
     /// @notice
-    function getCurrentAirdropInfo(address _user)
-        external
-        view
-        returns (AirdropPoolInfo memory);
+    function getCurrentAirdropInfo(
+        address _user
+    ) external view returns (AirdropPoolInfo memory);
 
     /// @notice Request airdrop.
     /// @dev It can be called in airdrop duration and
@@ -63,4 +62,9 @@ interface IHexOneAirdrop {
     /// @notice Claim HEXIT token as airdrop.
     /// @dev If users have requests that didn't claim yet, they can request claim.
     function claimAirdrop() external;
+
+    /// @notice Get HEXIT supply amount for airdrop by dayIndex.
+    function getAirdropSupplyAmount(
+        uint256 _dayIndex
+    ) external view returns (uint256);
 }

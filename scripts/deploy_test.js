@@ -34,9 +34,9 @@ async function deployBootstrap() {
 
     let HEXIT = await getContract("HEXIT", "HEXIT", "goerli");
 
-    let stakingMaster = await getContract(
-        "HexOneStakingMaster",
-        "HexOneStakingMaster",
+    let stakingPool = await getContract(
+        "HexOneStaking",
+        "HexOneStaking",
         "goerli"
     );
 
@@ -54,7 +54,7 @@ async function deployBootstrap() {
         hexToken: param.hexToken,
         pairToken: param.usdcAddress,
         hexitToken: HEXIT.address,
-        stakingContract: stakingMaster.address,
+        stakingContract: stakingPool.address,
         teamWallet: param.teamWallet,
         sacrificeStartTime: sacrificeStartTime,
         airdropStartTime: airdropStartTime,
@@ -88,22 +88,29 @@ async function deployBootstrap() {
 async function deployProtocol() {
     let param = getDeploymentParam();
 
-    let hexOneToken = await deploy(
-        "HexOneToken",
-        "HexOneToken",
-        "HexOne",
-        "HEXONE"
-    );
+    // let hexOneToken = await deploy(
+    //     "HexOneToken",
+    //     "HexOneToken",
+    //     "HexOne",
+    //     "HEXONE"
+    // );
 
-    let hexOnePriceFeed = await deployProxy(
+    let hexOneToken = await getContract("HexOneToken", "HexOneToken", "goerli");
+
+    // let hexOnePriceFeed = await deployProxy(
+    //     "HexOnePriceFeedTest",
+    //     "HexOnePriceFeedTest",
+    //     [
+    //         param.hexToken,
+    //         param.usdcAddress,
+    //         param.usdcPriceFeed,
+    //         param.dexRouter,
+    //     ]
+    // );
+    let hexOnePriceFeed = await getContract(
         "HexOnePriceFeedTest",
         "HexOnePriceFeedTest",
-        [
-            param.hexToken,
-            param.usdcAddress,
-            param.usdcPriceFeed,
-            param.dexRouter,
-        ]
+        "goerli"
     );
 
     let hexOneVault = await deployProxy("HexOneVault", "HexOneVault", [
@@ -111,23 +118,28 @@ async function deployProtocol() {
         hexOnePriceFeed.address,
     ]);
 
-    let stakingMaster = await deployProxy(
-        "HexOneStakingMaster",
-        "HexOneStakingMaster",
-        [param.feeReceiver, param.feeRate]
+    // let HEXIT = await deploy("HEXIT", "HEXIT", "Hex Incentive Token", "HEXIT");
+    let hexitToken = await getContract("HEXIT", "HEXIT", "goerli");
+
+    let hexOneStaking = await deploy(
+        "HexOneStaking",
+        "HexOneStaking",
+        param.hexToken,
+        hexitToken.address,
+        hexOnePriceFeed.address,
+        param.hexitDistRateForStaking
     );
 
     let hexOneProtocol = await deploy(
         "HexOneProtocol",
         "HexOneProtocol",
+        param.hexToken,
         hexOneToken.address,
         [hexOneVault.address],
-        stakingMaster.address,
+        hexOneStaking.address,
         param.minStakingDuration,
         param.maxStakingDuration
     );
-
-    let HEXIT = await deploy("HEXIT", "HEXIT", "Hex Incentive Token", "HEXIT");
 }
 
 async function getContracts() {
@@ -140,9 +152,9 @@ async function getContracts() {
     );
 
     let hexOneVault = await getContract("HexOneVault", "HexOneVault", "goerli");
-    let stakingMaster = await getContract(
-        "HexOneStakingMaster",
-        "HexOneStakingMaster",
+    let stakingPool = await getContract(
+        "HexOneStaking",
+        "HexOneStaking",
         "goerli"
     );
     let hexOneProtocol = await getContract(
@@ -184,7 +196,7 @@ async function initialize() {
         hexOneToken,
         hexOnePriceFeed,
         hexOneVault,
-        stakingMaster,
+        stakingPool,
         hexOneProtocol,
         HEXIT,
         hexOneBootstrap,
@@ -199,8 +211,11 @@ async function initialize() {
     tx = await hexOneVault.setHexOneProtocol(hexOneProtocol.address);
     await tx.wait();
 
-    console.log("stakingMaster.setHexOneProtocol");
-    tx = await stakingMaster.setHexOneProtocol(hexOneProtocol.address);
+    console.log("stakingPool.setBaseData");
+    tx = await stakingPool.setBaseData(
+        hexOneProtocol.address,
+        hexOneBootstrap.address
+    );
     await tx.wait();
 
     console.log("hexOneBootstrap.setEscrowContract");
@@ -274,8 +289,8 @@ async function main() {
     console.log("initialize contracts");
     await initialize();
 
-    console.log("add liquidity");
-    await addLiquidity();
+    // console.log("add liquidity");
+    // await addLiquidity();
 
     console.log("Deployed successfully");
 }

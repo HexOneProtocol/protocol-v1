@@ -88,6 +88,7 @@ describe("HexOne Protocol", function () {
             "HexOneStaking",
             this.hexToken.address,
             this.HEXIT.address,
+            this.hexOnePriceFeed.address,
             50 // 5% HEXIT dist
         );
         this.hexOneProtocol = await deploy(
@@ -602,28 +603,6 @@ describe("HexOne Protocol", function () {
     });
 
     describe("main process test", function () {
-        describe("staking hex token", function () {
-            it("stake hexToken", async function () {
-                let stakeAmount = await this.hexToken.balanceOf(
-                    this.staker_1.address
-                );
-                await this.hexToken
-                    .connect(this.staker_1)
-                    .approve(this.staking.address, BigInt(stakeAmount));
-                await this.staking
-                    .connect(this.staker_1)
-                    .stakeToken(this.hexToken.address, BigInt(stakeAmount));
-
-                stakeAmount = BigInt(stakeAmount) / BigInt(2);
-                await this.hexToken
-                    .connect(this.staker_2)
-                    .approve(this.staking.address, BigInt(stakeAmount));
-                await this.staking
-                    .connect(this.staker_2)
-                    .stakeToken(this.hexToken.address, BigInt(stakeAmount));
-            });
-        });
-
         describe("deposit and claim hex", function () {
             describe("deposit hex", function () {
                 it("deposit hex as collateral and check received $HEX1", async function () {
@@ -792,38 +771,6 @@ describe("HexOne Protocol", function () {
                         this.hexToken.address
                     )
                 ).to.be.equal(true);
-            });
-        });
-
-        describe("set staking master", function () {
-            it("deploy new staking master", async function () {
-                this.staking = await deploy(
-                    "HexOneStaking",
-                    "HexOneStaking",
-                    this.hexToken.address,
-                    this.HEXIT.address,
-                    100 // 10% HEXIT dist
-                );
-            });
-
-            it("set new staking master", async function () {
-                let oldOne = await this.hexOneProtocol.stakingMaster();
-                expect(oldOne).to.be.not.equal(this.staking.address);
-
-                /// reverts if caller is not the owner
-                await expect(
-                    this.hexOneProtocol
-                        .connect(this.depositor_1)
-                        .setStakingPool(this.staking.address)
-                ).to.be.revertedWith("Ownable: caller is not the owner");
-
-                await this.hexOneProtocol.setStakingPool(this.staking.address);
-
-                expect(await this.hexOneProtocol.stakingMaster()).to.be.equal(
-                    this.staking.address
-                );
-
-                await this.hexOneProtocol.setStakingPool(oldOne);
             });
         });
 
@@ -998,6 +945,77 @@ describe("HexOne Protocol", function () {
                         smallNum(shareBalance, 12)
                     );
                 });
+            });
+        });
+
+        describe("staking hex token", function () {
+            it("reverts if staking is not enabled", async function () {
+                await expect(
+                    this.staking
+                        .connect(this.staker_1)
+                        .stakeToken(this.hexToken.address, bigNum(100, 8))
+                ).to.be.revertedWith("staking is not enabled");
+            });
+
+            it("enable staking", async function () {
+                await expect(
+                    this.staking.connect(this.staker_1).enableStaking()
+                ).to.be.revertedWith("Ownable: caller is not the owner");
+
+                await this.staking.enableStaking();
+            });
+
+            it("stake hexToken", async function () {
+                let stakeAmount = await this.hexToken.balanceOf(
+                    this.staker_1.address
+                );
+                await this.hexToken
+                    .connect(this.staker_1)
+                    .approve(this.staking.address, BigInt(stakeAmount));
+                await this.staking
+                    .connect(this.staker_1)
+                    .stakeToken(this.hexToken.address, BigInt(stakeAmount));
+
+                stakeAmount = BigInt(stakeAmount) / BigInt(2);
+                await this.hexToken
+                    .connect(this.staker_2)
+                    .approve(this.staking.address, BigInt(stakeAmount));
+                await this.staking
+                    .connect(this.staker_2)
+                    .stakeToken(this.hexToken.address, BigInt(stakeAmount));
+            });
+        });
+
+        describe("set staking master", function () {
+            it("deploy new staking master", async function () {
+                this.staking = await deploy(
+                    "HexOneStaking",
+                    "HexOneStaking",
+                    this.hexToken.address,
+                    this.HEXIT.address,
+                    this.hexOnePriceFeed.address,
+                    100 // 10% HEXIT dist
+                );
+            });
+
+            it("set new staking master", async function () {
+                let oldOne = await this.hexOneProtocol.stakingMaster();
+                expect(oldOne).to.be.not.equal(this.staking.address);
+
+                /// reverts if caller is not the owner
+                await expect(
+                    this.hexOneProtocol
+                        .connect(this.depositor_1)
+                        .setStakingPool(this.staking.address)
+                ).to.be.revertedWith("Ownable: caller is not the owner");
+
+                await this.hexOneProtocol.setStakingPool(this.staking.address);
+
+                expect(await this.hexOneProtocol.stakingMaster()).to.be.equal(
+                    this.staking.address
+                );
+
+                await this.hexOneProtocol.setStakingPool(oldOne);
             });
         });
 

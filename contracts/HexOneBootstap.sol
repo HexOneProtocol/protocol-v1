@@ -375,6 +375,14 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         return (block.timestamp - airdropStartTime) / 1 days;
     }
 
+    function getAirdropSupplyAmount(
+        uint256 _dayIndex
+    ) external view override returns (uint256) {
+        uint256 curDay = getCurrentAirdropDay();
+        require(_dayIndex <= curDay, "invalid dayIndex");
+        return _calcAmountForAirdrop(_dayIndex);
+    }
+
     /// @inheritdoc IHexOneAirdrop
     function getCurrentAirdropInfo(
         address _user
