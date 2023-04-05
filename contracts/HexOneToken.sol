@@ -25,7 +25,7 @@ contract HexOneToken is ERC20, Ownable, IHexOneToken {
     }
 
     function decimals() public view virtual override returns (uint8) {
-        return 8;
+        return 18;
     }
 
     /// @inheritdoc IHexOneToken

@@ -93,13 +93,32 @@ const deployProxy = async (contractName, contractMark, args = []) => {
     return contract;
 };
 
-const upgradeProxy = async (contractName, contractAddress) => {
+const verifyProxy = async (contractName, contractMark, args = []) => {
+    const contract = await getContract(
+        contractName,
+        contractMark,
+        network.name
+    );
+
+    const implAddress = await getImplementationAddress(
+        ethers.provider,
+        contract.address
+    );
+    await verify(implAddress, args);
+};
+
+const upgradeProxy = async (contractName, contractMark, contractAddress) => {
     const factory = await ethers.getContractFactory(contractName);
     const contract = await upgrades.upgradeProxy(contractAddress, factory, {
         unsafeAllow: ["delegatecall", "constructor"],
     });
     await contract.deployed();
-    console.log(contractName, contract.address);
+    const implAddress = await getImplementationAddress(
+        ethers.provider,
+        contract.address
+    );
+    await updateAddress(contractMark, [contract.address, implAddress]);
+    console.log(contractName, contract.address, implAddress);
     return contract;
 };
 
@@ -116,7 +135,7 @@ const verify = async (contractAddress, args = []) => {
             constructorArguments: args,
         });
     } catch (ex) {
-        // console.log(ex);
+        console.log(ex);
     }
 };
 
@@ -140,6 +159,7 @@ const smallNum = (num, decimals) => parseInt(num) / bigNum(1, decimals);
 module.exports = {
     getAt,
     verify,
+    verifyProxy,
     deploy,
     deployProxy,
     upgradeProxy,

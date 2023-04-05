@@ -12,6 +12,7 @@ interface IHexOneSacrifice {
         address sacrificeToken;
         string sacrificeTokenSymbol;
         uint16 multiplier;
+        bool claimed;
     }
 
     /// @notice Check if now is after sacrificeEndTime.

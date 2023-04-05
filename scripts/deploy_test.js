@@ -9,6 +9,9 @@ const {
     day,
     hour,
     getContract,
+    upgradeProxy,
+    verify,
+    verifyProxy,
 } = require("./utils");
 
 const { uniswap_abi } = require("../external_abi/uniswap.abi.json");
@@ -22,22 +25,22 @@ async function deployBootstrap() {
     let hexOnePriceFeed = await getContract(
         "HexOnePriceFeedTest",
         "HexOnePriceFeedTest",
-        "goerli"
+        "fuji"
     );
 
-    hexOneToken = await getContract("HexOneToken", "HexOneToken", "goerli");
+    hexOneToken = await getContract("HexOneToken", "HexOneToken", "fuji");
     hexOneProtocol = await getContract(
         "HexOneProtocol",
         "HexOneProtocol",
-        "goerli"
+        "fuji"
     );
 
-    let HEXIT = await getContract("HEXIT", "HEXIT", "goerli");
+    let HEXIT = await getContract("HEXIT", "HEXIT", "fuji");
 
     let stakingPool = await getContract(
         "HexOneStaking",
         "HexOneStaking",
-        "goerli"
+        "fuji"
     );
 
     let sacrificeStartTime =
@@ -95,7 +98,7 @@ async function deployProtocol() {
         "HEXONE"
     );
 
-    // let hexOneToken = await getContract("HexOneToken", "HexOneToken", "goerli");
+    // let hexOneToken = await getContract("HexOneToken", "HexOneToken", "fuji");
 
     let hexOnePriceFeed = await deployProxy(
         "HexOnePriceFeedTest",
@@ -110,7 +113,7 @@ async function deployProtocol() {
     // let hexOnePriceFeed = await getContract(
     //     "HexOnePriceFeedTest",
     //     "HexOnePriceFeedTest",
-    //     "goerli"
+    //     "fuji"
     // );
 
     let hexOneVault = await deployProxy("HexOneVault", "HexOneVault", [
@@ -124,7 +127,7 @@ async function deployProtocol() {
         "Hex Incentive Token",
         "HEXIT"
     );
-    // let hexitToken = await getContract("HEXIT", "HEXIT", "goerli");
+    // let hexitToken = await getContract("HEXIT", "HEXIT", "fuji");
 
     let hexOneStaking = await deploy(
         "HexOneStaking",
@@ -148,38 +151,38 @@ async function deployProtocol() {
 }
 
 async function getContracts() {
-    let hexToken = await getContract("HexMockToken", "HexMockToken", "goerli");
-    let hexOneToken = await getContract("HexOneToken", "HexOneToken", "goerli");
+    let hexToken = await getContract("HexMockToken", "HexMockToken", "fuji");
+    let hexOneToken = await getContract("HexOneToken", "HexOneToken", "fuji");
     let hexOnePriceFeed = await getContract(
         "HexOnePriceFeedTest",
         "HexOnePriceFeedTest",
-        "goerli"
+        "fuji"
     );
 
-    let hexOneVault = await getContract("HexOneVault", "HexOneVault", "goerli");
+    let hexOneVault = await getContract("HexOneVault", "HexOneVault", "fuji");
     let stakingPool = await getContract(
         "HexOneStaking",
         "HexOneStaking",
-        "goerli"
+        "fuji"
     );
     let hexOneProtocol = await getContract(
         "HexOneProtocol",
         "HexOneProtocol",
-        "goerli"
+        "fuji"
     );
 
-    let HEXIT = await getContract("HEXIT", "HEXIT", "goerli");
+    let HEXIT = await getContract("HEXIT", "HEXIT", "fuji");
 
     let hexOneBootstrap = await getContract(
         "HexOneBootstrap",
         "HexOneBootstrap",
-        "goerli"
+        "fuji"
     );
 
     let hexOneEscrow = await getContract(
         "HexOneEscrow",
         "HexOneEscrow",
-        "goerli"
+        "fuji"
     );
 
     return [
@@ -187,7 +190,7 @@ async function getContracts() {
         hexOneToken,
         hexOnePriceFeed,
         hexOneVault,
-        stakingMaster,
+        stakingPool,
         hexOneProtocol,
         HEXIT,
         hexOneBootstrap,
@@ -235,34 +238,25 @@ async function initialize() {
 async function addLiquidity() {
     const [deployer] = await ethers.getSigners();
     let param = getDeploymentParam();
-    let USDC = new ethers.Contract(param.usdcAddress, erc20_abi, deployer);
+    let USDC = await getContract("HexOneMockToken", "MockUSDC", "fuji");
     let uniswapRouter = new ethers.Contract(
         param.dexRouter,
         uniswap_abi,
         deployer
     );
-    let hexToken = new ethers.Contract(param.hexToken, erc20_abi, deployer);
+    // let hexToken = new ethers.Contract(param.hexToken, erc20_abi, deployer);
+    let hexToken = await getContract("HexMockToken", "HexMockToken", "fuji");
+    let hexAmountForLiquidity = bigNum(1000000, 8);
+    await hexToken.mintToken(deployer.address, BigInt(hexAmountForLiquidity));
+    let usdcForLiquidity = bigNum(40000, 18);
+    await USDC.mintToken(BigInt(usdcForLiquidity), deployer.address);
 
-    let ethAmountForBuy = ethers.utils.parseEther("0.1");
-    let WETHAddress = await uniswapRouter.WETH();
-
-    let beforeBal = await USDC.balanceOf(deployer.address);
-    let tx = await uniswapRouter.swapExactETHForTokens(
-        0,
-        [WETHAddress, USDC.address],
-        deployer.address,
-        BigInt(await getCurrentTimestamp()) + BigInt(100),
-        { value: ethAmountForBuy }
+    let tx = await USDC.approve(
+        uniswapRouter.address,
+        BigInt(usdcForLiquidity)
     );
     await tx.wait();
-    let afterBal = await USDC.balanceOf(deployer.address);
-    let swappedUSDCAmount = BigInt(afterBal) - BigInt(beforeBal);
-    swappedUSDCAmount = (BigInt(swappedUSDCAmount) * BigInt(4)) / BigInt(5);
-    let hexAmountForLiquidity = await hexToken.balanceOf(deployer.address);
-    hexAmountForLiquidity = BigInt(hexAmountForLiquidity) / BigInt(2);
 
-    tx = await USDC.approve(uniswapRouter.address, BigInt(swappedUSDCAmount));
-    await tx.wait();
     tx = await hexToken.approve(
         uniswapRouter.address,
         BigInt(hexAmountForLiquidity)
@@ -271,7 +265,7 @@ async function addLiquidity() {
     tx = await uniswapRouter.addLiquidity(
         USDC.address,
         hexToken.address,
-        BigInt(swappedUSDCAmount),
+        BigInt(usdcForLiquidity),
         BigInt(hexAmountForLiquidity),
         0,
         0,
@@ -281,23 +275,148 @@ async function addLiquidity() {
     await tx.wait();
 }
 
+async function initializeSacrifice() {
+    let hexOneBootstrap = await getContract(
+        "HexOneBootstrap",
+        "HexOneBootstrap",
+        "fuji"
+    );
+
+    let hexToken = await getContract("HexMockToken", "HexMockToken", "fuji");
+    let mockUSDC = await getContract("HexOneMockToken", "MockUSDC", "fuji");
+
+    let tx = await hexOneBootstrap.setAllowedTokens(
+        [hexToken.address, mockUSDC.address],
+        true
+    );
+    await tx.wait();
+
+    tx = await hexOneBootstrap.setTokenWeight(
+        [hexToken.address, mockUSDC.address],
+        [5555, 3000]
+    );
+    await tx.wait();
+}
+
+async function updateHexOneBootstrap() {
+    let hexOneBootstrap = await getContract(
+        "HexOneBootstrap",
+        "HexOneBootstrap",
+        "fuji"
+    );
+    await upgradeProxy("HexOneBootstrap", hexOneBootstrap.address);
+    await verifyProxy("HexOneBootstrap", "HexOneBootstrap");
+}
+
+async function updateHexOneEscrow() {
+    await verifyProxy("HexOneEscrow", "HexOneEscrow");
+}
+
+async function updateHexOneStaking() {
+    let hexOneStaking = await getContract(
+        "HexOneStaking",
+        "HexOneStaking",
+        "fuji"
+    );
+
+    let hexToken = await hexOneStaking.hexToken();
+    let hexitToken = await hexOneStaking.hexitToken();
+    let hexOnePriceFeed = await hexOneStaking.hexOnePriceFeed();
+    let hexitDistRate = await hexOneStaking.hexitDistRate();
+
+    await verify(hexOneStaking.address, [
+        hexToken,
+        hexitToken,
+        hexOnePriceFeed,
+        hexitDistRate,
+    ]);
+}
+
+async function verifyHexMockToken() {
+    let hexMockToken = await getContract(
+        "HexMockToken",
+        "HexMockToken",
+        "fuji"
+    );
+    await verify(hexMockToken.address);
+}
+
+async function verifyHexOneStaking() {
+    await verifyProxy("HexOneStaking", "HexOneStaking");
+}
+
+async function upgradeHexOneStaking() {
+    let hexOneStaking = await getContract(
+        "HexOneStaking",
+        "HexOneStaking",
+        "fuji"
+    );
+    await upgradeProxy("HexOneStaking", "HexOneStaking", hexOneStaking.address);
+}
+
+async function verifyHexOneProtocol() {
+    let param = getDeploymentParam();
+    let hexOneToken = await getContract("HexOneToken", "HexOneToken", "fuji");
+    let hexOneVault = await getContract("HexOneVault", "HexOneVault", "fuji");
+    let hexOneStaking = await getContract(
+        "HexOneStaking",
+        "HexOneStaking",
+        "fuji"
+    );
+    let hexOneProtocol = await getContract(
+        "HexOneProtocol",
+        "HexOneProtocol",
+        "fuji"
+    );
+
+    await verify(hexOneProtocol.address, [
+        param.hexToken,
+        hexOneToken.address,
+        [hexOneVault.address],
+        hexOneStaking.address,
+        param.minStakingDuration,
+        param.maxStakingDuration,
+    ]);
+}
+
+async function addAllowedTokensToStaking() {
+    let mockUSDC = await getContract("HexOneMockToken", "MockUSDC", "fuji");
+    let hexToken = await getContract("HexMockToken", "HexMockToken", "fuji");
+    let staking = await getContract("HexOneStaking", "HexOneStaking", "fuji");
+
+    let tx = await staking.addAllowedTokens(
+        [mockUSDC.address, hexToken.address],
+        [
+            {
+                hexDistRate: 1500,
+                hexitDistRate: 3000,
+            },
+            {
+                hexDistRate: 1000,
+                hexitDistRate: 2000,
+            },
+        ]
+    );
+    await tx.wait();
+}
+
 async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
 
-    await deploy("HexMockToken", "HexMockToken");
+    console.log("deploy protocol");
+    await deployProtocol();
 
-    // console.log("deploy protocol");
-    // await deployProtocol();
+    console.log("deploy Bootstrap");
+    await deployBootstrap();
 
-    // console.log("deploy Bootstrap");
-    // await deployBootstrap();
+    console.log("initialize contracts");
+    await initialize();
 
-    // console.log("initialize contracts");
-    // await initialize();
+    console.log("add liquidity");
+    await addLiquidity();
 
-    // console.log("add liquidity");
-    // await addLiquidity();
+    await initializeSacrifice();
 
     console.log("Deployed successfully");
 }

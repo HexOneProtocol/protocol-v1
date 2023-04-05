@@ -13,6 +13,8 @@ module.exports = {
     networks: {
         hardhat: {
             forking: {
+                // url: "https://api.avax-test.network/ext/bc/C/rpc",
+                // blockNumber: 20593883,
                 url: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
                 blockNumber: 16589147,
                 // url: "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
@@ -30,6 +32,12 @@ module.exports = {
             chainId: 941,
             gasPrice: utils.parseUnits("100", "gwei").toNumber(),
             accounts: [process.env.DEPLOYER_WALLET],
+        },
+        fuji: {
+            url: "https://api.avax-test.network/ext/bc/C/rpc",
+            chainId: 43113,
+            accounts: [process.env.DEPLOYER_WALLET],
+            gasPrice: utils.parseUnits("100", "gwei").toNumber(),
         },
     },
     solidity: {
@@ -49,6 +57,7 @@ module.exports = {
         apiKey: {
             mainnet: process.env.ETH_API_KEY,
             goerli: process.env.ETH_API_KEY,
+            avalancheFujiTestnet: process.env.AVAX_API_KEY,
         },
     },
     mocha: {

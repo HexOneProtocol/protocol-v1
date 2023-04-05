@@ -636,6 +636,11 @@
               "internalType": "uint16",
               "name": "multiplier",
               "type": "uint16"
+            },
+            {
+              "internalType": "bool",
+              "name": "claimed",
+              "type": "bool"
             }
           ],
           "internalType": "struct IHexOneSacrifice.SacrificeInfo[]",
@@ -1041,6 +1046,11 @@
           "internalType": "uint16",
           "name": "multiplier",
           "type": "uint16"
+        },
+        {
+          "internalType": "bool",
+          "name": "claimed",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",

@@ -67,14 +67,12 @@ describe("Staking contract test", function () {
             ]
         );
 
-        this.staking = await deploy(
-            "HexOneStaking",
-            "HexOneStaking",
+        this.staking = await deployProxy("HexOneStaking", "HexOneStaking", [
             this.hexToken.address,
             this.mockHEXIT.address,
             this.hexOnePriceFeed.address,
-            50
-        );
+            50,
+        ]);
     });
 
     it("check deployment", async function () {
@@ -139,15 +137,15 @@ describe("Staking contract test", function () {
                             hexitDistRate: 9000,
                         },
                         {
-                            hexDistRate: 0,
+                            hexDistRate: 1000,
                             hexitDistRate: 3000,
                         },
                         {
-                            hexDistRate: 0,
+                            hexDistRate: 1500,
                             hexitDistRate: 2000,
                         },
                         {
-                            hexDistRate: 0,
+                            hexDistRate: 2000,
                             hexitDistRate: 1000,
                         },
                     ]

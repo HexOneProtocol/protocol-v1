@@ -83,14 +83,12 @@ describe("HexOne Protocol", function () {
             this.hexToken.address,
             this.hexOnePriceFeed.address,
         ]);
-        this.staking = await deploy(
-            "HexOneStaking",
-            "HexOneStaking",
+        this.staking = await deployProxy("HexOneStaking", "HexOneStaking", [
             this.hexToken.address,
             this.HEXIT.address,
             this.hexOnePriceFeed.address,
-            50 // 5% HEXIT dist
-        );
+            50, // 5% HEXIT dist
+        ]);
         this.hexOneProtocol = await deploy(
             "HexOneProtocol",
             "HexOneProtocol",
@@ -454,6 +452,14 @@ describe("HexOne Protocol", function () {
                 let beforeBal = await this.HEXIT.balanceOf(
                     this.sacrificer_1.address
                 );
+
+                // await expect(
+                //     this.hexOneBootstrap
+                //         .connect(this.sacrificer_1)
+                //         .claimAirdrop()
+                // ).to.be.revertedWith("too soon");
+                // await spendTime(day);
+
                 await this.hexOneBootstrap
                     .connect(this.sacrificer_1)
                     .claimAirdrop();
@@ -467,6 +473,12 @@ describe("HexOne Protocol", function () {
                 );
                 expect(smallNum(receivedAmount, 18)).to.be.greaterThan(0);
 
+                await expect(
+                    this.hexOneBootstrap
+                        .connect(this.sacrificer_2)
+                        .claimAirdrop()
+                ).to.be.revertedWith("too soon");
+                await spendTime(day);
                 beforeBal = await this.HEXIT.balanceOf(
                     this.sacrificer_2.address
                 );
@@ -506,6 +518,10 @@ describe("HexOne Protocol", function () {
 
                 let hexitForAirdrop =
                     await this.hexOneBootstrap.airdropHEXITAmount();
+                let hexitForSacrifice =
+                    await this.hexOneBootstrap.HEXITAmountForSacrifice();
+                let totalHexit =
+                    BigInt(hexitForAirdrop) + BigInt(hexitForSacrifice);
                 let beforeStakingBal = await this.HEXIT.balanceOf(
                     this.staking.address
                 );
@@ -521,9 +537,9 @@ describe("HexOne Protocol", function () {
                 );
 
                 let expectStakingAmount =
-                    (BigInt(hexitForAirdrop) * BigInt(33)) / BigInt(100);
+                    (BigInt(totalHexit) * BigInt(33)) / BigInt(100);
                 let expectTeamAmount =
-                    (BigInt(hexitForAirdrop) * BigInt(50)) / BigInt(100);
+                    (BigInt(totalHexit) * BigInt(50)) / BigInt(100);
 
                 expect(
                     smallNum(BigInt(afterTeamBal) - BigInt(beforeTeamBal), 18)
@@ -988,13 +1004,15 @@ describe("HexOne Protocol", function () {
 
         describe("set staking master", function () {
             it("deploy new staking master", async function () {
-                this.staking = await deploy(
+                this.staking = await deployProxy(
                     "HexOneStaking",
                     "HexOneStaking",
-                    this.hexToken.address,
-                    this.HEXIT.address,
-                    this.hexOnePriceFeed.address,
-                    100 // 10% HEXIT dist
+                    [
+                        this.hexToken.address,
+                        this.HEXIT.address,
+                        this.hexOnePriceFeed.address,
+                        100, // 10% HEXIT dist
+                    ]
                 );
             });
 

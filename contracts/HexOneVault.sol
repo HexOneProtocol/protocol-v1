@@ -10,7 +10,6 @@ import "./utils/TokenUtils.sol";
 import "./interfaces/IHexOneVault.sol";
 import "./interfaces/IHexToken.sol";
 import "./interfaces/IHexOnePriceFeed.sol";
-import "hardhat/console.sol";
 
 contract HexOneVault is OwnableUpgradeable, IHexOneVault {
     using EnumerableSet for EnumerableSet.UintSet;
@@ -193,6 +192,8 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
             "not enough borrowable amount"
         );
         depositInfo.mintAmount += _amount;
+        depositInfo.initHexPrice = IHexOnePriceFeed(hexOnePriceFeed)
+            .getHexTokenPrice(10 ** hexDecimals);
         userInfo.totalBorrowedAmount += _amount;
     }
 
@@ -384,7 +385,7 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
                         .getHexTokenPrice(effectiveHex),
                     initUSDValue: initialUSDValue,
                     currentUSDValue: currentUSDValue,
-                    graceDay: depositInfo.graceDay,
+                    graceDay: GRACE_DURATION,
                     liquidable: _afterGraceDuration(depositInfo)
                 });
             }
@@ -490,7 +491,7 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
         uint256 curHexDay = IHexToken(hexToken).currentDay();
         uint256 endHexDay = _depositInfo.depositedHexDay +
             _depositInfo.duration;
-        return curHexDay > (endHexDay + _depositInfo.graceDay);
+        return curHexDay > (endHexDay + GRACE_DURATION);
     }
 
     function _convertToHexAmount(

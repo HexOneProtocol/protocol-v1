@@ -5,20 +5,18 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 import "./interfaces/IHexOnePriceFeed.sol";
 import "./interfaces/IHexOneStaking.sol";
 import "./utils/TokenUtils.sol";
 
-import "hardhat/console.sol";
-
 contract HexOneStaking is
-    Ownable,
-    ERC721Holder,
-    ReentrancyGuard,
+    OwnableUpgradeable,
+    ERC721HolderUpgradeable,
+    ReentrancyGuardUpgradeable,
     IHexOneStaking
 {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -59,12 +57,16 @@ contract HexOneStaking is
         _;
     }
 
-    constructor(
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(
         address _hexToken,
         address _hexitToken,
         address _hexOnePriceFeed,
         uint16 _hexitDistRate
-    ) {
+    ) public initializer {
         require(_hexToken != address(0), "zero hex token address");
         require(_hexitToken != address(0), "zero hexit token address");
         require(_hexOnePriceFeed != address(0), "zero priceFeed address");
@@ -74,6 +76,8 @@ contract HexOneStaking is
         hexitDistRate = _hexitDistRate;
         hexToken = _hexToken;
         hexitToken = _hexitToken;
+
+        __Ownable_init();
     }
 
     function setBaseData(
@@ -234,8 +238,13 @@ contract HexOneStaking is
         uint256 hexitAmount = (info.hexitShareAmount *
             hexitRewardsRatePerShare) / totalHexitShareAmount;
 
-        hexAmount = hexAmount / 10 ** 10 - info.claimedHexAmount;
-        hexitAmount -= info.claimedHexitAmount;
+        hexAmount = hexAmount / 10 ** 10;
+        hexAmount = hexAmount > info.claimedHexAmount
+            ? hexAmount - info.claimedHexAmount
+            : 0;
+        hexitAmount = hexitAmount > info.claimedHexitAmount
+            ? hexitAmount - info.claimedHexitAmount
+            : 0;
 
         require(hexAmount > 0 || hexitAmount > 0, "no rewards");
         info.claimedHexAmount += hexAmount;
@@ -298,6 +307,7 @@ contract HexOneStaking is
         info.claimedHexitAmount += hexitAmount;
         info.hexShareAmount -= hexShareAmount;
         info.hexitShareAmount -= hexitShareAmount;
+        info.stakedAmount -= _unstakeAmount;
 
         totalHexShareAmount -= hexShareAmount;
         totalHexitShareAmount -= hexitShareAmount;
@@ -324,15 +334,12 @@ contract HexOneStaking is
             address token = allowedTokens.at(i);
             StakingInfo memory info = stakingInfos[_user][token];
             DistTokenWeight memory tokenWeight = distTokenWeights[token];
-            console.log("a");
             (
                 uint256 claimableHexAmount,
                 uint256 claimableHexitAmount
             ) = _calcRewardsAmount(_user, token);
-            console.log("b");
 
             (uint16 hexAPR, uint16 hexitAPR) = _calcAPR(token);
-            console.log("c");
 
             uint16 shareOfPool = 0;
             if (lockedTokenAmounts[token] > 0) {
@@ -346,6 +353,9 @@ contract HexOneStaking is
             if (info.stakedTime > 0) {
                 stakedTime = (block.timestamp - info.stakedTime) / 1 days + 1;
             }
+
+            uint256 lockedUSD = IHexOnePriceFeed(hexOnePriceFeed)
+                .getBaseTokenPrice(token, lockedTokenAmounts[token]);
             status[i] = UserStakingStatus({
                 token: token,
                 stakedAmount: info.stakedAmount,
@@ -354,8 +364,7 @@ contract HexOneStaking is
                 claimableHexAmount: claimableHexAmount,
                 claimableHexitAmount: claimableHexitAmount,
                 stakedTime: stakedTime,
-                totalLockedUSD: IHexOnePriceFeed(hexOnePriceFeed)
-                    .getBaseTokenPrice(token, lockedTokenAmounts[token]),
+                totalLockedUSD: lockedUSD,
                 totalLockedAmount: lockedTokenAmounts[token],
                 shareOfPool: shareOfPool,
                 hexAPR: hexAPR,
@@ -381,14 +390,19 @@ contract HexOneStaking is
             hexAmount =
                 (info.hexShareAmount * hexRewardsRatePerShare) /
                 totalHexShareAmount;
-            hexAmount = hexAmount / 10 ** 10 - info.claimedHexAmount;
+            hexAmount = hexAmount / 10 ** 10;
+            hexAmount = hexAmount > info.claimedHexAmount
+                ? hexAmount - info.claimedHexAmount
+                : 0;
         }
 
         if (totalHexitShareAmount > 0) {
             hexitAmount =
                 (info.hexitShareAmount * hexitRewardsRatePerShare) /
                 totalHexitShareAmount;
-            hexitAmount -= info.claimedHexitAmount;
+            hexitAmount = hexitAmount > info.claimedHexitAmount
+                ? hexitAmount - info.claimedHexitAmount
+                : 0;
         }
     }
 
@@ -472,4 +486,6 @@ contract HexOneStaking is
             return _amount * (10 ** (18 - tokenDecimals));
         }
     }
+
+    uint256[100] private __gaps;
 }

@@ -9,11 +9,11 @@ const DEPLOYMENT_PARAM = {
         usdcPriceFeed: "",
         feeReceiver: "",
     },
-    goerli: {
-        dexRouter: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-        hexToken: "0xdF1906df64C5f3b13eFAA25729F5EA4b469db805",
-        usdcAddress: "0x07865c6E87B9F70255377e024ace6630C1Eaa37F",
-        usdcPriceFeed: "0xAb5c49580294Aff77670F839ea425f5b78ab3Ae7",
+    fuji: {
+        dexRouter: "0x3705aBF712ccD4fc56Ee76f0BD3009FD4013ad75",
+        hexToken: "0xEb06b60E0b3A421a7100A3b09fd25DE119831694",
+        usdcAddress: "0x8025e948a7d494A845588099cb861a903EAdcF93",
+        usdcPriceFeed: "0x7898AcCC83587C3C55116c5230C17a6Cd9C71bad",
         feeReceiver: "0x4364E1d16526c954b029b6cf9335CB1b0eaAfB69",
         teamWallet: "0x4364E1d16526c954b029b6cf9335CB1b0eaAfB69",
         feeRate: 100, // 10%
@@ -27,15 +27,15 @@ const DEPLOYMENT_PARAM = {
         rateForAirdrop: 200,
         sacrificeDistRate: 750,
         sacrificeLiquidityRate: 250,
-        airdropDistRateForHexHolder: 100,
-        airdropDistRateForHEXITHolder: 900,
+        airdropDistRateForHexHolder: 1000,
+        airdropDistRateForHEXITHolder: 9000,
         hexitDistRateForStaking: 50, // 5%
     },
 };
 
 const getDeploymentParam = () => {
-    if (network.name == "goerli") {
-        return DEPLOYMENT_PARAM.goerli;
+    if (network.name == "fuji") {
+        return DEPLOYMENT_PARAM.fuji;
     } else if (network.name == "mainnet") {
         return DEPLOYMENT_PARAM.mainnet;
     } else {
