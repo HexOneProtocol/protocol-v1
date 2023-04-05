@@ -36,6 +36,7 @@ This is due to $1 Hex1 = $1 worth of hex.
 Hex One protocols contains two ecosystem tokens: a stablecoin, and the incentive token.
 
 $HEX1 - stablecoin backed by t-shares
+
 $HEXIT - Hex One Protocol incentive token.
 
 ## Supply
