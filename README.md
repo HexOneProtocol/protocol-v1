@@ -13,7 +13,7 @@ Participants can deposit __HEX__ which creates a t-share through the Hex One pro
 ## Understanding Hex & T-Shares
 
 [Hex Layman's Guide](https://hexicans.info/documentation/contract-guide/): an overview of Hex Protocol
-[How Hex T-shares Work](](https://hexicans.info/shares/): an overview of T-shares.
+[How Hex T-shares Work](https://hexicans.info/shares/): an overview of T-shares.
 
 
 ## Hex One Workflow
