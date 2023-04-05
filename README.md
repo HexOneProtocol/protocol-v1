@@ -57,13 +57,14 @@ Hex One functionality can be brokwn down into 3 main parts: Hex One protocol, Bo
 - Claim Hex: burn $HEX1 and pay the ETH fee, and claim hex principal + yield
 - Re-borrow: if the collateral price goes up (hex), borrow more $HEX1 against the same stake
 - Liquidate: if a depositor does not burn $HEX1 and pay the ETH fee within 7 days after maturity, other participants can liquidate the depositor position and claim his hex principal + yield
-- Price Oracle: a price feed based on HEX/USDC to know the price of hex. 
+- Price Oracle: a price feed based on HEX/USDC to know the price of hex
 - Vault: a contract that holds the deposits
 
 ## Bootsrapping
 
-- Sacrifice: sacrificing means users will forego approved ERC20s (Hex, USDC, Eth, Dai and Uni) and in return receive 75% of the USD-value deposited in $HEX1 and the incentive token, $HEXIT. The amount of $HEXIT received depends on the total amount sacrificed (USD-value) and the day of sacrifice. The sooner, the more $HEXIT a user claims. Some ERC20s give bonus too.
-- Airdrop: all participants that hold $HEX1 and have staked Hex (t-shares) at the moment the airdrop starts, can claim free $HEXIT.
+- Sacrifice: sacrificing means users will forego approved ERC20s (Hex, USDC, Eth, Dai and Uni) and in return receive 75% of the USD-value deposited in $HEX1 and the incentive token, $HEXIT. The amount of $HEXIT received depends on the total amount sacrificed (USD-value) and the day of sacrifice. The sooner, the more $HEXIT a user claims. Some ERC20s give bonus too
+- Escrow: the contract that holds the depositors sacrifice and will convert 75% into Hex to deposit into Hex1 protocol on the behalf of the sacrificers. This escrow contract will also deposit the Hex into Hex One protocol on behalf of the sacrifice participants, and will distribute $HEX1 to sacriffice participants
+- Airdrop: all participants that hold $HEX1 and have staked Hex (t-shares) at the moment the airdrop starts, can claim free $HEXIT
 
 ## Staking
 
