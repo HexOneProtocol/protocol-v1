@@ -6,6 +6,8 @@ Hex One Protocol is a stablecoin backed by __HEX__ t-shares
 
 Please check the [Hex One gitbook](https://hex-one.gitbook.io/hex-one-protocol/) for detailed information
 
+Please check the [Hex One website](https:hex1.club) 
+
 ## How Hex One Works?
 
 Participants can deposit __HEX__ which creates a t-share through the Hex One protocol, and allows the user to borrow the same _dollar_-value as initially deposited. To claim the collateral, depositors must wait until maturity to claim the t-share and they must also burn the initial borrowed $HEX1 amount.
@@ -15,7 +17,6 @@ Participants can deposit __HEX__ which creates a t-share through the Hex One pro
 [Hex Layman's Guide](https://hexicans.info/documentation/contract-guide/): an overview of Hex Protocol
 
 [How Hex T-shares Work](https://hexicans.info/shares/): an overview of T-shares.
-
 
 ## Hex One Workflow
 
@@ -81,4 +82,3 @@ There is an opmitized strategy to participate in the Hex One protocol borrowing 
 | Hex Price Down | New borrow  |  |  | Yes |
 | De-peg Up | Borrow more | No | Yes |  |
 | De-Peg Down |  | Yes  | No  | Yes |
-
