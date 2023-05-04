@@ -26,10 +26,10 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     uint256 public MAX_DURATION;
 
     /// @notice The address of hex token.
-    address public hexToken;
+    address public immutable hexToken;
 
     /// @notice The address of $HEX1.
-    address public hexOneToken;
+    address public immutable hexOneToken;
 
     /// @notice The address of staking master.
     address public stakingMaster;
@@ -38,9 +38,9 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     address public hexOneEscrow;
 
     /// @dev The address to burn tokens.
-    address public DEAD;
+    address public immutable DEAD;
 
-    uint16 public FIXED_POINT;
+    uint16 public immutable FIXED_POINT;
 
     /// @notice Show vault address from token address.
     mapping(address => address) private vaultInfos;
