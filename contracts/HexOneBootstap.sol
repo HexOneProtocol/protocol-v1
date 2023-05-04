@@ -368,7 +368,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         uint256 dayIndex = info.day;
         uint256 totalWeight = totalSacrificeWeight[dayIndex];
         uint256 userWeight = info.sacrificedWeight;
-        uint256 supplyAmount = _calcSupplyAmountForSacrifice(dayIndex);
+        uint256 supplyAmount = info.supplyAmount;
         uint256 rewardsAmount = ((supplyAmount * userWeight) / totalWeight);
 
         uint256 sacrificeRewardsAmount = (rewardsAmount * rateForSacrifice) /
