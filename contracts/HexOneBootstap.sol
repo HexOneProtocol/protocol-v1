@@ -53,6 +53,8 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     /// @notice HEXIT token rate will be generated addtionally for Team.
     uint16 public additionalRateForTeam;
 
+    uint16 public sliceRate;
+
     /// @notice Allowed token info.
     mapping(address => Token) public allowedTokens;
 
@@ -140,6 +142,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
 
     function initialize(Param memory _param) public initializer {
         FIXED_POINT = 1000;
+        sliceRate = 5; // 0.5%
         distRateForDailyAirdrop = 500; // 50%
         supplyCropRateForSacrifice = 47; // 4.7%
         sacrificeInitialSupply = 5_555_555 * 1e18;
@@ -711,16 +714,19 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         if (_token != _targetToken) {
             path[0] = _token == address(0) ? dexRouter.WETH() : _token;
             path[1] = _targetToken;
+            uint256[] memory amounts = dexRouter.getAmountsOut(_amount, path);
+            uint256 minAmountOut = (amounts[1] * sliceRate) / FIXED_POINT;
+            minAmountOut = amounts[1] - minAmountOut;
 
             if (_token == address(0)) {
                 dexRouter.swapExactETHForTokensSupportingFeeOnTransferTokens{
                     value: _amount
-                }(0, path, _recipient, block.timestamp);
+                }(minAmountOut, path, _recipient, block.timestamp);
             } else {
                 IERC20(_token).approve(address(dexRouter), _amount);
                 dexRouter.swapExactTokensForTokensSupportingFeeOnTransferTokens(
                     _amount,
-                    0,
+                    minAmountOut,
                     path,
                     _recipient,
                     block.timestamp
