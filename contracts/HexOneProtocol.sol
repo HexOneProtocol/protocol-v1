@@ -113,6 +113,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     function setStakingPool(
         address _stakingMaster
     ) external override onlyOwner {
+        require(_stakingMaster != address(0), "zero stakingMaster address");
         stakingMaster = _stakingMaster;
     }
 
