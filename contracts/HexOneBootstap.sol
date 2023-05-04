@@ -577,7 +577,9 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             _token,
             _amount
         );
-        (uint256 dayIndex, ) = _getSupplyAmountForSacrificeToday();
+        uint256 dayIndex = getCurrentSacrificeDay();
+        require(dayIndex > 0, "before sacrifice startTime");
+        dayIndex -= 1;
 
         uint16 weight = allowedTokens[_token].weight == 0
             ? FIXED_POINT
@@ -625,18 +627,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         uint256 hexAmount = uint256((shares * shareRate) / 10 ** 5);
 
         return IHexOnePriceFeed(hexOnePriceFeed).getHexTokenPrice(hexAmount);
-    }
-
-    function _getSupplyAmountForSacrificeToday()
-        internal
-        view
-        returns (uint256 day, uint256 supplyAmount)
-    {
-        uint256 elapsedTime = block.timestamp - sacrificeStartTime;
-        uint256 dayIndex = elapsedTime / 1 days;
-        supplyAmount = _calcSupplyAmountForSacrifice(dayIndex);
-
-        return (dayIndex, 0);
     }
 
     function _calcSupplyAmountForSacrifice(
