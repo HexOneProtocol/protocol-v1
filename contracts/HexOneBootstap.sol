@@ -285,6 +285,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     ) external override onlyOwner {
         uint256 length = _tokens.length;
         require(length > 0, "invalid length");
+        require(length == _weights.length, "array mismatched");
         require(block.timestamp < sacrificeStartTime, "too late to set");
 
         for (uint256 i = 0; i < length; i++) {
