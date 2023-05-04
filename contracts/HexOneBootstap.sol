@@ -112,8 +112,8 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     modifier whenSacrificeDuration() {
         uint256 curTimestamp = block.timestamp;
         require(
-            curTimestamp >= sacrificeStartTime &&
-                curTimestamp <= sacrificeEndTime,
+            curTimestamp > sacrificeStartTime &&
+                curTimestamp < sacrificeEndTime,
             "not sacrifice duration"
         );
         _;
