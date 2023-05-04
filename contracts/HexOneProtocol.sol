@@ -97,7 +97,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
 
     /// @inheritdoc IHexOneProtocol
     function setVaults(
-        address[] memory _vaults,
+        address[] calldata _vaults,
         bool _add
     ) external override onlyOwner {
         _setVaults(_vaults, _add);

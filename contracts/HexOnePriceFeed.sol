@@ -55,8 +55,8 @@ contract HexOnePriceFeed is OwnableUpgradeable, IHexOnePriceFeed {
 
     /// @inheritdoc IHexOnePriceFeed
     function setMultiPriceFeed(
-        address[] memory _baseTokens,
-        address[] memory _priceFeeds
+        address[] calldata _baseTokens,
+        address[] calldata _priceFeeds
     ) external override onlyOwner {
         uint256 length = _baseTokens.length;
         require(length > 0, "invalid length array");
