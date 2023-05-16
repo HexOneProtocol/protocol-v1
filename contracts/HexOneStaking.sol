@@ -467,11 +467,11 @@ contract HexOneStaking is
         uint256 distributedHexit = rewardsPool.distributedHexit;
 
         if (hexShare > 0) {
-            hexAPR = uint16((distributedHex * 10 ** 8) / hexShare);
+            hexAPR = uint16((distributedHex * 10 ** 18) / hexShare);
         }
 
         if (hexitShare > 0) {
-            hexitAPR = uint16((distributedHexit * 10 ** 18) / hexitShare);
+            hexitAPR = uint16((distributedHexit * 10 ** 8) / hexitShare);
         }
     }
 
