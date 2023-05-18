@@ -15,14 +15,14 @@ module.exports = {
             forking: {
                 // url: "https://api.avax-test.network/ext/bc/C/rpc",
                 // blockNumber: 20593883,
-                url: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+                url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
                 blockNumber: 16589147,
-                // url: "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+                // url: `https://goerli.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
                 // blockNumber: 8611771
             },
         },
         goerli: {
-            url: "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+            url: `https://goerli.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
             chainId: 5,
             gasPrice: utils.parseUnits("100", "gwei").toNumber(),
             accounts: [process.env.DEPLOYER_WALLET],
