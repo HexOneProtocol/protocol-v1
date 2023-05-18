@@ -469,7 +469,7 @@ contract HexOneStaking is
         }
 
         if (hexitShare > 0) {
-            hexitAPR = uint16((distributedHexit * 10 ** 18) / hexitShare);
+            hexitAPR = uint16((distributedHexit * 10 ** 8) / hexitShare);
         }
     }
 
