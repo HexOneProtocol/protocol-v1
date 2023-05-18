@@ -119,8 +119,8 @@ contract HexOneStaking is
     }
 
     function addAllowedTokens(
-        address[] memory _allowedTokens,
-        DistTokenWeight[] memory _distTokenWeights
+        address[] calldata _allowedTokens,
+        DistTokenWeight[] calldata _distTokenWeights
     ) external onlyOwner {
         uint256 length = _allowedTokens.length;
         require(length > 0, "invalid length array");
@@ -147,7 +147,7 @@ contract HexOneStaking is
     }
 
     function removeAllowedTokens(
-        address[] memory _allowedTokens
+        address[] calldata _allowedTokens
     ) external onlyOwner {
         uint256 length = _allowedTokens.length;
         require(length > 0, "invalid length array");

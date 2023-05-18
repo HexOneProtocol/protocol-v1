@@ -138,7 +138,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         _disableInitializers();
     }
 
-    function initialize(Param memory _param) public initializer {
+    function initialize(Param calldata _param) public initializer {
         FIXED_POINT = 1000;
         distRateForDailyAirdrop = 500; // 50%
         supplyCropRateForSacrifice = 47; // 4.7%
@@ -264,7 +264,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
 
     /// @inheritdoc IHexOneBootstrap
     function setAllowedTokens(
-        address[] memory _tokens,
+        address[] calldata _tokens,
         bool _enable
     ) external override onlyOwner {
         uint256 length = _tokens.length;
@@ -288,8 +288,8 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
 
     /// @inheritdoc IHexOneBootstrap
     function setTokenWeight(
-        address[] memory _tokens,
-        uint16[] memory _weights
+        address[] calldata _tokens,
+        uint16[] calldata _weights
     ) external override onlyOwner {
         uint256 length = _tokens.length;
         require(length > 0, "invalid length");
