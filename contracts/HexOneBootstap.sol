@@ -272,8 +272,16 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
 
         for (uint256 i = 0; i < length; i++) {
             address token = _tokens[i];
-            allowedTokens[token].enable = true;
-            allowedTokens[token].decimals = TokenUtils.expectDecimals(token);
+            if (_enable) {
+                require(
+                    allowedTokens[token].weight != 0,
+                    "token weight is not set yet"
+                );
+                allowedTokens[token].decimals = TokenUtils.expectDecimals(
+                    token
+                );
+            }
+            allowedTokens[token].enable = _enable;
         }
         emit AllowedTokensSet(_tokens, _enable);
     }
