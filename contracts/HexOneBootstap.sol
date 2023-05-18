@@ -472,9 +472,9 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         userInfo.airdropId = (airdropId++);
         userInfo.requestedDay = getCurrentAirdropDay();
         userInfo.sacrificeUSD = userSacrificedUSD[sender];
-        userInfo.sacrificeMultiplier = airdropDistRateForHexHolder;
+        userInfo.sacrificeMultiplier = airdropDistRateForHEXITHolder;
         userInfo.hexShares = _getTotalShareUSD(sender);
-        userInfo.hexShareMultiplier = airdropDistRateForHEXITHolder;
+        userInfo.hexShareMultiplier = airdropDistRateForHexHolder;
         userInfo.totalUSD =
             (userInfo.sacrificeUSD * userInfo.sacrificeMultiplier) /
             FIXED_POINT +
