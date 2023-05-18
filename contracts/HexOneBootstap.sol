@@ -724,39 +724,17 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
                     }(0, path, _recipient, block.timestamp);
                 }
             } else {
-                if (_targetToken == address(0)) {
-                    if (_token == WETH) {
-                        IWETH9(WETH).withdraw(_amount);
-                        _transferETH(_recipient, _amount);
-                    } else {
-                        IERC20(_token).approve(address(dexRouter), _amount);
-                        dexRouter
-                            .swapExactTokensForETHSupportingFeeOnTransferTokens(
-                                _amount,
-                                0,
-                                path,
-                                _recipient,
-                                block.timestamp
-                            );
-                    }
-                } else {
-                    IERC20(_token).approve(address(dexRouter), _amount);
-                    dexRouter
-                        .swapExactTokensForTokensSupportingFeeOnTransferTokens(
-                            _amount,
-                            0,
-                            path,
-                            _recipient,
-                            block.timestamp
-                        );
-                }
+                IERC20(_token).approve(address(dexRouter), _amount);
+                dexRouter.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                    _amount,
+                    0,
+                    path,
+                    _recipient,
+                    block.timestamp
+                );
             }
         } else {
-            if (_token == address(0)) {
-                _transferETH(_recipient, _amount);
-            } else {
-                IERC20(_targetToken).safeTransfer(_recipient, _amount);
-            }
+            IERC20(_targetToken).safeTransfer(_recipient, _amount);
         }
     }
 
