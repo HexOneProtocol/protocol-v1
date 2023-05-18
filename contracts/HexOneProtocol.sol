@@ -42,6 +42,8 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
 
     uint16 public immutable FIXED_POINT;
 
+    uint8 public immutable version;
+
     /// @notice Show vault address from token address.
     mapping(address => address) private vaultInfos;
 
@@ -72,6 +74,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         _setVaults(_vaults, true);
         stakingMaster = _stakingMaster;
         hexToken = _hexToken;
+        version = 1;
 
         DEAD = 0x000000000000000000000000000000000000dEaD;
         FIXED_POINT = 1000;
@@ -277,7 +280,8 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         require(vaultAddress != address(0), "proper vault is not set");
         IERC20(_token).safeApprove(vaultAddress, realAmount);
         IERC20(_token).safeApprove(stakingMaster, feeAmount);
-        if (feeAmount > 0 && _token == hexToken) {
+        require(version != 1 || _token == hexToken, "wrong purchase token");
+        if (feeAmount > 0) {
             IHexOneStaking(stakingMaster).purchaseHex(feeAmount);
         }
 
