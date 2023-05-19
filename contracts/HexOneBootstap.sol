@@ -327,7 +327,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         uint256 _amount
     ) external whenSacrificeDuration onlyAllowedToken(_token) {
         address sender = msg.sender;
-        CheckLibrary.checkEOA(sender);
+        CheckLibrary.checkEOA();
         require(sender != address(0), "zero caller address");
         require(_token != address(0), "zero token address");
         require(_amount > 0, "zero amount");
@@ -456,7 +456,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     function requestAirdrop() external override whenAirdropDuration {
         address sender = msg.sender;
         RequestAirdrop storage userInfo = requestAirdropInfo[sender];
-        CheckLibrary.checkEOA(sender);
+        CheckLibrary.checkEOA();
         require(sender != address(0), "zero caller address");
         require(userInfo.airdropId == 0, "already requested");
 
@@ -569,7 +569,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         onlyAllowedToken(address(0))
     {
         address sender = msg.sender;
-        CheckLibrary.checkEOA(sender);
+        CheckLibrary.checkEOA();
         _updateSacrificeInfo(sender, address(0), msg.value);
     }
 
