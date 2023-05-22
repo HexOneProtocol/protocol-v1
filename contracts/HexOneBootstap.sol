@@ -15,6 +15,7 @@ import "./interfaces/IUniswapV2Router.sol";
 import "./interfaces/IHEXIT.sol";
 import "./interfaces/IHexToken.sol";
 import "./interfaces/IToken.sol";
+import "./interfaces/IWETH9.sol";
 
 /// @notice For sacrifice and airdrop
 contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
@@ -563,8 +564,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         if (_token == address(0)) {
             balance = address(this).balance;
             require(balance > 0, "zero balance");
-            (bool sent, ) = (owner()).call{value: balance}("");
-            require(sent, "sending ETH failed");
+            _transferETH(owner(), balance);
         } else {
             balance = IERC20(_token).balanceOf(address(this));
             require(balance > 0, "zero balance");
@@ -715,6 +715,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         if (_amount == 0) return;
 
         address[] memory path = new address[](2);
+        address WETH = dexRouter.WETH();
         if (_token != _targetToken) {
             path[0] = _token == address(0) ? dexRouter.WETH() : _token;
             path[1] = _targetToken;
@@ -723,9 +724,15 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             minAmountOut = amounts[1] - minAmountOut;
 
             if (_token == address(0)) {
-                dexRouter.swapExactETHForTokensSupportingFeeOnTransferTokens{
-                    value: _amount
-                }(minAmountOut, path, _recipient, block.timestamp);
+                if (_targetToken == WETH) {
+                    IWETH9(WETH).deposit{value: _amount}();
+                    IERC20(WETH).safeTransfer(_recipient, _amount);
+                } else {
+                    dexRouter
+                        .swapExactETHForTokensSupportingFeeOnTransferTokens{
+                        value: _amount
+                    }(0, path, _recipient, block.timestamp);
+                }
             } else {
                 IERC20(_token).approve(address(dexRouter), _amount);
                 dexRouter.swapExactTokensForTokensSupportingFeeOnTransferTokens(
@@ -763,6 +770,11 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             airdropHEXITAmount += airdropAmount;
             HEXITAmountForSacrifice += sacrificeRewardsAmount;
         }
+    }
+
+    function _transferETH(address _recipient, uint256 _amount) internal {
+        (bool sent, ) = _recipient.call{value: _amount}("");
+        require(sent, "sending ETH failed");
     }
 
     uint256[100] private __gap;
