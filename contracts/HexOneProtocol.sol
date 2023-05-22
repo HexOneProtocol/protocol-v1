@@ -9,6 +9,7 @@ import "./interfaces/IHexOneProtocol.sol";
 import "./interfaces/IHexOneVault.sol";
 import "./interfaces/IHexOneStaking.sol";
 import "./interfaces/IHexOneToken.sol";
+import "./utils/CheckLibrary.sol";
 
 contract HexOneProtocol is Ownable, IHexOneProtocol {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -26,10 +27,10 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     uint256 public MAX_DURATION;
 
     /// @notice The address of hex token.
-    address public hexToken;
+    address public immutable hexToken;
 
     /// @notice The address of $HEX1.
-    address public hexOneToken;
+    address public immutable hexOneToken;
 
     /// @notice The address of staking master.
     address public stakingMaster;
@@ -38,9 +39,11 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     address public hexOneEscrow;
 
     /// @dev The address to burn tokens.
-    address public DEAD;
+    address public immutable DEAD;
 
-    uint16 public FIXED_POINT;
+    uint16 public immutable FIXED_POINT;
+
+    uint8 public immutable version;
 
     /// @notice Show vault address from token address.
     mapping(address => address) private vaultInfos;
@@ -72,6 +75,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         _setVaults(_vaults, true);
         stakingMaster = _stakingMaster;
         hexToken = _hexToken;
+        version = 1;
 
         DEAD = 0x000000000000000000000000000000000000dEaD;
         FIXED_POINT = 1000;
@@ -97,7 +101,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
 
     /// @inheritdoc IHexOneProtocol
     function setVaults(
-        address[] memory _vaults,
+        address[] calldata _vaults,
         bool _add
     ) external override onlyOwner {
         _setVaults(_vaults, _add);
@@ -113,6 +117,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     function setStakingPool(
         address _stakingMaster
     ) external override onlyOwner {
+        require(_stakingMaster != address(0), "zero stakingMaster address");
         stakingMaster = _stakingMaster;
     }
 
@@ -156,6 +161,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint256 _amount
     ) external override {
         address sender = msg.sender;
+        CheckLibrary.checkEOA();
         require(sender != address(0), "zero caller address");
         require(allowedTokens.contains(_token), "not allowed token");
         require(
@@ -175,6 +181,9 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint16 _duration
     ) external override {
         address sender = msg.sender;
+        if (msg.sender != hexOneEscrow) {
+            CheckLibrary.checkEOA();
+        }
         require(sender != address(0), "zero address caller");
         require(allowedTokens.contains(_token), "invalid token");
         require(_amount > 0, "invalid amount");
@@ -206,6 +215,10 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint256 _depositId
     ) external override returns (uint256) {
         address sender = msg.sender;
+        if (sender != hexOneEscrow) {
+            CheckLibrary.checkEOA();
+        }
+
         require(sender != address(0), "zero caller address");
         require(allowedTokens.contains(_token), "not allowed token");
 
@@ -276,7 +289,8 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         require(vaultAddress != address(0), "proper vault is not set");
         IERC20(_token).safeApprove(vaultAddress, realAmount);
         IERC20(_token).safeApprove(stakingMaster, feeAmount);
-        if (feeAmount > 0 && _token == hexToken) {
+        require(version != 1 || _token == hexToken, "wrong purchase token");
+        if (feeAmount > 0) {
             IHexOneStaking(stakingMaster).purchaseHex(feeAmount);
         }
 

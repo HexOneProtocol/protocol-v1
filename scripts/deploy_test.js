@@ -285,15 +285,15 @@ async function initializeSacrifice() {
     let hexToken = await getContract("HexMockToken", "HexMockToken", "fuji");
     let mockUSDC = await getContract("HexOneMockToken", "MockUSDC", "fuji");
 
-    let tx = await hexOneBootstrap.setAllowedTokens(
+    let tx = await hexOneBootstrap.setTokenWeight(
         [hexToken.address, mockUSDC.address],
-        true
+        [5555, 3000]
     );
     await tx.wait();
 
-    tx = await hexOneBootstrap.setTokenWeight(
+    tx = await hexOneBootstrap.setAllowedTokens(
         [hexToken.address, mockUSDC.address],
-        [5555, 3000]
+        true
     );
     await tx.wait();
 }
