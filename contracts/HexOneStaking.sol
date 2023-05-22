@@ -3,7 +3,6 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
@@ -15,7 +14,6 @@ import "./utils/TokenUtils.sol";
 
 contract HexOneStaking is
     OwnableUpgradeable,
-    ERC721HolderUpgradeable,
     ReentrancyGuardUpgradeable,
     IHexOneStaking
 {
@@ -119,8 +117,8 @@ contract HexOneStaking is
     }
 
     function addAllowedTokens(
-        address[] memory _allowedTokens,
-        DistTokenWeight[] memory _distTokenWeights
+        address[] calldata _allowedTokens,
+        DistTokenWeight[] calldata _distTokenWeights
     ) external onlyOwner {
         uint256 length = _allowedTokens.length;
         require(length > 0, "invalid length array");
@@ -147,7 +145,7 @@ contract HexOneStaking is
     }
 
     function removeAllowedTokens(
-        address[] memory _allowedTokens
+        address[] calldata _allowedTokens
     ) external onlyOwner {
         uint256 length = _allowedTokens.length;
         require(length > 0, "invalid length array");
@@ -471,7 +469,7 @@ contract HexOneStaking is
         }
 
         if (hexitShare > 0) {
-            hexitAPR = uint16((distributedHexit * 10 ** 18) / hexitShare);
+            hexitAPR = uint16((distributedHexit * 10 ** 8) / hexitShare);
         }
     }
 

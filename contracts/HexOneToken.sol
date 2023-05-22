@@ -7,6 +7,8 @@ import "./interfaces/IHexOneToken.sol";
 
 contract HexOneToken is ERC20, Ownable, IHexOneToken {
     address public admin;
+    address public constant deadWallet =
+        0x000000000000000000000000000000000000dEaD;
 
     modifier onlyHexOneProtocol() {
         require(msg.sender == admin, "only Admin");
@@ -47,5 +49,21 @@ contract HexOneToken is ERC20, Ownable, IHexOneToken {
         require(_account != address(0), "zero account address");
         require(_amount > 0, "zero burn token amount");
         _burn(_account, _amount);
+    }
+
+    function _transfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual override {
+        require(
+            from != address(0) && from != deadWallet,
+            "Transfer from invalid address"
+        );
+        require(
+            to != address(0) && to != deadWallet,
+            "Transfer to invalid address"
+        );
+        super._transfer(from, to, amount);
     }
 }

@@ -381,8 +381,8 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
                     initHexPrice: depositInfo.initHexPrice,
                     currentHexPrice: curHexPrice,
                     depositedHexAmount: depositInfo.amount,
-                    currentValue: IHexOnePriceFeed(hexOnePriceFeed)
-                        .getHexTokenPrice(effectiveHex),
+                    currentValue: (effectiveHex * curHexPrice) /
+                        10 ** hexDecimals,
                     initUSDValue: initialUSDValue,
                     currentUSDValue: currentUSDValue,
                     graceDay: GRACE_DURATION,

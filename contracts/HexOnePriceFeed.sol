@@ -8,6 +8,7 @@ import "./utils/TokenUtils.sol";
 import "./interfaces/IHexOnePriceFeed.sol";
 import "./interfaces/IUniswapV2Factory.sol";
 import "./interfaces/IUniswapV2Router.sol";
+import "./interfaces/IUniswapV2Pair.sol";
 
 contract HexOnePriceFeed is OwnableUpgradeable, IHexOnePriceFeed {
     mapping(address => address) private priceFeeds;
@@ -55,8 +56,8 @@ contract HexOnePriceFeed is OwnableUpgradeable, IHexOnePriceFeed {
 
     /// @inheritdoc IHexOnePriceFeed
     function setMultiPriceFeed(
-        address[] memory _baseTokens,
-        address[] memory _priceFeeds
+        address[] calldata _baseTokens,
+        address[] calldata _priceFeeds
     ) external override onlyOwner {
         uint256 length = _baseTokens.length;
         require(length > 0, "invalid length array");
@@ -144,16 +145,21 @@ contract HexOnePriceFeed is OwnableUpgradeable, IHexOnePriceFeed {
     function _convertHexToPairToken(
         uint256 _amount
     ) internal view returns (uint256) {
-        address tokenPair = IUniswapV2Factory(dexRouter.factory()).getPair(
-            hexToken,
-            pairToken
+        IUniswapV2Pair tokenPair = IUniswapV2Pair(
+            IUniswapV2Factory(dexRouter.factory()).getPair(hexToken, pairToken)
         );
-        if (tokenPair == address(0)) {
+        if (address(tokenPair) == address(0)) {
             return 0;
         }
 
-        uint256 hexTokenBalance = IERC20(hexToken).balanceOf(tokenPair);
-        uint256 pairTokenBalance = IERC20(pairToken).balanceOf(tokenPair);
+        (uint112 reserve0, uint112 reserve1, ) = tokenPair.getReserves();
+
+        uint256 hexTokenBalance = tokenPair.token0() == hexToken
+            ? uint256(reserve0)
+            : uint256(reserve1);
+        uint256 pairTokenBalance = tokenPair.token0() == pairToken
+            ? uint256(reserve0)
+            : uint256(reserve1);
 
         return (pairTokenBalance * _amount) / hexTokenBalance;
     }
