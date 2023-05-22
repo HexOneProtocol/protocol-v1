@@ -181,7 +181,9 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint16 _duration
     ) external override {
         address sender = msg.sender;
-        CheckLibrary.checkEOA();
+        if (msg.sender != hexOneEscrow) {
+            CheckLibrary.checkEOA();
+        }
         require(sender != address(0), "zero address caller");
         require(allowedTokens.contains(_token), "invalid token");
         require(_amount > 0, "invalid amount");

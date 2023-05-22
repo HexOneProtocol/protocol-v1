@@ -8,6 +8,8 @@ const day = 24 * hour;
 
 const month = day * 30;
 
+const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
 const checkDeploymentFolder = async () => {
     if (network.name == "localhost" || network.name == "hardhat") return;
 
@@ -71,6 +73,12 @@ const deploy = async (contractName, contractMark, ...args) => {
     const factory = await ethers.getContractFactory(contractName);
     const contract = await factory.deploy(...args);
     await contract.deployed();
+
+    if (network.name != "hardhat") {
+        await delay(12000);
+        console.log("Waited 12s");
+    }
+
     await verify(contract.address, [...args]);
     console.log(contractName, contract.address);
     await updateAddress(contractMark, [contract.address]);
@@ -83,6 +91,12 @@ const deployProxy = async (contractName, contractMark, args = []) => {
         unsafeAllow: ["delegatecall", "constructor"],
     });
     await contract.deployed();
+
+    if (network.name != "hardhat") {
+        await delay(12000);
+        console.log("Waited 12s");
+    }
+
     const implAddress = await getImplementationAddress(
         ethers.provider,
         contract.address

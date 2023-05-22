@@ -256,14 +256,21 @@ describe("HexOne Protocol", function () {
     describe("Sacrifice and Airdrop", function () {
         describe("Sacrifice", function () {
             it("set allowed tokens and token weight", async function () {
-                await this.hexOneBootstrap.setAllowedTokens(
-                    [this.USDC.address, this.hexToken.address],
-                    true
-                );
+                await expect(
+                    this.hexOneBootstrap.setAllowedTokens(
+                        [this.USDC.address, this.hexToken.address],
+                        true
+                    )
+                ).to.be.revertedWith("token weight is not set yet");
 
                 await this.hexOneBootstrap.setTokenWeight(
                     [this.USDC.address, this.hexToken.address],
                     [3000, 5555]
+                );
+
+                await this.hexOneBootstrap.setAllowedTokens(
+                    [this.USDC.address, this.hexToken.address],
+                    true
                 );
             });
 
