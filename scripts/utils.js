@@ -82,6 +82,7 @@ const deploy = async (contractName, contractMark, ...args) => {
     await verify(contract.address, [...args]);
     console.log(contractName, contract.address);
     await updateAddress(contractMark, [contract.address]);
+
     return contract;
 };
 
@@ -166,6 +167,13 @@ const getETHBalance = async (walletAddress) => {
     return await ethers.provider.getBalance(walletAddress);
 };
 
+const sendETHTo = async (from, to, amount) => {
+    await from.sendTransaction({
+        to: to.address,
+        value: BigInt(amount),
+    });
+};
+
 const bigNum = (num, decimals) => num + "0".repeat(decimals);
 
 const smallNum = (num, decimals) => parseInt(num) / bigNum(1, decimals);
@@ -182,6 +190,7 @@ module.exports = {
     getCurrentTimestamp,
     spendTime,
     getETHBalance,
+    sendETHTo,
     bigNum,
     smallNum,
     hour,

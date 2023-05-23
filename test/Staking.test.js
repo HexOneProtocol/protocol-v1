@@ -59,12 +59,7 @@ describe("Staking contract test", function () {
         this.hexOnePriceFeed = await deployProxy(
             "HexOnePriceFeedTest",
             "HexOnePriceFeedTest",
-            [
-                this.hexToken.address,
-                this.mockUSDC.address,
-                usdcPriceFeed,
-                pulsexRouterAddress,
-            ]
+            [this.hexToken.address, this.mockUSDC.address, pulsexRouterAddress]
         );
 
         this.staking = await deployProxy("HexOneStaking", "HexOneStaking", [
@@ -77,17 +72,6 @@ describe("Staking contract test", function () {
 
     it("check deployment", async function () {
         console.log("deployed successfully!");
-    });
-
-    it("add mockUNI, hex and hexit tokens to priceFeed", async function () {
-        await this.hexOnePriceFeed.setMultiPriceFeed(
-            [
-                this.mockUNI.address,
-                this.mockHEXIT.address,
-                this.mockUSDC.address,
-            ],
-            [uniPriceFeed, usdcPriceFeed, usdcPriceFeed]
-        );
     });
 
     describe("setBaseData", function () {
@@ -472,14 +456,6 @@ describe("Staking contract test", function () {
 
                 expect(smallNum(hexAmount, 8)).to.be.equal(0);
                 expect(smallNum(hexitAmount, 18)).to.be.equal(0);
-            });
-
-            it("get userStakingStatus", async function () {
-                console.log(
-                    await this.staking.getUserStakingStatus(
-                        this.staker_1.address
-                    )
-                );
             });
 
             it("unstake tokens and check userStakingStatus", async function () {

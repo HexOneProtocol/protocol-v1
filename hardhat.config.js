@@ -22,6 +22,9 @@ module.exports = {
                 // url: `https://goerli.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
                 // blockNumber: 8611771
             },
+            accounts: {
+                accountsBalance: "1000000000000000000000000000",
+            },
         },
         goerli: {
             url: `https://goerli.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,

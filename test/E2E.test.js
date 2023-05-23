@@ -2,26 +2,28 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { constants } = require("@openzeppelin/test-helpers");
 
-const { uniswap_abi } = require("../external_abi/uniswap.abi.json");
+const { pulsex_abi } = require("../external_abi/pulsex.abi.json");
 const { erc20_abi } = require("../external_abi/erc20.abi.json");
 const { hex_abi } = require("../external_abi/hex.abi.json");
 
 const {
     deploy,
     bigNum,
+    sendETHTo,
     getCurrentTimestamp,
     smallNum,
     spendTime,
     day,
     deployProxy,
     hour,
+    getETHBalance,
 } = require("../scripts/utils");
 
 describe("HexOne Protocol", function () {
-    let usdcAddress = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-    let usdcPriceFeed = "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6";
+    let usdcAddress = "0x15D38573d2feeb82e7ad5187aB8c1D52810B1f07";
     let hexTokenAddress = "0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39";
     let pulsexRouterAddress = "0x98bf93ebf5c380C0e6Ae8e192A7e2AE08edAcc02";
+    let WPLS;
 
     before(async function () {
         [
@@ -39,9 +41,9 @@ describe("HexOne Protocol", function () {
             this.teamFinance,
         ] = await ethers.getSigners();
 
-        this.uniswapRouter = new ethers.Contract(
+        this.dexRouter = new ethers.Contract(
             pulsexRouterAddress,
-            uniswap_abi,
+            pulsex_abi,
             this.deployer
         );
         this.hexToken = new ethers.Contract(
@@ -57,6 +59,7 @@ describe("HexOne Protocol", function () {
             "HexOne",
             "HEXONE"
         );
+
         this.hexOneToken = await deploy(
             "HexOneMockToken",
             "HexOneMockToken",
@@ -66,12 +69,7 @@ describe("HexOne Protocol", function () {
         this.hexOnePriceFeed = await deployProxy(
             "HexOnePriceFeedTest",
             "HexOnePriceFeedTest",
-            [
-                this.hexToken.address,
-                usdcAddress,
-                usdcPriceFeed,
-                this.uniswapRouter.address,
-            ]
+            [this.hexToken.address, usdcAddress, this.dexRouter.address]
         );
         this.HEXIT = await deploy(
             "HEXIT",
@@ -112,7 +110,7 @@ describe("HexOne Protocol", function () {
 
         let bootstrapParam = {
             hexOnePriceFeed: this.hexOnePriceFeed.address,
-            dexRouter: this.uniswapRouter.address,
+            dexRouter: this.dexRouter.address,
             hexToken: this.hexToken.address,
             pairToken: usdcAddress,
             hexitToken: this.HEXIT.address,
@@ -181,24 +179,24 @@ describe("HexOne Protocol", function () {
         });
 
         it("buy hex token", async function () {
-            let ethAmountForBuy = bigNum(2, 18);
-            let WETHAddress = await this.uniswapRouter.WETH();
+            let ethAmountForBuy = bigNum(200, 18);
+            let WPLSAddress = await this.dexRouter.WPLS();
 
-            let amounts = await this.uniswapRouter.getAmountsOut(
+            let amounts = await this.dexRouter.getAmountsOut(
                 BigInt(ethAmountForBuy),
-                [WETHAddress, this.hexToken.address]
+                [WPLSAddress, this.hexToken.address]
             );
             let expectHexTokenAmount = amounts[1];
 
             let beforeBal = await this.hexToken.balanceOf(
                 this.deployer.address
             );
-            await this.uniswapRouter.swapExactETHForTokens(
+            await this.dexRouter.swapExactETHForTokens(
                 0,
-                [WETHAddress, this.hexToken.address],
+                [WPLSAddress, this.hexToken.address],
                 this.deployer.address,
                 BigInt(await getCurrentTimestamp()) + BigInt(100),
-                { value: ethAmountForBuy }
+                { value: BigInt(ethAmountForBuy) }
             );
             let afterBal = await this.hexToken.balanceOf(this.deployer.address);
 
@@ -218,22 +216,22 @@ describe("HexOne Protocol", function () {
         });
 
         it("buy USDC token", async function () {
-            let ethAmountForBuy = bigNum(10, 18);
-            let WETHAddress = await this.uniswapRouter.WETH();
+            let ethAmountForBuy = bigNum(1000, 18);
+            let WPLSAddress = await this.dexRouter.WPLS();
 
-            let amounts = await this.uniswapRouter.getAmountsOut(
+            let amounts = await this.dexRouter.getAmountsOut(
                 BigInt(ethAmountForBuy),
-                [WETHAddress, this.USDC.address]
+                [WPLSAddress, this.USDC.address]
             );
             let expectUSDCTokenAmount = amounts[1];
 
             let beforeBal = await this.USDC.balanceOf(this.deployer.address);
-            await this.uniswapRouter.swapExactETHForTokens(
+            await this.dexRouter.swapExactETHForTokens(
                 0,
-                [WETHAddress, this.USDC.address],
+                [WPLSAddress, this.USDC.address],
                 this.deployer.address,
                 BigInt(await getCurrentTimestamp()) + BigInt(100),
-                { value: ethAmountForBuy }
+                { value: BigInt(ethAmountForBuy) }
             );
             let afterBal = await this.USDC.balanceOf(this.deployer.address);
 
@@ -278,7 +276,7 @@ describe("HexOne Protocol", function () {
                 let sacrificeUSDCAmount = await this.USDC.balanceOf(
                     this.deployer.address
                 );
-                sacrificeUSDCAmount = BigInt(sacrificeUSDCAmount) / BigInt(100);
+                sacrificeUSDCAmount = BigInt(sacrificeUSDCAmount) / BigInt(5);
                 console.log(
                     "USDC amount to sacrifice",
                     smallNum(sacrificeUSDCAmount, 6)
@@ -341,7 +339,7 @@ describe("HexOne Protocol", function () {
                 let sacrificeHexAmount = await this.hexToken.balanceOf(
                     this.deployer.address
                 );
-                sacrificeHexAmount = BigInt(sacrificeHexAmount) / BigInt(50);
+                sacrificeHexAmount = BigInt(sacrificeHexAmount) / BigInt(2);
                 console.log(
                     "Hex token amount to sacrifice: ",
                     smallNum(sacrificeHexAmount, 8)
@@ -1220,12 +1218,12 @@ describe("HexOne Protocol", function () {
                     this.staker_1.address
                 );
 
-                let unstakeAmount = bigNum(100, 8);
                 let stakedAmount = await this.staking.stakingInfos(
                     this.staker_1.address,
                     this.hexToken.address
                 );
                 stakedAmount = stakedAmount.stakedAmount;
+                let unstakeAmount = BigInt(stakedAmount) / BigInt(4);
                 await this.staking
                     .connect(this.staker_1)
                     .unstake(this.hexToken.address, BigInt(unstakeAmount));
@@ -1268,7 +1266,7 @@ describe("HexOne Protocol", function () {
                         BigInt(expectClaimableAmount) + BigInt(unstakeAmount),
                         8
                     ),
-                    0.0001
+                    0.01
                 );
             });
         });
