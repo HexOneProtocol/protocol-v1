@@ -11,7 +11,7 @@ import "./utils/CheckLibrary.sol";
 import "./interfaces/IHexOneBootstrap.sol";
 import "./interfaces/IHexOneStaking.sol";
 import "./interfaces/IHexOnePriceFeed.sol";
-import "./interfaces/uniswap/IUniswapV2Router.sol";
+import "./interfaces/pulsex/IPulseXRouter.sol";
 import "./interfaces/IHEXIT.sol";
 import "./interfaces/IHexToken.sol";
 import "./interfaces/IToken.sol";
@@ -88,7 +88,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     /// @notice Requested amount by daily.
     mapping(uint256 => uint256) public requestedAmountInfo;
 
-    IUniswapV2Router02 public dexRouter;
+    IPulseXRouter02 public dexRouter;
     address public hexOnePriceFeed;
     address public hexitToken;
     address public hexToken;
@@ -180,7 +180,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             1 days;
 
         require(_param.dexRouter != address(0), "zero dexRouter address");
-        dexRouter = IUniswapV2Router02(_param.dexRouter);
+        dexRouter = IPulseXRouter02(_param.dexRouter);
 
         require(_param.hexToken != address(0), "zero hexToken address");
         require(_param.pairToken != address(0), "zero pairToken address");
@@ -715,9 +715,9 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         if (_amount == 0) return;
 
         address[] memory path = new address[](2);
-        address WETH = dexRouter.WETH();
+        address WETH = dexRouter.WPLS();
         if (_token != _targetToken) {
-            path[0] = _token == address(0) ? dexRouter.WETH() : _token;
+            path[0] = _token == address(0) ? dexRouter.WPLS() : _token;
             path[1] = _targetToken;
             uint256[] memory amounts = dexRouter.getAmountsOut(_amount, path);
             uint256 minAmountOut = (amounts[1] * sliceRate) / FIXED_POINT;

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: None
 pragma solidity ^0.8.17;
 
-interface IUniswapV2Pair {
+interface IPulseXPair {
     function name() external pure returns (string memory);
 
     function symbol() external pure returns (string memory);
