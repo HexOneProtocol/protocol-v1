@@ -21,7 +21,7 @@ describe("HexOne Protocol", function () {
     let usdcAddress = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
     let usdcPriceFeed = "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6";
     let hexTokenAddress = "0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39";
-    let uniswapRouterAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+    let pulsexRouterAddress = "0x98bf93ebf5c380C0e6Ae8e192A7e2AE08edAcc02";
 
     before(async function () {
         [
@@ -40,7 +40,7 @@ describe("HexOne Protocol", function () {
         ] = await ethers.getSigners();
 
         this.uniswapRouter = new ethers.Contract(
-            uniswapRouterAddress,
+            pulsexRouterAddress,
             uniswap_abi,
             this.deployer
         );

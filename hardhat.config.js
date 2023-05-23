@@ -15,8 +15,10 @@ module.exports = {
             forking: {
                 // url: "https://api.avax-test.network/ext/bc/C/rpc",
                 // blockNumber: 20593883,
-                url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
-                blockNumber: 16589147,
+                // url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
+                // blockNumber: 16589147,
+                url: "https://rpc.pulsechain.com",
+                blockNumber: 17334026,
                 // url: `https://goerli.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
                 // blockNumber: 8611771
             },

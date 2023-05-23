@@ -11,7 +11,7 @@ import "./utils/CheckLibrary.sol";
 import "./interfaces/IHexOneBootstrap.sol";
 import "./interfaces/IHexOneStaking.sol";
 import "./interfaces/IHexOnePriceFeed.sol";
-import "./interfaces/IUniswapV2Router.sol";
+import "./interfaces/uniswap/IUniswapV2Router.sol";
 import "./interfaces/IHEXIT.sol";
 import "./interfaces/IHexToken.sol";
 import "./interfaces/IToken.sol";

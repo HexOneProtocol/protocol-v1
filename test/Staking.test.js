@@ -20,7 +20,7 @@ const {
 describe("Staking contract test", function () {
     let usdcPriceFeed = "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6";
     let uniPriceFeed = "0x553303d460EE0afB37EdFf9bE42922D8FF63220e";
-    let uniswapRouterAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+    let pulsexRouterAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 
     before(async function () {
         [
@@ -63,7 +63,7 @@ describe("Staking contract test", function () {
                 this.hexToken.address,
                 this.mockUSDC.address,
                 usdcPriceFeed,
-                uniswapRouterAddress,
+                pulsexRouterAddress,
             ]
         );
 

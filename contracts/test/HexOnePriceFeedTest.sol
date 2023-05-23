@@ -6,8 +6,8 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 import "../utils/TokenUtils.sol";
 import "../interfaces/IHexOnePriceFeed.sol";
-import "../interfaces/IUniswapV2Factory.sol";
-import "../interfaces/IUniswapV2Router.sol";
+import "../interfaces/uniswap/IUniswapV2Factory.sol";
+import "../interfaces/uniswap/IUniswapV2Router.sol";
 
 contract HexOnePriceFeedTest is OwnableUpgradeable, IHexOnePriceFeed {
     mapping(address => address) private priceFeeds;
