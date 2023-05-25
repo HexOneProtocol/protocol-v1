@@ -1,3 +1,4 @@
+{
   "Vault_abi": [
     {
       "inputs": [],
@@ -599,3 +600,4 @@
       "type": "function"
     }
   ]
+}

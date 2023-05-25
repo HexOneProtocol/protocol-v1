@@ -1,3 +1,4 @@
+{
   "Protocol_abi": [
     {
       "inputs": [
@@ -447,5 +448,19 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "version",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     }
   ]
+}

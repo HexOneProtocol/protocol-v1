@@ -1,27 +1,7 @@
+{
   "Staking_abi": [
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_hexToken",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_hexitToken",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_hexOnePriceFeed",
-          "type": "address"
-        },
-        {
-          "internalType": "uint16",
-          "name": "_hexitDistRate",
-          "type": "uint16"
-        }
-      ],
+      "inputs": [],
       "stateMutability": "nonpayable",
       "type": "constructor"
     },
@@ -45,6 +25,19 @@
       ],
       "name": "ERC20CallFailed",
       "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "version",
+          "type": "uint8"
+        }
+      ],
+      "name": "Initialized",
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -393,6 +386,34 @@
       "inputs": [
         {
           "internalType": "address",
+          "name": "_hexToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_hexitToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_hexOnePriceFeed",
+          "type": "address"
+        },
+        {
+          "internalType": "uint16",
+          "name": "_hexitDistRate",
+          "type": "uint16"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "",
           "type": "address"
         }
@@ -406,40 +427,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes",
-          "name": "",
-          "type": "bytes"
-        }
-      ],
-      "name": "onERC721Received",
-      "outputs": [
-        {
-          "internalType": "bytes4",
-          "name": "",
-          "type": "bytes4"
-        }
-      ],
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -708,3 +695,4 @@
       "type": "function"
     }
   ]
+}

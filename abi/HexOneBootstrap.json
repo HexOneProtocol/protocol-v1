@@ -1,3 +1,4 @@
+{
   "Bootstrap_abi": [
     {
       "inputs": [],
@@ -317,7 +318,7 @@
       "name": "dexRouter",
       "outputs": [
         {
-          "internalType": "contract IUniswapV2Router02",
+          "internalType": "contract IPulseXRouter02",
           "name": "",
           "type": "address"
         }
@@ -1201,6 +1202,19 @@
     },
     {
       "inputs": [],
+      "name": "sliceRate",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "stakingContract",
       "outputs": [
         {
@@ -1350,3 +1364,4 @@
       "type": "receive"
     }
   ]
+}
