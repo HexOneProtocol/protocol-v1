@@ -1,0 +1,3 @@
+{
+  "contract": "0xC82611A5C1eA0384bfFB5afA6BAD20Ac40151d16"
+}

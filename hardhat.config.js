@@ -38,6 +38,12 @@ module.exports = {
             gasPrice: utils.parseUnits("100", "gwei").toNumber(),
             accounts: [process.env.DEPLOYER_WALLET],
         },
+        pulse_test: {
+            url: "https://rpc.v4.testnet.pulsechain.com",
+            chainId: 943,
+            gasPrice: utils.parseUnits("100", "gwei").toNumber(),
+            accounts: [process.env.DEPLOYER_WALLET_PULSE],
+        },
         fuji: {
             url: "https://api.avax-test.network/ext/bc/C/rpc",
             chainId: 43113,

@@ -25,23 +25,19 @@ async function deployBootstrap() {
     let hexOnePriceFeed = await getContract(
         "HexOnePriceFeedTest",
         "HexOnePriceFeedTest",
-        "fuji"
+        network.name
     );
 
-    hexOneToken = await getContract("HexOneToken", "HexOneToken", "fuji");
+    hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
     hexOneProtocol = await getContract(
         "HexOneProtocol",
         "HexOneProtocol",
-        "fuji"
+        network.name
     );
 
-    let HEXIT = await getContract("HEXIT", "HEXIT", "fuji");
+    let HEXIT = await getContract("HEXIT", "HEXIT", network.name);
 
-    let stakingPool = await getContract(
-        "HexOneStaking",
-        "HexOneStaking",
-        "fuji"
-    );
+    let stakingPool = await getContract("HexOneStaking", "HexOneStaking", network.name);
 
     let sacrificeStartTime =
         BigInt(await getCurrentTimestamp()) + BigInt(param.sacrificeStartTime);
@@ -98,22 +94,17 @@ async function deployProtocol() {
         "HEXONE"
     );
 
-    // let hexOneToken = await getContract("HexOneToken", "HexOneToken", "fuji");
+    // let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
 
     let hexOnePriceFeed = await deployProxy(
         "HexOnePriceFeedTest",
         "HexOnePriceFeedTest",
-        [
-            param.hexToken,
-            param.usdcAddress,
-            param.usdcPriceFeed,
-            param.dexRouter,
-        ]
+        [param.hexToken, param.usdcAddress, param.dexRouter]
     );
     // let hexOnePriceFeed = await getContract(
     //     "HexOnePriceFeedTest",
     //     "HexOnePriceFeedTest",
-    //     "fuji"
+    //     network.name
     // );
 
     let hexOneVault = await deployProxy("HexOneVault", "HexOneVault", [
@@ -127,16 +118,14 @@ async function deployProtocol() {
         "Hex Incentive Token",
         "HEXIT"
     );
-    // let hexitToken = await getContract("HEXIT", "HEXIT", "fuji");
+    // let hexitToken = await getContract("HEXIT", "HEXIT", network.name);
 
-    let hexOneStaking = await deploy(
-        "HexOneStaking",
-        "HexOneStaking",
+    let hexOneStaking = await deployProxy("HexOneStaking", "HexOneStaking", [
         param.hexToken,
         hexitToken.address,
         hexOnePriceFeed.address,
-        param.hexitDistRateForStaking
-    );
+        param.hexitDistRateForStaking,
+    ]);
 
     let hexOneProtocol = await deploy(
         "HexOneProtocol",
@@ -151,39 +140,31 @@ async function deployProtocol() {
 }
 
 async function getContracts() {
-    let hexToken = await getContract("HexMockToken", "HexMockToken", "fuji");
-    let hexOneToken = await getContract("HexOneToken", "HexOneToken", "fuji");
+    let hexToken = await getContract("HexMockToken", "HexMockToken", network.name);
+    let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
     let hexOnePriceFeed = await getContract(
         "HexOnePriceFeedTest",
         "HexOnePriceFeedTest",
-        "fuji"
+        network.name
     );
 
-    let hexOneVault = await getContract("HexOneVault", "HexOneVault", "fuji");
-    let stakingPool = await getContract(
-        "HexOneStaking",
-        "HexOneStaking",
-        "fuji"
-    );
+    let hexOneVault = await getContract("HexOneVault", "HexOneVault", network.name);
+    let stakingPool = await getContract("HexOneStaking", "HexOneStaking", network.name);
     let hexOneProtocol = await getContract(
         "HexOneProtocol",
         "HexOneProtocol",
-        "fuji"
+        network.name
     );
 
-    let HEXIT = await getContract("HEXIT", "HEXIT", "fuji");
+    let HEXIT = await getContract("HEXIT", "HEXIT", network.name);
 
     let hexOneBootstrap = await getContract(
         "HexOneBootstrap",
         "HexOneBootstrap",
-        "fuji"
+        network.name
     );
 
-    let hexOneEscrow = await getContract(
-        "HexOneEscrow",
-        "HexOneEscrow",
-        "fuji"
-    );
+    let hexOneEscrow = await getContract("HexOneEscrow", "HexOneEscrow", network.name);
 
     return [
         hexToken,
@@ -238,23 +219,22 @@ async function initialize() {
 async function addLiquidity() {
     const [deployer] = await ethers.getSigners();
     let param = getDeploymentParam();
-    let USDC = await getContract("HexOneMockToken", "MockUSDC", "fuji");
+    let USDC = await getContract("HexOneMockToken", "MockUSDC", network.name);
     let uniswapRouter = new ethers.Contract(
         param.dexRouter,
         uniswap_abi,
         deployer
     );
     // let hexToken = new ethers.Contract(param.hexToken, erc20_abi, deployer);
-    let hexToken = await getContract("HexMockToken", "HexMockToken", "fuji");
+    let hexToken = await getContract("HexMockToken", "HexMockToken", network.name);
     let hexAmountForLiquidity = bigNum(1000000, 8);
-    await hexToken.mintToken(deployer.address, BigInt(hexAmountForLiquidity));
+    let tx = await hexToken.mintTo(deployer.address, BigInt(hexAmountForLiquidity));
+    await tx.wait();
     let usdcForLiquidity = bigNum(40000, 18);
-    await USDC.mintToken(BigInt(usdcForLiquidity), deployer.address);
+    tx = await USDC.mintToken(BigInt(usdcForLiquidity), deployer.address);
+    await tx.wait();
 
-    let tx = await USDC.approve(
-        uniswapRouter.address,
-        BigInt(usdcForLiquidity)
-    );
+    tx = await USDC.approve(uniswapRouter.address, BigInt(usdcForLiquidity));
     await tx.wait();
 
     tx = await hexToken.approve(
@@ -279,11 +259,11 @@ async function initializeSacrifice() {
     let hexOneBootstrap = await getContract(
         "HexOneBootstrap",
         "HexOneBootstrap",
-        "fuji"
+        network.name
     );
 
-    let hexToken = await getContract("HexMockToken", "HexMockToken", "fuji");
-    let mockUSDC = await getContract("HexOneMockToken", "MockUSDC", "fuji");
+    let hexToken = await getContract("HexMockToken", "HexMockToken", network.name);
+    let mockUSDC = await getContract("HexOneMockToken", "MockUSDC", network.name);
 
     let tx = await hexOneBootstrap.setTokenWeight(
         [hexToken.address, mockUSDC.address],
@@ -302,7 +282,7 @@ async function updateHexOneBootstrap() {
     let hexOneBootstrap = await getContract(
         "HexOneBootstrap",
         "HexOneBootstrap",
-        "fuji"
+        network.name
     );
     await upgradeProxy("HexOneBootstrap", hexOneBootstrap.address);
     await verifyProxy("HexOneBootstrap", "HexOneBootstrap");
@@ -316,7 +296,7 @@ async function updateHexOneStaking() {
     let hexOneStaking = await getContract(
         "HexOneStaking",
         "HexOneStaking",
-        "fuji"
+        network.name
     );
 
     let hexToken = await hexOneStaking.hexToken();
@@ -333,11 +313,7 @@ async function updateHexOneStaking() {
 }
 
 async function verifyHexMockToken() {
-    let hexMockToken = await getContract(
-        "HexMockToken",
-        "HexMockToken",
-        "fuji"
-    );
+    let hexMockToken = await getContract("HexMockToken", "HexMockToken", network.name);
     await verify(hexMockToken.address);
 }
 
@@ -349,24 +325,24 @@ async function upgradeHexOneStaking() {
     let hexOneStaking = await getContract(
         "HexOneStaking",
         "HexOneStaking",
-        "fuji"
+        network.name
     );
     await upgradeProxy("HexOneStaking", "HexOneStaking", hexOneStaking.address);
 }
 
 async function verifyHexOneProtocol() {
     let param = getDeploymentParam();
-    let hexOneToken = await getContract("HexOneToken", "HexOneToken", "fuji");
-    let hexOneVault = await getContract("HexOneVault", "HexOneVault", "fuji");
+    let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
+    let hexOneVault = await getContract("HexOneVault", "HexOneVault", network.name);
     let hexOneStaking = await getContract(
         "HexOneStaking",
         "HexOneStaking",
-        "fuji"
+        network.name
     );
     let hexOneProtocol = await getContract(
         "HexOneProtocol",
         "HexOneProtocol",
-        "fuji"
+        network.name
     );
 
     await verify(hexOneProtocol.address, [
@@ -380,9 +356,9 @@ async function verifyHexOneProtocol() {
 }
 
 async function addAllowedTokensToStaking() {
-    let mockUSDC = await getContract("HexOneMockToken", "MockUSDC", "fuji");
-    let hexToken = await getContract("HexMockToken", "HexMockToken", "fuji");
-    let staking = await getContract("HexOneStaking", "HexOneStaking", "fuji");
+    let mockUSDC = await getContract("HexOneMockToken", "MockUSDC", network.name);
+    let hexToken = await getContract("HexMockToken", "HexMockToken", network.name);
+    let staking = await getContract("HexOneStaking", "HexOneStaking", network.name);
 
     let tx = await staking.addAllowedTokens(
         [mockUSDC.address, hexToken.address],
@@ -404,14 +380,14 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
 
-    console.log("deploy protocol");
-    await deployProtocol();
+    // console.log("deploy protocol");
+    // await deployProtocol();
 
-    console.log("deploy Bootstrap");
-    await deployBootstrap();
+    // console.log("deploy Bootstrap");
+    // await deployBootstrap();
 
-    console.log("initialize contracts");
-    await initialize();
+    // console.log("initialize contracts");
+    // await initialize();
 
     console.log("add liquidity");
     await addLiquidity();

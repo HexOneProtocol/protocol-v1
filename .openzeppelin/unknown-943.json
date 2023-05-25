@@ -1,0 +1,1811 @@
+{
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0x9153518E1bCE71D32fE7870B6c5dB4b578993941",
+    "txHash": "0x69f64f724c1d3434423e5deae209f580514b42d4d14e05c1a44c420287ca370f"
+  },
+  "proxies": [
+    {
+      "address": "0x89D2588ca102Cad384364d203Ad846ef91812dEC",
+      "txHash": "0x88f0ce087851fc08ec5b2e0220ebff2c0aab31a04b9368bf17b31c9d30086f41",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x116E09801c6F87d1f78D3C47b4356203eB303d6e",
+      "txHash": "0xbd4d47bb42011c0145353c3ab6f58f31326366cf04e4ea04ddf18d28b9dee1fe",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x95A1464A89Fda24D36166E6a2192ADAA36c65969",
+      "txHash": "0xdd6e81825bad975bff6ae54ba329b1cdd13c22ac7596cbdfcce456e261fc5dd9",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x8A15DaD1C9531774fA3c3a863D16bd47ac7338F8",
+      "txHash": "0x25ac2ede0096218b5ef37d34a6d180e2b0f0cb807c3ea69fd8d57e5d795222d1",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xf99eE611e5c5b38657C92cFaeB393Cd03697c1D9",
+      "txHash": "0x8fb7ff3daec208bc8c9647b8c9d00f7011dce90241cf6fbb073af2cb2b81a0eb",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x897838dfB60f33808816B44A39eb0750729771C8",
+      "txHash": "0xb10fd0333943e3cc198aedc6f553b18167dc49719c824ef102052c3791bb111b",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x89b85e7e50F848C651481aB562d17F5f308cb3D8",
+      "txHash": "0xf7ee4b6e465788f67c30af300cc4e4faec06bbaf91327a3f39b8caab527b90c1",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x87EF5a1486Aa5b291D022c696D83e149531b58EB",
+      "txHash": "0xbb17b1a715de64d6dbc4f5d03ff829f487ed6471e74b7c4c595172bf82a9f5f8",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x4621d19Ea5d36afA427952b1E3266D82b183B0dA",
+      "txHash": "0x092aa27553d7767b953fb36fcda1b9af39367dbbf1cef69554a900e81d8076b4",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xE093d84a8FCE768F37B393344396aC511ed0875F",
+      "txHash": "0x46ea308d483e2d3b26acf30e0e30c4d5430eaaad8cd5c5349ad48356f775d4cb",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "6a5d12e19d7671f647f8ac75915265aca03cf235ad31e43ece0ff5755132bc70": {
+      "address": "0x005c145e0D5295507c700d87F56f68B9CfA9Eab5",
+      "txHash": "0x85190ca97b73db3b8894db88d48b66bc26ba7ff092377e8bd01ce85284dc36ad",
+      "layout": {
+        "solcVersion": "0.8.17",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "FIXED_POINT_SCALAR",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_uint256",
+            "contract": "HexOnePriceFeedTest",
+            "src": "contracts\\test\\HexOnePriceFeedTest.sol:14"
+          },
+          {
+            "label": "hexToken",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_address",
+            "contract": "HexOnePriceFeedTest",
+            "src": "contracts\\test\\HexOnePriceFeedTest.sol:16"
+          },
+          {
+            "label": "pairToken",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_address",
+            "contract": "HexOnePriceFeedTest",
+            "src": "contracts\\test\\HexOnePriceFeedTest.sol:19"
+          },
+          {
+            "label": "dexRouter",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_contract(IPulseXRouter02)13520",
+            "contract": "HexOnePriceFeedTest",
+            "src": "contracts\\test\\HexOnePriceFeedTest.sol:21"
+          },
+          {
+            "label": "testRate",
+            "offset": 20,
+            "slot": "104",
+            "type": "t_uint16",
+            "contract": "HexOnePriceFeedTest",
+            "src": "contracts\\test\\HexOnePriceFeedTest.sol:23"
+          },
+          {
+            "label": "FIXED_POINT",
+            "offset": 22,
+            "slot": "104",
+            "type": "t_uint16",
+            "contract": "HexOnePriceFeedTest",
+            "src": "contracts\\test\\HexOnePriceFeedTest.sol:25"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_array(t_uint256)100_storage",
+            "contract": "HexOnePriceFeedTest",
+            "src": "contracts\\test\\HexOnePriceFeedTest.sol:112"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)100_storage": {
+            "label": "uint256[100]",
+            "numberOfBytes": "3200"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_contract(IPulseXRouter02)13520": {
+            "label": "contract IPulseXRouter02",
+            "numberOfBytes": "20"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "0b08fa58871260d992367d0b1a415f15ccc47af465c578e72e7dff3d91569f11": {
+      "address": "0xA8f0a144ffB6f544FbF193462A1F07CBF67B3D4E",
+      "txHash": "0x86b83451fba36f134fc7e7b8237d63d42dc6848134b6cbcd7d8f0cc357db3b9b",
+      "layout": {
+        "solcVersion": "0.8.17",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "availableDepositIds",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_struct(UintSet)3232_storage",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:19"
+          },
+          {
+            "label": "hexOneProtocol",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_address",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:22"
+          },
+          {
+            "label": "hexToken",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_address",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:25"
+          },
+          {
+            "label": "hexOnePriceFeed",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_address",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:28"
+          },
+          {
+            "label": "totalLocked",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_uint256",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:31"
+          },
+          {
+            "label": "lockedUSDValue",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_uint256",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:34"
+          },
+          {
+            "label": "FIXED_POINT_PAYOUT",
+            "offset": 0,
+            "slot": "108",
+            "type": "t_uint256",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:36"
+          },
+          {
+            "label": "hexDecimals",
+            "offset": 0,
+            "slot": "109",
+            "type": "t_uint8",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:38"
+          },
+          {
+            "label": "GRACE_DURATION",
+            "offset": 1,
+            "slot": "109",
+            "type": "t_uint16",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:41"
+          },
+          {
+            "label": "FIXED_POINT",
+            "offset": 3,
+            "slot": "109",
+            "type": "t_uint16",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:43"
+          },
+          {
+            "label": "depositId",
+            "offset": 0,
+            "slot": "110",
+            "type": "t_uint256",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:45"
+          },
+          {
+            "label": "userInfos",
+            "offset": 0,
+            "slot": "111",
+            "type": "t_mapping(t_address,t_struct(UserInfo)11879_storage)",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:48"
+          },
+          {
+            "label": "vaultDepositInfos",
+            "offset": 0,
+            "slot": "112",
+            "type": "t_mapping(t_uint256,t_struct(VaultDepositInfo)11910_storage)",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:51"
+          },
+          {
+            "label": "userDepositIds",
+            "offset": 0,
+            "slot": "113",
+            "type": "t_mapping(t_address,t_struct(UintSet)3232_storage)",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:53"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "114",
+            "type": "t_array(t_uint256)100_storage",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:533"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)100_storage": {
+            "label": "uint256[100]",
+            "numberOfBytes": "3200"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(UintSet)3232_storage)": {
+            "label": "mapping(address => struct EnumerableSet.UintSet)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(UserInfo)11879_storage)": {
+            "label": "mapping(address => struct IHexOneVault.UserInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(DepositInfo)11865_storage)": {
+            "label": "mapping(uint256 => struct IHexOneVault.DepositInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(VaultDepositInfo)11910_storage)": {
+            "label": "mapping(uint256 => struct IHexOneVault.VaultDepositInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(DepositInfo)11865_storage": {
+            "label": "struct IHexOneVault.DepositInfo",
+            "members": [
+              {
+                "label": "vaultDepositId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "stakeId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "shares",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "mintAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "depositedHexDay",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "initHexPrice",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "duration",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "graceDay",
+                "type": "t_uint16",
+                "offset": 2,
+                "slot": "7"
+              },
+              {
+                "label": "exist",
+                "type": "t_bool",
+                "offset": 4,
+                "slot": "7"
+              }
+            ],
+            "numberOfBytes": "256"
+          },
+          "t_struct(Set)2760_storage": {
+            "label": "struct EnumerableSet.Set",
+            "members": [
+              {
+                "label": "_values",
+                "type": "t_array(t_bytes32)dyn_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_indexes",
+                "type": "t_mapping(t_bytes32,t_uint256)",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(UintSet)3232_storage": {
+            "label": "struct EnumerableSet.UintSet",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)2760_storage",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(UserInfo)11879_storage": {
+            "label": "struct IHexOneVault.UserInfo",
+            "members": [
+              {
+                "label": "depositId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "shareBalance",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "depositedBalance",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "totalBorrowedAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "depositInfos",
+                "type": "t_mapping(t_uint256,t_struct(DepositInfo)11865_storage)",
+                "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_struct(VaultDepositInfo)11910_storage": {
+            "label": "struct IHexOneVault.VaultDepositInfo",
+            "members": [
+              {
+                "label": "userAddress",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "userDepositId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "def7c6ee399ed3be75d2562f8c4ab08d7b46f21e878de22954c8644201a019a4": {
+      "address": "0x7CE1C19919E7f80A434216c9df4c06b2253F1d82",
+      "txHash": "0x8a2c93905d3506eab3a25e196ded6097f8789be864a99d8d9d779238d8ec5f70",
+      "layout": {
+        "solcVersion": "0.8.17",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:88"
+          },
+          {
+            "label": "allowedTokens",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_struct(AddressSet)3075_storage",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:24"
+          },
+          {
+            "label": "rewardsPool",
+            "offset": 0,
+            "slot": "153",
+            "type": "t_struct(RewardsPool)11777_storage",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:26"
+          },
+          {
+            "label": "distTokenWeights",
+            "offset": 0,
+            "slot": "157",
+            "type": "t_mapping(t_address,t_struct(DistTokenWeight)11751_storage)",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:28"
+          },
+          {
+            "label": "lockedTokenAmounts",
+            "offset": 0,
+            "slot": "158",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:29"
+          },
+          {
+            "label": "stakingInfos",
+            "offset": 0,
+            "slot": "159",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_struct(StakingInfo)11768_storage))",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:30"
+          },
+          {
+            "label": "hexRewardsRatePerShare",
+            "offset": 0,
+            "slot": "160",
+            "type": "t_uint256",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:32"
+          },
+          {
+            "label": "hexitRewardsRatePerShare",
+            "offset": 0,
+            "slot": "161",
+            "type": "t_uint256",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:33"
+          },
+          {
+            "label": "totalHexShareAmount",
+            "offset": 0,
+            "slot": "162",
+            "type": "t_uint256",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:34"
+          },
+          {
+            "label": "totalHexitShareAmount",
+            "offset": 0,
+            "slot": "163",
+            "type": "t_uint256",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:35"
+          },
+          {
+            "label": "stakingLaunchTime",
+            "offset": 0,
+            "slot": "164",
+            "type": "t_uint256",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:36"
+          },
+          {
+            "label": "hexOneProtocol",
+            "offset": 0,
+            "slot": "165",
+            "type": "t_address",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:38"
+          },
+          {
+            "label": "hexOneBootstrap",
+            "offset": 0,
+            "slot": "166",
+            "type": "t_address",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:39"
+          },
+          {
+            "label": "hexToken",
+            "offset": 0,
+            "slot": "167",
+            "type": "t_address",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:40"
+          },
+          {
+            "label": "hexitToken",
+            "offset": 0,
+            "slot": "168",
+            "type": "t_address",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:41"
+          },
+          {
+            "label": "hexOnePriceFeed",
+            "offset": 0,
+            "slot": "169",
+            "type": "t_address",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:42"
+          },
+          {
+            "label": "hexitDistRate",
+            "offset": 20,
+            "slot": "169",
+            "type": "t_uint16",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:45"
+          },
+          {
+            "label": "stakingEnable",
+            "offset": 22,
+            "slot": "169",
+            "type": "t_bool",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:46"
+          },
+          {
+            "label": "__gaps",
+            "offset": 0,
+            "slot": "170",
+            "type": "t_array(t_uint256)100_storage",
+            "contract": "HexOneStaking",
+            "src": "contracts\\HexOneStaking.sol:488"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)100_storage": {
+            "label": "uint256[100]",
+            "numberOfBytes": "3200"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_struct(StakingInfo)11768_storage))": {
+            "label": "mapping(address => mapping(address => struct IHexOneStaking.StakingInfo))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(DistTokenWeight)11751_storage)": {
+            "label": "mapping(address => struct IHexOneStaking.DistTokenWeight)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(StakingInfo)11768_storage)": {
+            "label": "mapping(address => struct IHexOneStaking.StakingInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AddressSet)3075_storage": {
+            "label": "struct EnumerableSet.AddressSet",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)2760_storage",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(DistTokenWeight)11751_storage": {
+            "label": "struct IHexOneStaking.DistTokenWeight",
+            "members": [
+              {
+                "label": "hexDistRate",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "hexitDistRate",
+                "type": "t_uint16",
+                "offset": 2,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RewardsPool)11777_storage": {
+            "label": "struct IHexOneStaking.RewardsPool",
+            "members": [
+              {
+                "label": "hexPool",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "hexitPool",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "distributedHex",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "distributedHexit",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(Set)2760_storage": {
+            "label": "struct EnumerableSet.Set",
+            "members": [
+              {
+                "label": "_values",
+                "type": "t_array(t_bytes32)dyn_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_indexes",
+                "type": "t_mapping(t_bytes32,t_uint256)",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(StakingInfo)11768_storage": {
+            "label": "struct IHexOneStaking.StakingInfo",
+            "members": [
+              {
+                "label": "stakedTime",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "claimedHexAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "claimedHexitAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "stakedAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "hexShareAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "hexitShareAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "stakedToken",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "staker",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "7"
+              }
+            ],
+            "numberOfBytes": "256"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "ee8e96b120067e56929a5f55e726ecb46c18344d06f41e76f230128d0d1a9488": {
+      "address": "0x493dCcE0826Bf04CCeD67CB4661718fbf67Cc0f7",
+      "txHash": "0xe6e6c02729f307e5893b9a41eaa5072b0f62fc3271f61b7a652ee6261d11d643",
+      "layout": {
+        "solcVersion": "0.8.17",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "rateForSacrifice",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_uint16",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:27"
+          },
+          {
+            "label": "rateForAirdrop",
+            "offset": 2,
+            "slot": "101",
+            "type": "t_uint16",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:30"
+          },
+          {
+            "label": "sacrificeDistRate",
+            "offset": 4,
+            "slot": "101",
+            "type": "t_uint16",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:35"
+          },
+          {
+            "label": "sacrificeLiquidityRate",
+            "offset": 6,
+            "slot": "101",
+            "type": "t_uint16",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:38"
+          },
+          {
+            "label": "airdropDistRateForHexHolder",
+            "offset": 8,
+            "slot": "101",
+            "type": "t_uint16",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:41"
+          },
+          {
+            "label": "airdropDistRateForHEXITHolder",
+            "offset": 10,
+            "slot": "101",
+            "type": "t_uint16",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:44"
+          },
+          {
+            "label": "distRateForDailyAirdrop",
+            "offset": 12,
+            "slot": "101",
+            "type": "t_uint16",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:47"
+          },
+          {
+            "label": "supplyCropRateForSacrifice",
+            "offset": 14,
+            "slot": "101",
+            "type": "t_uint16",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:50"
+          },
+          {
+            "label": "additionalRateForStaking",
+            "offset": 16,
+            "slot": "101",
+            "type": "t_uint16",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:53"
+          },
+          {
+            "label": "additionalRateForTeam",
+            "offset": 18,
+            "slot": "101",
+            "type": "t_uint16",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:56"
+          },
+          {
+            "label": "sliceRate",
+            "offset": 20,
+            "slot": "101",
+            "type": "t_uint16",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:58"
+          },
+          {
+            "label": "allowedTokens",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_mapping(t_address,t_struct(Token)11374_storage)",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:61"
+          },
+          {
+            "label": "totalSacrificeWeight",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:64"
+          },
+          {
+            "label": "totalSacrificeTokenAmount",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:66"
+          },
+          {
+            "label": "sacrificeUserWeight",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:71"
+          },
+          {
+            "label": "userRewardsForSacrifice",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:74"
+          },
+          {
+            "label": "userSacrificedIds",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_mapping(t_address,t_struct(UintSet)3232_storage)",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:77"
+          },
+          {
+            "label": "userSacrificedUSD",
+            "offset": 0,
+            "slot": "108",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:79"
+          },
+          {
+            "label": "sacrificeInfos",
+            "offset": 0,
+            "slot": "109",
+            "type": "t_mapping(t_uint256,t_struct(SacrificeInfo)11671_storage)",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:81"
+          },
+          {
+            "label": "requestAirdropInfo",
+            "offset": 0,
+            "slot": "110",
+            "type": "t_mapping(t_address,t_struct(RequestAirdrop)11273_storage)",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:86"
+          },
+          {
+            "label": "requestedAmountInfo",
+            "offset": 0,
+            "slot": "111",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:89"
+          },
+          {
+            "label": "dexRouter",
+            "offset": 0,
+            "slot": "112",
+            "type": "t_contract(IPulseXRouter02)13520",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:91"
+          },
+          {
+            "label": "hexOnePriceFeed",
+            "offset": 0,
+            "slot": "113",
+            "type": "t_address",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:92"
+          },
+          {
+            "label": "hexitToken",
+            "offset": 0,
+            "slot": "114",
+            "type": "t_address",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:93"
+          },
+          {
+            "label": "hexToken",
+            "offset": 0,
+            "slot": "115",
+            "type": "t_address",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:94"
+          },
+          {
+            "label": "pairToken",
+            "offset": 0,
+            "slot": "116",
+            "type": "t_address",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:95"
+          },
+          {
+            "label": "escrowCA",
+            "offset": 0,
+            "slot": "117",
+            "type": "t_address",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:96"
+          },
+          {
+            "label": "stakingContract",
+            "offset": 0,
+            "slot": "118",
+            "type": "t_address",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:97"
+          },
+          {
+            "label": "teamWallet",
+            "offset": 0,
+            "slot": "119",
+            "type": "t_address",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:98"
+          },
+          {
+            "label": "sacrificeInitialSupply",
+            "offset": 0,
+            "slot": "120",
+            "type": "t_uint256",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:100"
+          },
+          {
+            "label": "sacrificeStartTime",
+            "offset": 0,
+            "slot": "121",
+            "type": "t_uint256",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:101"
+          },
+          {
+            "label": "sacrificeEndTime",
+            "offset": 0,
+            "slot": "122",
+            "type": "t_uint256",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:102"
+          },
+          {
+            "label": "airdropStartTime",
+            "offset": 0,
+            "slot": "123",
+            "type": "t_uint256",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:103"
+          },
+          {
+            "label": "airdropEndTime",
+            "offset": 0,
+            "slot": "124",
+            "type": "t_uint256",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:104"
+          },
+          {
+            "label": "airdropHEXITAmount",
+            "offset": 0,
+            "slot": "125",
+            "type": "t_uint256",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:105"
+          },
+          {
+            "label": "HEXITAmountForSacrifice",
+            "offset": 0,
+            "slot": "126",
+            "type": "t_uint256",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:106"
+          },
+          {
+            "label": "sacrificeId",
+            "offset": 0,
+            "slot": "127",
+            "type": "t_uint256",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:107"
+          },
+          {
+            "label": "airdropId",
+            "offset": 0,
+            "slot": "128",
+            "type": "t_uint256",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:108"
+          },
+          {
+            "label": "FIXED_POINT",
+            "offset": 0,
+            "slot": "129",
+            "type": "t_uint16",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:110"
+          },
+          {
+            "label": "amountUpdated",
+            "offset": 2,
+            "slot": "129",
+            "type": "t_bool",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:111"
+          },
+          {
+            "label": "sacrificeParticipants",
+            "offset": 0,
+            "slot": "130",
+            "type": "t_struct(AddressSet)3075_storage",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:113"
+          },
+          {
+            "label": "airdropRequestors",
+            "offset": 0,
+            "slot": "132",
+            "type": "t_struct(AddressSet)3075_storage",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:114"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "134",
+            "type": "t_array(t_uint256)100_storage",
+            "contract": "HexOneBootstrap",
+            "src": "contracts\\HexOneBootstap.sol:780"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)100_storage": {
+            "label": "uint256[100]",
+            "numberOfBytes": "3200"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IPulseXRouter02)13520": {
+            "label": "contract IPulseXRouter02",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_struct(RequestAirdrop)11273_storage)": {
+            "label": "mapping(address => struct IHexOneAirdrop.RequestAirdrop)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(Token)11374_storage)": {
+            "label": "mapping(address => struct IHexOneBootstrap.Token)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(UintSet)3232_storage)": {
+            "label": "mapping(address => struct EnumerableSet.UintSet)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(SacrificeInfo)11671_storage)": {
+            "label": "mapping(uint256 => struct IHexOneSacrifice.SacrificeInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AddressSet)3075_storage": {
+            "label": "struct EnumerableSet.AddressSet",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)2760_storage",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(RequestAirdrop)11273_storage": {
+            "label": "struct IHexOneAirdrop.RequestAirdrop",
+            "members": [
+              {
+                "label": "airdropId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "requestedDay",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "sacrificeUSD",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "sacrificeMultiplier",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "hexShares",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "hexShareMultiplier",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "totalUSD",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "claimedAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "claimed",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "8"
+              }
+            ],
+            "numberOfBytes": "288"
+          },
+          "t_struct(SacrificeInfo)11671_storage": {
+            "label": "struct IHexOneSacrifice.SacrificeInfo",
+            "members": [
+              {
+                "label": "sacrificeId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "day",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "supplyAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "sacrificedAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "sacrificedWeight",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "usdValue",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "sacrificeToken",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "sacrificeTokenSymbol",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "multiplier",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "claimed",
+                "type": "t_bool",
+                "offset": 2,
+                "slot": "8"
+              }
+            ],
+            "numberOfBytes": "288"
+          },
+          "t_struct(Set)2760_storage": {
+            "label": "struct EnumerableSet.Set",
+            "members": [
+              {
+                "label": "_values",
+                "type": "t_array(t_bytes32)dyn_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_indexes",
+                "type": "t_mapping(t_bytes32,t_uint256)",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(Token)11374_storage": {
+            "label": "struct IHexOneBootstrap.Token",
+            "members": [
+              {
+                "label": "weight",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "decimals",
+                "type": "t_uint8",
+                "offset": 2,
+                "slot": "0"
+              },
+              {
+                "label": "enable",
+                "type": "t_bool",
+                "offset": 3,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(UintSet)3232_storage": {
+            "label": "struct EnumerableSet.UintSet",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)2760_storage",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "aa4e8aba322c5c0af28886e0b26f8adbad0f8e272593cb2df66e36a529ef2bb8": {
+      "address": "0x3189294f6cBc52C7F12AcE34bB37C4aF1895eB3d",
+      "txHash": "0xc6f575548eb3fcea011d15d3f88fcb1f32c783ee78e0d3baf0988b36914a6ade",
+      "layout": {
+        "solcVersion": "0.8.17",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "hexOneBootstrap",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:17"
+          },
+          {
+            "label": "hexToken",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:20"
+          },
+          {
+            "label": "hexOneToken",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:23"
+          },
+          {
+            "label": "hexOneProtocol",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:26"
+          },
+          {
+            "label": "hexOnePriceFeed",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:29"
+          },
+          {
+            "label": "borrowedAmount",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_uint256",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:31"
+          },
+          {
+            "label": "stakedHexAmount",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_uint256",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:33"
+          },
+          {
+            "label": "collateralDeposited",
+            "offset": 0,
+            "slot": "108",
+            "type": "t_bool",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:36"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "109",
+            "type": "t_array(t_uint256)100_storage",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:176"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)100_storage": {
+            "label": "uint256[100]",
+            "numberOfBytes": "3200"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    }
+  }
+}
