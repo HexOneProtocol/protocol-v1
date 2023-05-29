@@ -1,3 +1,3 @@
 {
-  "contract": "0x82a23AE4013695ebA112f673728a672554bA684b"
+  "contract": "0x2CacFf2c3B2EeB5547682613102cFc7f526032a8"
 }

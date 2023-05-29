@@ -74,12 +74,12 @@ const deploy = async (contractName, contractMark, ...args) => {
     const contract = await factory.deploy(...args);
     await contract.deployed();
 
-    if (network.name != "hardhat") {
-        await delay(12000);
-        console.log("Waited 12s");
-    }
+    // if (network.name != "hardhat") {
+    //     await delay(12000);
+    //     console.log("Waited 12s");
+    // }
 
-    await verify(contract.address, [...args]);
+    // await verify(contract.address, [...args]);
     console.log(contractName, contract.address);
     await updateAddress(contractMark, [contract.address]);
 
@@ -93,16 +93,16 @@ const deployProxy = async (contractName, contractMark, args = []) => {
     });
     await contract.deployed();
 
-    if (network.name != "hardhat") {
-        await delay(12000);
-        console.log("Waited 12s");
-    }
+    // if (network.name != "hardhat") {
+    //     await delay(12000);
+    //     console.log("Waited 12s");
+    // }
 
     const implAddress = await getImplementationAddress(
         ethers.provider,
         contract.address
     );
-    await verify(implAddress, args);
+    // await verify(implAddress, args);
     await updateAddress(contractMark, [contract.address, implAddress]);
     console.log(contractName, contract.address, implAddress);
     return contract;

@@ -376,18 +376,20 @@ async function addAllowedTokensToStaking() {
     await tx.wait();
 }
 
+async function additionalAction() { }
+
 async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
 
-    // console.log("deploy protocol");
-    // await deployProtocol();
+    console.log("deploy protocol");
+    await deployProtocol();
 
-    // console.log("deploy Bootstrap");
-    // await deployBootstrap();
+    console.log("deploy Bootstrap");
+    await deployBootstrap();
 
-    // console.log("initialize contracts");
-    // await initialize();
+    console.log("initialize contracts");
+    await initialize();
 
     console.log("add liquidity");
     await addLiquidity();
