@@ -9,6 +9,7 @@ interface IHexOneSacrifice {
         uint256 sacrificedAmount;
         uint256 sacrificedWeight;
         uint256 usdValue;
+        uint256 totalHexitAmount;
         address sacrificeToken;
         string sacrificeTokenSymbol;
         uint16 multiplier;

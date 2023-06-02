@@ -610,14 +610,16 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         if (!sacrificeParticipants.contains(_participant)) {
             sacrificeParticipants.add(_participant);
         }
+        uint256 sacrificeDayAmount = getAmountForSacrifice(dayIndex);
 
         sacrificeInfos[sacrificeId] = SacrificeInfo(
             sacrificeId,
             dayIndex,
-            getAmountForSacrifice(dayIndex),
+            sacrificeDayAmount,
             _amount,
             sacrificeWeight,
             usdValue,
+            (sacrificeWeight * sacrificeDayAmount) / 1e18,
             _token,
             IToken(_token).symbol(),
             weight,
