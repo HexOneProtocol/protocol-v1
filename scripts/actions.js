@@ -73,6 +73,89 @@ async function generateAdditionalTokens() {
     console.log("addtionalTokens generated successfully!");
 }
 
+async function createHexStakingPool() {
+    const hexOneStaking = await getContract(
+        "HexOneStaking",
+        "HexOneStaking",
+        network.name
+    );
+    let param = getDeploymentParam();
+    let hexTokenAddr = param.hexToken;
+
+    console.log("add hex token to allowToken list");
+    let tx = await hexOneStaking.addAllowedTokens(
+        [hexTokenAddr],
+        [{ hexDistRate: 0, hexitDistRate: 2000 }]
+    );
+    await tx.wait();
+    console.log("processed successfully!");
+}
+
+async function increasePriceFeedRate() {
+    const hexOnePriceFeed = await getContract(
+        "HexOnePriceFeedTest",
+        "HexOnePriceFeedTest",
+        network.name
+    );
+    console.log("set priceFeed rate as 150%");
+    let tx = await hexOnePriceFeed.setTestRate(1500);
+    await tx.wait();
+    console.log("processed successfully!");
+}
+
+async function decreasePriceFeedRate() {
+    const hexOnePriceFeed = await getContract(
+        "HexOnePriceFeedTest",
+        "HexOnePriceFeedTest",
+        network.name
+    );
+    console.log("set priceFeed rate as 80%");
+    let tx = await hexOnePriceFeed.setTestRate(800);
+    await tx.wait();
+    console.log("processed successfully!");
+}
+
+async function setHexOneEscrowAddress() {
+    const hexOneProtocol = await getContract(
+        "HexOneProtocol",
+        "HexOneProtocol",
+        network.name
+    );
+    const hexOneEscrow = await getContract(
+        "HexOneEscrow",
+        "HexOneEscrow",
+        network.name
+    );
+    console.log("setting EscrowContract address");
+    let tx = await hexOneProtocol.setEscrowContract(hexOneEscrow.address);
+    await tx.wait();
+    console.log("processed successfully!");
+}
+
+async function depositEscrowHexToProtocol() {
+    const hexOneEscrow = await getContract(
+        "HexOneEscrow",
+        "HexOneEscrow",
+        network.name
+    );
+    // console.log("deposit escrow hex to protocol");
+    // let tx = await hexOneEscrow.depositCollateralToHexOneProtocol(5);
+    // await tx.wait();
+    // console.log("processed successfully!");
+
+    let walletAddress = "0xd1C56Cf01B810e6AD2c22A583A7DeaB7F1d5eFfa";
+    console.log(await hexOneEscrow.getOverview(walletAddress));
+}
+
+async function getLiquidableDeposits() {
+    const hexOneVault = await getContract(
+        "HexOneVault",
+        "HexOneVault",
+        network.name
+    );
+    console.log(await hexOneVault.getLiquidableDeposits());
+}
+
 async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Action contract with the account: ", deployer.address);
@@ -85,7 +168,18 @@ async function main() {
     // await generateAdditionalTokens();
     // await getRewardsPoolInfo();
 
-    await enableStaking();
+    // await enableStaking();
+
+    // await createHexStakingPool();
+
+    // await increasePriceFeedRate();
+    // await decreasePriceFeedRate();
+
+    // await setHexOneEscrowAddress();
+
+    await depositEscrowHexToProtocol();
+
+    // await getLiquidableDeposits();
 }
 
 main()
