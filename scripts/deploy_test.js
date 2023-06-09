@@ -14,7 +14,7 @@ const {
     verifyProxy,
 } = require("./utils");
 
-const { uniswap_abi } = require("../external_abi/uniswap.abi.json");
+const { pulsex_abi } = require("../external_abi/pulsex.abi.json");
 const { erc20_abi } = require("../external_abi/erc20.abi.json");
 const { hex_abi } = require("../external_abi/hex.abi.json");
 const { getDeploymentParam } = require("./param");
@@ -219,20 +219,43 @@ async function initialize() {
 async function addLiquidity() {
     const [deployer] = await ethers.getSigners();
     let param = getDeploymentParam();
-    let USDC = await getContract("HexOneMockToken", "MockUSDC", network.name);
+    // let USDC = await getContract("HexOneMockToken", "MockUSDC", network.name);
+    let USDC = new ethers.Contract(param.usdcAddress, erc20_abi, deployer);
     let uniswapRouter = new ethers.Contract(
         param.dexRouter,
-        uniswap_abi,
+        pulsex_abi,
         deployer
     );
-    // let hexToken = new ethers.Contract(param.hexToken, erc20_abi, deployer);
-    let hexToken = await getContract("HexMockToken", "HexMockToken", network.name);
-    let hexAmountForLiquidity = bigNum(1000000, 8);
-    let tx = await hexToken.mintTo(deployer.address, BigInt(hexAmountForLiquidity));
+    let hexToken = new ethers.Contract(param.hexToken, erc20_abi, deployer);
+
+    console.log("swap PLS to USDC");
+    let plsAmountForSwap = bigNum(5000, 18);
+    let WPLS = await uniswapRouter.WPLS();
+    let tx = await uniswapRouter.swapExactETHForTokens(
+        0,
+        [WPLS, USDC.address],
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100),
+        {
+            value: BigInt(plsAmountForSwap)
+        }
+    );
     await tx.wait();
-    let usdcForLiquidity = bigNum(40000, 18);
-    tx = await USDC.mintToken(BigInt(usdcForLiquidity), deployer.address);
+
+    tx = await uniswapRouter.swapExactETHForTokens(
+        0,
+        [WPLS, hexToken.address],
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100),
+        {
+            value: BigInt(plsAmountForSwap)
+        }
+    );
     await tx.wait();
+
+    let hexAmountForLiquidity = await hexToken.balanceOf(deployer.address);
+    let usdcForLiquidity = await USDC.balanceOf(deployer.address);
+    console.log(smallNum(hexAmountForLiquidity, 8), smallNum(usdcForLiquidity, 6));
 
     tx = await USDC.approve(uniswapRouter.address, BigInt(usdcForLiquidity));
     await tx.wait();
@@ -256,23 +279,22 @@ async function addLiquidity() {
 }
 
 async function initializeSacrifice() {
+    console.log("initialize sacrifice");
     let hexOneBootstrap = await getContract(
         "HexOneBootstrap",
         "HexOneBootstrap",
         network.name
     );
-
-    let hexToken = await getContract("HexMockToken", "HexMockToken", network.name);
-    let mockUSDC = await getContract("HexOneMockToken", "MockUSDC", network.name);
+    let param = getDeploymentParam();
 
     let tx = await hexOneBootstrap.setTokenWeight(
-        [hexToken.address, mockUSDC.address],
+        [param.hexToken, param.usdcAddress],
         [5555, 3000]
     );
     await tx.wait();
 
     tx = await hexOneBootstrap.setAllowedTokens(
-        [hexToken.address, mockUSDC.address],
+        [param.hexToken, param.usdcAddress],
         true
     );
     await tx.wait();
@@ -382,17 +404,17 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
 
-    console.log("deploy protocol");
-    await deployProtocol();
+    // console.log("deploy protocol");
+    // await deployProtocol();
 
-    console.log("deploy Bootstrap");
-    await deployBootstrap();
+    // console.log("deploy Bootstrap");
+    // await deployBootstrap();
 
-    console.log("initialize contracts");
-    await initialize();
+    // console.log("initialize contracts");
+    // await initialize();
 
-    console.log("add liquidity");
-    await addLiquidity();
+    // console.log("add liquidity");
+    // await addLiquidity();
 
     await initializeSacrifice();
 
