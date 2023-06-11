@@ -306,7 +306,7 @@ async function updateHexOneBootstrap() {
         "HexOneBootstrap",
         network.name
     );
-    await upgradeProxy("HexOneBootstrap", hexOneBootstrap.address);
+    await upgradeProxy("HexOneBootstrap", "HexOneBootstrap", hexOneBootstrap.address);
     await verifyProxy("HexOneBootstrap", "HexOneBootstrap");
 }
 
@@ -416,7 +416,9 @@ async function main() {
     // console.log("add liquidity");
     // await addLiquidity();
 
-    await initializeSacrifice();
+    // await initializeSacrifice();
+
+    await updateHexOneBootstrap();
 
     console.log("Deployed successfully");
 }

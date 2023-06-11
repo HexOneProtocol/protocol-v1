@@ -177,9 +177,13 @@ async function main() {
 
     // await setHexOneEscrowAddress();
 
-    await depositEscrowHexToProtocol();
+    // await depositEscrowHexToProtocol();
 
     // await getLiquidableDeposits();
+
+    const hexOneBootstrap = await getContract("HexOneBootstrap", "HexOneBootstrap", network.name);
+    const userAddr = "0xd1C56Cf01B810e6AD2c22A583A7DeaB7F1d5eFfa";
+    console.log(await hexOneBootstrap.getUserSacrificeInfo(userAddr));
 }
 
 main()

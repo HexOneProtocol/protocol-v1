@@ -317,10 +317,8 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         uint256 _dayIndex
     ) public view override returns (uint256) {
         uint256 todayIndex = getCurrentSacrificeDay();
-        todayIndex = todayIndex == 0 ? 0 : todayIndex - 1;
-        require(_dayIndex <= todayIndex, "invalid day index");
-
-        return _calcSupplyAmountForSacrifice(_dayIndex);
+        require(_dayIndex > 0 && _dayIndex <= todayIndex, "invalid day index");
+        return _calcSupplyAmountForSacrifice(_dayIndex - 1);
     }
 
     /// @inheritdoc IHexOneSacrifice
@@ -613,7 +611,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         if (!sacrificeParticipants.contains(_participant)) {
             sacrificeParticipants.add(_participant);
         }
-        uint256 sacrificeDayAmount = getAmountForSacrifice(dayIndex);
+        uint256 sacrificeDayAmount = getAmountForSacrifice(dayIndex + 1);
 
         sacrificeInfos[sacrificeId] = SacrificeInfo(
             sacrificeId,
