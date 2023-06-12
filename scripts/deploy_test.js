@@ -288,13 +288,23 @@ async function initializeSacrifice() {
     let param = getDeploymentParam();
 
     let tx = await hexOneBootstrap.setTokenWeight(
-        [param.hexToken, param.usdcAddress],
-        [5555, 3000]
+        [
+            param.hexToken,
+            param.usdcAddress,
+            param.plsxAddress,
+            param.wplsAddress
+        ],
+        [5555, 3000, 1000, 2000]
     );
     await tx.wait();
 
     tx = await hexOneBootstrap.setAllowedTokens(
-        [param.hexToken, param.usdcAddress],
+        [
+            param.hexToken,
+            param.usdcAddress,
+            param.plsxAddress,
+            param.wplsAddress
+        ],
         true
     );
     await tx.wait();
@@ -416,9 +426,9 @@ async function main() {
     // console.log("add liquidity");
     // await addLiquidity();
 
-    // await initializeSacrifice();
+    await initializeSacrifice();
 
-    await updateHexOneBootstrap();
+    // await updateHexOneBootstrap();
 
     console.log("Deployed successfully");
 }

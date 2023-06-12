@@ -33,12 +33,12 @@ const DEPLOYMENT_PARAM = {
     },
     pulse_test: {
         dexRouter: "0xDaE9dd3d1A52CfCe9d5F2fAC7fDe164D500E50f7",
-        // hexToken: "0xB0053502887d1113d4DF6297D7b577A084da64eE", // mockHex
-        // usdcAddress: "0xD39ebC984640d5BADBd5A6e90B88dfB58D18EBC8",  // mockUSDC
-        hexToken: "0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39",
+        hexToken: "0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39", // HEX
         usdcAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",  // USDC
+        plsxAddress: "0x8a810ea8B121d08342E9e7696f4a9915cBE494B7",  // PLSX
+        wplsAddress: "0x70499adEBB11Efd915E3b69E700c331778628707",  // WPLS
         feeReceiver: "0x4364E1d16526c954b029b6cf9335CB1b0eaAfB69",
-        teamWallet: "0x4364E1d16526c954b029b6cf9335CB1b0eaAfB69",
+        teamWallet: "0xc54A5f32Bc53f49eBC4FE69c6AE60adE91eC8A35",
         feeRate: 100, // 10%
         minStakingDuration: 1, // 1 day
         maxStakingDuration: 10, // 10 days
