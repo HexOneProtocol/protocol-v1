@@ -219,8 +219,8 @@ async function initialize() {
 async function addLiquidity() {
     const [deployer] = await ethers.getSigners();
     let param = getDeploymentParam();
-    // let USDC = await getContract("HexOneMockToken", "MockUSDC", network.name);
     let USDC = new ethers.Contract(param.usdcAddress, erc20_abi, deployer);
+    let PLSX = new ethers.Contract(param.plsxAddress, erc20_abi, deployer);
     let uniswapRouter = new ethers.Contract(
         param.dexRouter,
         pulsex_abi,
@@ -231,51 +231,51 @@ async function addLiquidity() {
     console.log("swap PLS to USDC");
     let plsAmountForSwap = bigNum(5000, 18);
     let WPLS = await uniswapRouter.WPLS();
-    let tx = await uniswapRouter.swapExactETHForTokens(
-        0,
-        [WPLS, USDC.address],
-        deployer.address,
-        BigInt(await getCurrentTimestamp()) + BigInt(100),
-        {
-            value: BigInt(plsAmountForSwap)
-        }
-    );
-    await tx.wait();
+    // let tx = await uniswapRouter.swapExactETHForTokens(
+    //     0,
+    //     [WPLS, USDC.address],
+    //     deployer.address,
+    //     BigInt(await getCurrentTimestamp()) + BigInt(100),
+    //     {
+    //         value: BigInt(plsAmountForSwap)
+    //     }
+    // );
+    // await tx.wait();
 
-    tx = await uniswapRouter.swapExactETHForTokens(
-        0,
-        [WPLS, hexToken.address],
-        deployer.address,
-        BigInt(await getCurrentTimestamp()) + BigInt(100),
-        {
-            value: BigInt(plsAmountForSwap)
-        }
-    );
-    await tx.wait();
+    // tx = await uniswapRouter.swapExactETHForTokens(
+    //     0,
+    //     [WPLS, hexToken.address],
+    //     deployer.address,
+    //     BigInt(await getCurrentTimestamp()) + BigInt(100),
+    //     {
+    //         value: BigInt(plsAmountForSwap)
+    //     }
+    // );
+    // await tx.wait();
 
-    let hexAmountForLiquidity = await hexToken.balanceOf(deployer.address);
-    let usdcForLiquidity = await USDC.balanceOf(deployer.address);
-    console.log(smallNum(hexAmountForLiquidity, 8), smallNum(usdcForLiquidity, 6));
+    // let hexAmountForLiquidity = await hexToken.balanceOf(deployer.address);
+    // let usdcForLiquidity = await USDC.balanceOf(deployer.address);
+    // console.log(smallNum(hexAmountForLiquidity, 8), smallNum(usdcForLiquidity, 6));
 
-    tx = await USDC.approve(uniswapRouter.address, BigInt(usdcForLiquidity));
-    await tx.wait();
+    // tx = await USDC.approve(uniswapRouter.address, BigInt(usdcForLiquidity));
+    // await tx.wait();
 
-    tx = await hexToken.approve(
-        uniswapRouter.address,
-        BigInt(hexAmountForLiquidity)
-    );
-    await tx.wait();
-    tx = await uniswapRouter.addLiquidity(
-        USDC.address,
-        hexToken.address,
-        BigInt(usdcForLiquidity),
-        BigInt(hexAmountForLiquidity),
-        0,
-        0,
-        deployer.address,
-        BigInt(await getCurrentTimestamp()) + BigInt(100)
-    );
-    await tx.wait();
+    // tx = await hexToken.approve(
+    //     uniswapRouter.address,
+    //     BigInt(hexAmountForLiquidity)
+    // );
+    // await tx.wait();
+    // tx = await uniswapRouter.addLiquidity(
+    //     USDC.address,
+    //     hexToken.address,
+    //     BigInt(usdcForLiquidity),
+    //     BigInt(hexAmountForLiquidity),
+    //     0,
+    //     0,
+    //     deployer.address,
+    //     BigInt(await getCurrentTimestamp()) + BigInt(100)
+    // );
+    // await tx.wait();
 }
 
 async function initializeSacrifice() {
@@ -291,10 +291,11 @@ async function initializeSacrifice() {
         [
             param.hexToken,
             param.usdcAddress,
+            param.daiAddress,
             param.plsxAddress,
             param.wplsAddress
         ],
-        [5555, 3000, 1000, 2000]
+        [5555, 3000, 3000, 1000, 2000]
     );
     await tx.wait();
 
@@ -302,6 +303,7 @@ async function initializeSacrifice() {
         [
             param.hexToken,
             param.usdcAddress,
+            param.daiAddress,
             param.plsxAddress,
             param.wplsAddress
         ],
