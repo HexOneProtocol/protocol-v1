@@ -221,6 +221,7 @@ async function addLiquidity() {
     let param = getDeploymentParam();
     let USDC = new ethers.Contract(param.usdcAddress, erc20_abi, deployer);
     let PLSX = new ethers.Contract(param.plsxAddress, erc20_abi, deployer);
+    let DAI = new ethers.Contract(param.daiAddress, erc20_abi, deployer);
     let uniswapRouter = new ethers.Contract(
         param.dexRouter,
         pulsex_abi,
@@ -229,53 +230,220 @@ async function addLiquidity() {
     let hexToken = new ethers.Contract(param.hexToken, erc20_abi, deployer);
 
     console.log("swap PLS to USDC");
-    let plsAmountForSwap = bigNum(5000, 18);
+    let plsAmountForSwap = bigNum(3000, 18);
     let WPLS = await uniswapRouter.WPLS();
-    // let tx = await uniswapRouter.swapExactETHForTokens(
-    //     0,
-    //     [WPLS, USDC.address],
-    //     deployer.address,
-    //     BigInt(await getCurrentTimestamp()) + BigInt(100),
-    //     {
-    //         value: BigInt(plsAmountForSwap)
-    //     }
-    // );
-    // await tx.wait();
+    let tx = await uniswapRouter.swapExactETHForTokens(
+        0,
+        [WPLS, USDC.address],
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100),
+        {
+            value: BigInt(plsAmountForSwap)
+        }
+    );
+    await tx.wait();
 
-    // tx = await uniswapRouter.swapExactETHForTokens(
-    //     0,
-    //     [WPLS, hexToken.address],
-    //     deployer.address,
-    //     BigInt(await getCurrentTimestamp()) + BigInt(100),
-    //     {
-    //         value: BigInt(plsAmountForSwap)
-    //     }
-    // );
-    // await tx.wait();
+    tx = await uniswapRouter.swapExactETHForTokens(
+        0,
+        [WPLS, hexToken.address],
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100),
+        {
+            value: BigInt(plsAmountForSwap)
+        }
+    );
+    await tx.wait();
 
-    // let hexAmountForLiquidity = await hexToken.balanceOf(deployer.address);
-    // let usdcForLiquidity = await USDC.balanceOf(deployer.address);
-    // console.log(smallNum(hexAmountForLiquidity, 8), smallNum(usdcForLiquidity, 6));
+    let hexAmountForLiquidity = await hexToken.balanceOf(deployer.address);
+    let usdcForLiquidity = await USDC.balanceOf(deployer.address);
+    console.log(smallNum(hexAmountForLiquidity, 8), smallNum(usdcForLiquidity, 6));
 
-    // tx = await USDC.approve(uniswapRouter.address, BigInt(usdcForLiquidity));
-    // await tx.wait();
+    tx = await USDC.approve(uniswapRouter.address, BigInt(usdcForLiquidity));
+    await tx.wait();
 
-    // tx = await hexToken.approve(
-    //     uniswapRouter.address,
-    //     BigInt(hexAmountForLiquidity)
-    // );
-    // await tx.wait();
-    // tx = await uniswapRouter.addLiquidity(
-    //     USDC.address,
-    //     hexToken.address,
-    //     BigInt(usdcForLiquidity),
-    //     BigInt(hexAmountForLiquidity),
-    //     0,
-    //     0,
-    //     deployer.address,
-    //     BigInt(await getCurrentTimestamp()) + BigInt(100)
-    // );
-    // await tx.wait();
+    tx = await hexToken.approve(
+        uniswapRouter.address,
+        BigInt(hexAmountForLiquidity)
+    );
+    await tx.wait();
+    tx = await uniswapRouter.addLiquidity(
+        USDC.address,
+        hexToken.address,
+        BigInt(usdcForLiquidity),
+        BigInt(hexAmountForLiquidity),
+        0,
+        0,
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100)
+    );
+    await tx.wait();
+
+    tx = await uniswapRouter.swapExactETHForTokens(
+        0,
+        [WPLS, USDC.address],
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100),
+        {
+            value: BigInt(plsAmountForSwap)
+        }
+    );
+    await tx.wait();
+
+    tx = await uniswapRouter.swapExactETHForTokens(
+        0,
+        [WPLS, hexToken.address],
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100),
+        {
+            value: BigInt(plsAmountForSwap)
+        }
+    );
+    await tx.wait();
+
+    hexAmountForLiquidity = await hexToken.balanceOf(deployer.address);
+    usdcForLiquidity = await USDC.balanceOf(deployer.address);
+    console.log(smallNum(hexAmountForLiquidity, 8), smallNum(usdcForLiquidity, 6));
+
+    tx = await USDC.approve(uniswapRouter.address, BigInt(usdcForLiquidity));
+    await tx.wait();
+
+    tx = await hexToken.approve(
+        uniswapRouter.address,
+        BigInt(hexAmountForLiquidity)
+    );
+    await tx.wait();
+    tx = await uniswapRouter.addLiquidity(
+        USDC.address,
+        hexToken.address,
+        BigInt(usdcForLiquidity),
+        BigInt(hexAmountForLiquidity),
+        0,
+        0,
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100)
+    );
+    await tx.wait();
+
+    console.log("addLiquidity HEX/DAI");
+    tx = await uniswapRouter.swapExactETHForTokens(
+        0,
+        [WPLS, DAI.address],
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100),
+        {
+            value: BigInt(plsAmountForSwap)
+        }
+    );
+    await tx.wait();
+
+    tx = await uniswapRouter.swapExactETHForTokens(
+        0,
+        [WPLS, hexToken.address],
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100),
+        {
+            value: BigInt(plsAmountForSwap)
+        }
+    );
+    await tx.wait();
+
+    hexAmountForLiquidity = await hexToken.balanceOf(deployer.address);
+    let daiAmountForLiquidity = await DAI.balanceOf(deployer.address);
+    console.log(hexAmountForLiquidity, daiAmountForLiquidity);
+
+    tx = await DAI.approve(uniswapRouter.address, BigInt(daiAmountForLiquidity));
+    await tx.wait();
+
+    tx = await hexToken.approve(
+        uniswapRouter.address,
+        BigInt(hexAmountForLiquidity)
+    );
+    await tx.wait();
+    tx = await uniswapRouter.addLiquidity(
+        DAI.address,
+        hexToken.address,
+        BigInt(daiAmountForLiquidity),
+        BigInt(hexAmountForLiquidity),
+        0,
+        0,
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100)
+    );
+    await tx.wait();
+
+    console.log("addLiquidity HEX/PLSX");
+    tx = await uniswapRouter.swapExactETHForTokens(
+        0,
+        [WPLS, PLSX.address],
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100),
+        {
+            value: BigInt(plsAmountForSwap)
+        }
+    );
+    await tx.wait();
+
+    tx = await uniswapRouter.swapExactETHForTokens(
+        0,
+        [WPLS, hexToken.address],
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100),
+        {
+            value: BigInt(plsAmountForSwap)
+        }
+    );
+    await tx.wait();
+
+    hexAmountForLiquidity = await hexToken.balanceOf(deployer.address);
+    let plsxAmountForLiquidity = await PLSX.balanceOf(deployer.address);
+    console.log(hexAmountForLiquidity, plsxAmountForLiquidity);
+
+    tx = await PLSX.approve(uniswapRouter.address, BigInt(plsxAmountForLiquidity));
+    await tx.wait();
+
+    tx = await hexToken.approve(
+        uniswapRouter.address,
+        BigInt(hexAmountForLiquidity)
+    );
+    await tx.wait();
+    tx = await uniswapRouter.addLiquidity(
+        PLSX.address,
+        hexToken.address,
+        BigInt(plsxAmountForLiquidity),
+        BigInt(hexAmountForLiquidity),
+        0,
+        0,
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100)
+    );
+    await tx.wait();
+
+    console.log("addLiquidity HEX/WPLS");
+    tx = await uniswapRouter.swapExactETHForTokens(
+        0,
+        [WPLS, hexToken.address],
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100),
+        {
+            value: BigInt(plsAmountForSwap)
+        }
+    );
+    await tx.wait();
+    hexAmountForLiquidity = await hexToken.balanceOf(deployer.address);
+    console.log(hexAmountForLiquidity, plsAmountForSwap);
+    tx = await hexToken.approve(uniswapRouter.address, BigInt(hexAmountForLiquidity));
+    await tx.wait();
+    tx = await uniswapRouter.addLiquidityETH(
+        hexToken.address,
+        hexAmountForLiquidity,
+        0,
+        0,
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100),
+        { value: BigInt(plsAmountForSwap) }
+    );
+    await tx.wait();
+    console.log("processed successfully!");
 }
 
 async function initializeSacrifice() {
@@ -416,17 +584,17 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
 
-    // console.log("deploy protocol");
-    // await deployProtocol();
+    console.log("deploy protocol");
+    await deployProtocol();
 
-    // console.log("deploy Bootstrap");
-    // await deployBootstrap();
+    console.log("deploy Bootstrap");
+    await deployBootstrap();
 
-    // console.log("initialize contracts");
-    // await initialize();
+    console.log("initialize contracts");
+    await initialize();
 
-    // console.log("add liquidity");
-    // await addLiquidity();
+    console.log("add liquidity");
+    await addLiquidity();
 
     await initializeSacrifice();
 
