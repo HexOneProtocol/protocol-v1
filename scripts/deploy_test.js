@@ -494,6 +494,11 @@ async function updateHexOneEscrow() {
     await verifyProxy("HexOneEscrow", "HexOneEscrow");
 }
 
+async function updateHexOneVault() {
+    const hexOneVault = await getContract("HexOneVault", "HexOneVault", network.name);
+    await upgradeProxy("HexOneVault", "HexOneVault", hexOneVault.address);
+}
+
 async function updateHexOneStaking() {
     let hexOneStaking = await getContract(
         "HexOneStaking",
@@ -578,7 +583,10 @@ async function addAllowedTokensToStaking() {
     await tx.wait();
 }
 
-async function additionalAction() { }
+async function updateHexOnePriceFeedTest() {
+    let hexOnePriceFeedTest = await getContract("HexOnePriceFeedTest", "HexOnePriceFeedTest", network.name);
+    await upgradeProxy("HexOnePriceFeedTest", "HexOnePriceFeedTest", hexOnePriceFeedTest.address);
+}
 
 async function main() {
     const [deployer] = await ethers.getSigners();

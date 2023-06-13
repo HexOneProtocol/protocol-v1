@@ -58,7 +58,8 @@ contract HexOnePriceFeedTest is OwnableUpgradeable, IHexOnePriceFeed {
         if (_baseToken == hexToken) {
             return getHexTokenPrice(_amount);
         } else if (_baseToken == pairToken) {
-            return FIXED_POINT_SCALAR; // 1 USD
+            uint8 pairTokenDecimals = TokenUtils.expectDecimals(pairToken);
+            return (FIXED_POINT_SCALAR * _amount) / 10 ** pairTokenDecimals; // 1 USD
         } else if (_baseToken == address(0)) {
             /// native token
             _baseToken = dexRouter.WPLS();
