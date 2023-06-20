@@ -605,8 +605,8 @@ async function main() {
     console.log("initialize contracts");
     await initialize();
 
-    console.log("add liquidity");
-    await addLiquidity();
+    // console.log("add liquidity");
+    // await addLiquidity();
 
     await initializeSacrifice();
 
