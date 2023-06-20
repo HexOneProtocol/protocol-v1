@@ -53,6 +53,13 @@ async function enableStaking() {
         await hexOneStaking.stakingEnable()
     );
 
+    let param = getDeploymentParam();
+    const hexOneProtocol = await getContract(
+        "HexOneProtocol",
+        "HexOneProtocol",
+        network.name
+    );
+
     let tx = await hexOneStaking.enableStaking();
     await tx.wait();
 
@@ -85,7 +92,7 @@ async function createHexStakingPool() {
     console.log("add hex token to allowToken list");
     let tx = await hexOneStaking.addAllowedTokens(
         [hexTokenAddr],
-        [{ hexDistRate: 0, hexitDistRate: 2000 }]
+        [{ hexDistRate: 1000, hexitDistRate: 0 }]
     );
     await tx.wait();
     console.log("processed successfully!");
@@ -138,13 +145,10 @@ async function depositEscrowHexToProtocol() {
         "HexOneEscrow",
         network.name
     );
-    // console.log("deposit escrow hex to protocol");
-    // let tx = await hexOneEscrow.depositCollateralToHexOneProtocol(5);
-    // await tx.wait();
-    // console.log("processed successfully!");
-
-    let walletAddress = "0xd1C56Cf01B810e6AD2c22A583A7DeaB7F1d5eFfa";
-    console.log(await hexOneEscrow.getOverview(walletAddress));
+    console.log("deposit escrow hex to protocol");
+    let tx = await hexOneEscrow.depositCollateralToHexOneProtocol(2);
+    await tx.wait();
+    console.log("processed successfully!");
 }
 
 async function getLiquidableDeposits() {
@@ -168,7 +172,7 @@ async function main() {
     // await generateAdditionalTokens();
     // await getRewardsPoolInfo();
 
-    // await enableStaking();
+    await enableStaking();
 
     // await createHexStakingPool();
 
@@ -181,9 +185,15 @@ async function main() {
 
     // await getLiquidableDeposits();
 
-    const hexOneBootstrap = await getContract("HexOneBootstrap", "HexOneBootstrap", network.name);
-    const userAddr = "0xd1C56Cf01B810e6AD2c22A583A7DeaB7F1d5eFfa";
-    console.log(await hexOneBootstrap.getUserSacrificeInfo(userAddr));
+    // await generateAdditionalTokens();
+
+    // const hexOneBootstrap = await getContract("HexOneBootstrap", "HexOneBootstrap", network.name);
+    // const userAddr = "0xf960c54D4744C7B9B1B450C30F5cfe2D825abc0F";
+    // const sacrificeUserInfo = await hexOneBootstrap.getUserSacrificeInfo(userAddr);
+    // const info = sacrificeUserInfo[2];
+    // console.log(info);
+
+    // console.log(BigInt(info.sacrificedWeight) * BigInt(info.supplyAmount));
 }
 
 main()

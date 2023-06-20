@@ -214,6 +214,10 @@ async function initialize() {
     console.log("HEXIT.setBootstrap");
     tx = await HEXIT.setBootstrap(hexOneBootstrap.address);
     await tx.wait();
+
+    console.log("Set hexOneEscrow to HexOneProtocol");
+    tx = await hexOneProtocol.setEscrowContract(hexOneEscrow.address);
+    await tx.wait();
 }
 
 async function addLiquidity() {
