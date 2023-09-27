@@ -37,16 +37,16 @@ const DEPLOYMENT_PARAM = {
         usdcAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",  // USDC
         plsxAddress: "0x8a810ea8B121d08342E9e7696f4a9915cBE494B7",  // PLSX
         wplsAddress: "0x70499adEBB11Efd915E3b69E700c331778628707",  // WPLS
-        daiAddress: "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359",  // DAI
+        daiAddress: "0x826e4e896CC2f5B371Cd7Bb0bd929DB3e3DB67c0",  // DAI
         feeReceiver: "0x4364E1d16526c954b029b6cf9335CB1b0eaAfB69",
         teamWallet: "0xc54A5f32Bc53f49eBC4FE69c6AE60adE91eC8A35",
         feeRate: 100, // 10%
         minStakingDuration: 1, // 1 day
         maxStakingDuration: 10, // 10 days
         sacrificeStartTime: hour, // means after 0 seconds
-        sacrificeDuration: 3, // 5 day
+        sacrificeDuration: 1, // 5 day
         airdropStartTime: hour, // means after 0 seconds
-        airdropDuration: 3, // 3 days
+        airdropDuration: 1, // 3 days
         rateForSacrifice: 800,
         rateForAirdrop: 200,
         sacrificeDistRate: 750,

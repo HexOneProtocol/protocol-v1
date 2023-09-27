@@ -458,7 +458,7 @@ async function initializeSacrifice() {
         network.name
     );
     let param = getDeploymentParam();
-
+    console.log('----------------', param.sacrificeDuration)
     let tx = await hexOneBootstrap.setTokenWeight(
         [
             param.hexToken,

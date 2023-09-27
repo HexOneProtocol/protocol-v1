@@ -2,6 +2,7 @@
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-ethers");
 require("@openzeppelin/hardhat-upgrades");
+require('@nomiclabs/hardhat-etherscan')
 // require("hardhat-gas-reporter");
 require("hardhat-contract-sizer");
 require("solidity-coverage");
@@ -69,7 +70,19 @@ module.exports = {
             mainnet: process.env.ETH_API_KEY,
             goerli: process.env.ETH_API_KEY,
             avalancheFujiTestnet: process.env.AVAX_API_KEY,
+            pulse_test: process.env.PLS_API_KEY
         },
+
+        customChains: [
+            {
+                network: "pulse_test",
+                chainId: 943,
+                urls: {
+                    apiURL: "https://rpc.v4.testnet.pulsechain.com/api",
+                    browserURL: "https://rpc.v4.testnet.pulsechain.com"
+                }
+            }
+        ]
     },
     mocha: {
         timeout: 2000000000,
