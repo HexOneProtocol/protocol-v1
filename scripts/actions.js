@@ -174,7 +174,7 @@ async function main() {
 
     await enableStaking();
 
-    // await createHexStakingPool();
+    await createHexStakingPool();
 
     // await increasePriceFeedRate();
     // await decreasePriceFeedRate();
