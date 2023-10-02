@@ -34,8 +34,8 @@ module.exports = {
             accounts: [process.env.DEPLOYER_WALLET],
         },
         pulse: {
-            url: "https://rpc.v2b.testnet.pulsechain.com",
-            chainId: 941,
+            url: "https://pulsechain.publicnode.com",
+            chainId: 369,
             gasPrice: utils.parseUnits("100", "gwei").toNumber(),
             accounts: [process.env.DEPLOYER_WALLET],
         },

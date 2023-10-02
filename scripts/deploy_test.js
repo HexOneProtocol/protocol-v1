@@ -51,7 +51,7 @@ async function deployBootstrap() {
         hexOnePriceFeed: hexOnePriceFeed.address,
         dexRouter: param.dexRouter,
         hexToken: param.hexToken,
-        pairToken: param.usdcAddress,
+        pairToken: param.daiAddress,
         hexitToken: HEXIT.address,
         stakingContract: stakingPool.address,
         teamWallet: param.teamWallet,
@@ -91,7 +91,7 @@ async function deployProtocol() {
         "HexOneToken",
         "HexOneToken",
         "HexOne",
-        "HEXONE"
+        "test1"
     );
 
     // let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
@@ -594,23 +594,23 @@ async function updateHexOnePriceFeedTest() {
 
 async function main() {
     const [deployer] = await ethers.getSigners();
-    // console.log("Deploying contracts with the account:", deployer.address);
+    console.log("Deploying contracts with the account:", deployer.address);
 
-    // console.log("deploy protocol");
-    // await deployProtocol();
+    console.log("deploy protocol");
+    await deployProtocol();
 
-    // console.log("deploy Bootstrap");
-    // await deployBootstrap();
+    console.log("deploy Bootstrap");
+    await deployBootstrap();
 
-    // console.log("initialize contracts");
-    // await initialize();
+    console.log("initialize contracts");
+    await initialize();
 
-    // console.log("add liquidity");
-    // await addLiquidity();
+    console.log("add liquidity");
+    await addLiquidity();
 
-    //    await initializeSacrifice();
+    await initializeSacrifice();
 
-    // await updateHexOneBootstrap();
+    await updateHexOneBootstrap();
 
     console.log("Deployed successfully");
 }
