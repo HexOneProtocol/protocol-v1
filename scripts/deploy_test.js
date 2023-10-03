@@ -86,14 +86,12 @@ async function deployBootstrap() {
 
 async function deployProtocol() {
     let param = getDeploymentParam();
-
     let hexOneToken = await deploy(
         "HexOneToken",
         "HexOneToken",
         "HexOne",
         "test1"
     );
-
     // let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
 
     let hexOnePriceFeed = await deployProxy(
@@ -458,7 +456,7 @@ async function initializeSacrifice() {
         network.name
     );
     let param = getDeploymentParam();
-    console.log('----------------', param.sacrificeDuration)
+
     let tx = await hexOneBootstrap.setTokenWeight(
         [
             param.hexToken,

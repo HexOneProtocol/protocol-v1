@@ -34,10 +34,10 @@ module.exports = {
             accounts: [process.env.DEPLOYER_WALLET],
         },
         pulse: {
-            url: "https://pulsechain.publicnode.com",
+            url: "https://rpc.pulsechain.com",
             chainId: 369,
-            gasPrice: utils.parseUnits("100", "gwei").toNumber(),
-            accounts: [process.env.DEPLOYER_WALLET],
+            gasPrice: utils.parseUnits("300", "gwei").toNumber(),
+            accounts: [process.env.DEPLOYER_WALLET_PULSE],
         },
         pulse_test: {
             url: "https://rpc.v4.testnet.pulsechain.com",
@@ -70,16 +70,16 @@ module.exports = {
             mainnet: process.env.ETH_API_KEY,
             goerli: process.env.ETH_API_KEY,
             avalancheFujiTestnet: process.env.AVAX_API_KEY,
-            pulse_test: process.env.PLS_API_KEY
+            pulse: process.env.PLS_API_KEY,
         },
 
         customChains: [
             {
-                network: "pulse_test",
-                chainId: 943,
+                network: "pulse",
+                chainId: 369,
                 urls: {
-                    apiURL: "https://rpc.v4.testnet.pulsechain.com/api",
-                    browserURL: "https://rpc.v4.testnet.pulsechain.com"
+                    apiURL: "https://scan.pulsechain.com/api",
+                    browserURL: "https://scan.pulsechain.com"
                 }
             }
         ]
