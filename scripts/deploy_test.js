@@ -86,11 +86,17 @@ async function deployBootstrap() {
 
 async function deployProtocol() {
     let param = getDeploymentParam();
+
+    let hexMockToken = await deploy(
+        "HexMockToken",
+        "HexMockToken"
+    )
+
     let hexOneToken = await deploy(
         "HexOneToken",
         "HexOneToken",
         "HexOne",
-        "HEXONE"
+        "test1"
     );
     // let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
 
@@ -138,7 +144,7 @@ async function deployProtocol() {
 }
 
 async function getContracts() {
-    let hexToken = await getContract("HexMockToken", "HexMockToken", network.name);
+    // let hexToken = await getContract("HexMockToken", "HexMockToken", network.name);
     let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
     let hexOnePriceFeed = await getContract(
         "HexOnePriceFeedTest",
@@ -165,7 +171,7 @@ async function getContracts() {
     let hexOneEscrow = await getContract("HexOneEscrow", "HexOneEscrow", network.name);
 
     return [
-        hexToken,
+        // hexToken,
         hexOneToken,
         hexOnePriceFeed,
         hexOneVault,
@@ -179,7 +185,7 @@ async function getContracts() {
 
 async function initialize() {
     let [
-        hexToken,
+        // hexToken,
         hexOneToken,
         hexOnePriceFeed,
         hexOneVault,
