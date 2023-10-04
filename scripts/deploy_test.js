@@ -90,7 +90,7 @@ async function deployProtocol() {
         "HexOneToken",
         "HexOneToken",
         "HexOne",
-        "test1"
+        "HEXONE"
     );
     // let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
 

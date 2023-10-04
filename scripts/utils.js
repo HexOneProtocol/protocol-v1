@@ -70,13 +70,10 @@ const getContract = async (contractName, contractMark, network_name) => {
 };
 
 const deploy = async (contractName, contractMark, ...args) => {
-    console.log('-------------', contractName, contractMark, ...args)
     const factory = await ethers.getContractFactory(contractName);
     const contract = await factory.deploy(...args);
 
-    try { await contract.deployed(); }
-    catch (err) { console.log(err) }
-    console.log(contractName, contract.address)
+    await contract.deployed();
     // if (network.name != "hardhat") {
     //     await delay(12000);
     //     console.log("Waited 12s");

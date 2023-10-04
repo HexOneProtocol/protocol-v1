@@ -32,7 +32,7 @@ const DEPLOYMENT_PARAM = {
         hexitDistRateForStaking: 50, // 5%
     },
     pulse: {
-        dexRouter: "0x98bf93ebf5c380C0e6Ae8e192A7e2AE08edAcc02",
+        dexRouter: "0x165C3410fC91EF562C50559f7d2289fEbed552d9",
         hexToken: "0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39", // HEX
         usdcAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",  // USDC
         plsxAddress: "0x95B303987A60C71504D99Aa1b13B4DA07b0790ab",  // PLSX

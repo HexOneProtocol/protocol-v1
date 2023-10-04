@@ -36,7 +36,7 @@ module.exports = {
         pulse: {
             url: "https://rpc.pulsechain.com",
             chainId: 369,
-            gasPrice: utils.parseUnits("300", "gwei").toNumber(),
+            gasPrice: utils.parseUnits("900000", "gwei").toNumber(),
             accounts: [process.env.DEPLOYER_WALLET_PULSE],
         },
         pulse_test: {
