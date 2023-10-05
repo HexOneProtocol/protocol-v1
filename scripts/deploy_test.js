@@ -103,7 +103,7 @@ async function deployProtocol() {
     let hexOnePriceFeed = await deployProxy(
         "HexOnePriceFeedTest",
         "HexOnePriceFeedTest",
-        [param.hexToken, param.usdcAddress, param.dexRouter]
+        [param.hexToken, param.daiAddress, param.dexRouter]
     );
     // let hexOnePriceFeed = await getContract(
     //     "HexOnePriceFeedTest",
