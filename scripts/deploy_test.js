@@ -87,10 +87,10 @@ async function deployBootstrap() {
 async function deployProtocol() {
     let param = getDeploymentParam();
 
-    let hexMockToken = await deploy(
-        "HexMockToken",
-        "HexMockToken"
-    )
+    // let hexMockToken = await deploy(
+    //     "HexMockToken",
+    //     "HexMockToken"
+    // )
 
     let hexOneToken = await deploy(
         "HexOneToken",
