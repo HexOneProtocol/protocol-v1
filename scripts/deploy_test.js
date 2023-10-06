@@ -100,16 +100,16 @@ async function deployProtocol() {
     );
     // let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
 
-    // let hexOnePriceFeed = await deployProxy(
-    //     "HexOnePriceFeedTest",
-    //     "HexOnePriceFeedTest",
-    //     [param.hexToken, param.daiAddress, param.dexRouter]
-    // );
-    let hexOnePriceFeed = await getContract(
+    let hexOnePriceFeed = await deployProxy(
         "HexOnePriceFeedTest",
         "HexOnePriceFeedTest",
-        network.name
+        [param.hexToken, param.daiAddress, param.dexRouter]
     );
+    // let hexOnePriceFeed = await getContract(
+    //     "HexOnePriceFeedTest",
+    //     "HexOnePriceFeedTest",
+    //     network.name
+    // );
 
     let hexOneVault = await deployProxy("HexOneVault", "HexOneVault", [
         param.hexToken,
