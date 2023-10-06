@@ -99,6 +99,31 @@
       "address": "0x270BD8dB52F08443F230d2c005e731D7CE93Ac93",
       "txHash": "0xe43d4678ced43b8d050c7f0f303c43239fc2872619150be21c09323213dc45a5",
       "kind": "transparent"
+    },
+    {
+      "address": "0xdf8532f9A3B63244392D6452f47341D8aCF1F4D0",
+      "txHash": "0xc8da2e2d6bc81f026091d5f659a73d2b46127df34bdd13434143eda49b18df57",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x0cf33C0806BF8E3B2186F226d271d119A5A55dc6",
+      "txHash": "0xca7c1881221e903c55221a1a800e6cdecebe4d30462dffe8b664cf0eab896bc3",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xfF852aD69F35578A1ccF4624E5168629De18F090",
+      "txHash": "0x643683b84ab4145c53e92d7e504a63a2f09dc4fd3a75cd893578a030eeeb6f1e",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xfAfEc4A21Eae6dbF6df14D86541DD030e9509e1d",
+      "txHash": "0x2275629b52c06d096c8ad66df74e4f73ee7932ca77a07725962a7aa17fa3362f",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xCd8F36d62871Ff7fdF62DdA263347d6b2d9d270A",
+      "txHash": "0x766e0ac3048d6ae9b15ca292f5266cfd1021fcb240b30340279643b293be5da9",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -1174,7 +1199,7 @@
             "label": "allowedTokens",
             "offset": 0,
             "slot": "102",
-            "type": "t_mapping(t_address,t_struct(Token)4846_storage)",
+            "type": "t_mapping(t_address,t_struct(Token)11832_storage)",
             "contract": "HexOneBootstrap",
             "src": "contracts\\HexOneBootstap.sol:61"
           },
@@ -1214,7 +1239,7 @@
             "label": "userSacrificedIds",
             "offset": 0,
             "slot": "107",
-            "type": "t_mapping(t_address,t_struct(UintSet)2003_storage)",
+            "type": "t_mapping(t_address,t_struct(UintSet)3232_storage)",
             "contract": "HexOneBootstrap",
             "src": "contracts\\HexOneBootstap.sol:77"
           },
@@ -1230,7 +1255,7 @@
             "label": "sacrificeInfos",
             "offset": 0,
             "slot": "109",
-            "type": "t_mapping(t_uint256,t_struct(SacrificeInfo)4990_storage)",
+            "type": "t_mapping(t_uint256,t_struct(SacrificeInfo)12131_storage)",
             "contract": "HexOneBootstrap",
             "src": "contracts\\HexOneBootstap.sol:81"
           },
@@ -1238,7 +1263,7 @@
             "label": "requestAirdropInfo",
             "offset": 0,
             "slot": "110",
-            "type": "t_mapping(t_address,t_struct(RequestAirdrop)4745_storage)",
+            "type": "t_mapping(t_address,t_struct(RequestAirdrop)11731_storage)",
             "contract": "HexOneBootstrap",
             "src": "contracts\\HexOneBootstap.sol:86"
           },
@@ -1254,7 +1279,7 @@
             "label": "dexRouter",
             "offset": 0,
             "slot": "112",
-            "type": "t_contract(IPulseXRouter02)5647",
+            "type": "t_contract(IPulseXRouter02)13980",
             "contract": "HexOneBootstrap",
             "src": "contracts\\HexOneBootstap.sol:91"
           },
@@ -1414,7 +1439,7 @@
             "label": "sacrificeParticipants",
             "offset": 0,
             "slot": "130",
-            "type": "t_struct(AddressSet)1846_storage",
+            "type": "t_struct(AddressSet)3075_storage",
             "contract": "HexOneBootstrap",
             "src": "contracts\\HexOneBootstap.sol:114"
           },
@@ -1422,7 +1447,7 @@
             "label": "airdropRequestors",
             "offset": 0,
             "slot": "132",
-            "type": "t_struct(AddressSet)1846_storage",
+            "type": "t_struct(AddressSet)3075_storage",
             "contract": "HexOneBootstrap",
             "src": "contracts\\HexOneBootstap.sol:115"
           },
@@ -1464,19 +1489,19 @@
             "label": "bytes32",
             "numberOfBytes": "32"
           },
-          "t_contract(IPulseXRouter02)5647": {
+          "t_contract(IPulseXRouter02)13980": {
             "label": "contract IPulseXRouter02",
             "numberOfBytes": "20"
           },
-          "t_mapping(t_address,t_struct(RequestAirdrop)4745_storage)": {
+          "t_mapping(t_address,t_struct(RequestAirdrop)11731_storage)": {
             "label": "mapping(address => struct IHexOneAirdrop.RequestAirdrop)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(Token)4846_storage)": {
+          "t_mapping(t_address,t_struct(Token)11832_storage)": {
             "label": "mapping(address => struct IHexOneBootstrap.Token)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(UintSet)2003_storage)": {
+          "t_mapping(t_address,t_struct(UintSet)3232_storage)": {
             "label": "mapping(address => struct EnumerableSet.UintSet)",
             "numberOfBytes": "32"
           },
@@ -1492,7 +1517,7 @@
             "label": "mapping(uint256 => mapping(address => uint256))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(SacrificeInfo)4990_storage)": {
+          "t_mapping(t_uint256,t_struct(SacrificeInfo)12131_storage)": {
             "label": "mapping(uint256 => struct IHexOneSacrifice.SacrificeInfo)",
             "numberOfBytes": "32"
           },
@@ -1504,19 +1529,19 @@
             "label": "string",
             "numberOfBytes": "32"
           },
-          "t_struct(AddressSet)1846_storage": {
+          "t_struct(AddressSet)3075_storage": {
             "label": "struct EnumerableSet.AddressSet",
             "members": [
               {
                 "label": "_inner",
-                "type": "t_struct(Set)1531_storage",
+                "type": "t_struct(Set)2760_storage",
                 "offset": 0,
                 "slot": "0"
               }
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(RequestAirdrop)4745_storage": {
+          "t_struct(RequestAirdrop)11731_storage": {
             "label": "struct IHexOneAirdrop.RequestAirdrop",
             "members": [
               {
@@ -1576,7 +1601,7 @@
             ],
             "numberOfBytes": "288"
           },
-          "t_struct(SacrificeInfo)4990_storage": {
+          "t_struct(SacrificeInfo)12131_storage": {
             "label": "struct IHexOneSacrifice.SacrificeInfo",
             "members": [
               {
@@ -1648,7 +1673,7 @@
             ],
             "numberOfBytes": "320"
           },
-          "t_struct(Set)1531_storage": {
+          "t_struct(Set)2760_storage": {
             "label": "struct EnumerableSet.Set",
             "members": [
               {
@@ -1666,7 +1691,7 @@
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(Token)4846_storage": {
+          "t_struct(Token)11832_storage": {
             "label": "struct IHexOneBootstrap.Token",
             "members": [
               {
@@ -1690,12 +1715,12 @@
             ],
             "numberOfBytes": "32"
           },
-          "t_struct(UintSet)2003_storage": {
+          "t_struct(UintSet)3232_storage": {
             "label": "struct EnumerableSet.UintSet",
             "members": [
               {
                 "label": "_inner",
-                "type": "t_struct(Set)1531_storage",
+                "type": "t_struct(Set)2760_storage",
                 "offset": 0,
                 "slot": "0"
               }
