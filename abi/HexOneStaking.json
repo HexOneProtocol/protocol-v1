@@ -1,8 +1,30 @@
+{
   "Staking_abi": [
     {
       "inputs": [],
       "stateMutability": "nonpayable",
       "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "success",
+          "type": "bool"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "ERC20CallFailed",
+      "type": "error"
     },
     {
       "anonymous": false,
@@ -50,13 +72,72 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "NFTStaking",
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "_allowedTokens",
+          "type": "address[]"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint16",
+              "name": "hexDistRate",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint16",
+              "name": "hexitDistRate",
+              "type": "uint16"
+            }
+          ],
+          "internalType": "struct IHexOneStaking.DistTokenWeight[]",
+          "name": "_distTokenWeights",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "addAllowedTokens",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "claimRewards",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_user",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "claimableRewardsAmount",
       "outputs": [
         {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
+          "internalType": "uint256",
+          "name": "hexAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "hexitAmount",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -64,12 +145,12 @@
     },
     {
       "inputs": [],
-      "name": "baseToken",
+      "name": "currentStakingDay",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "uint256",
           "name": "",
-          "type": "address"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -79,23 +160,49 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_staker",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_rewardToken",
+          "name": "",
           "type": "address"
         }
       ],
-      "name": "claimableRewards",
+      "name": "distTokenWeights",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "hexDistRate",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint16",
+          "name": "hexitDistRate",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "enableStaking",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_user",
+          "type": "address"
+        }
+      ],
+      "name": "getUserStakingStatus",
       "outputs": [
         {
           "components": [
             {
-              "internalType": "uint256",
-              "name": "stakeId",
-              "type": "uint256"
+              "internalType": "address",
+              "name": "token",
+              "type": "address"
             },
             {
               "internalType": "uint256",
@@ -104,23 +211,172 @@
             },
             {
               "internalType": "uint256",
-              "name": "claimableRewards",
+              "name": "earnedHexAmount",
               "type": "uint256"
             },
             {
-              "internalType": "address",
-              "name": "rewardToken",
-              "type": "address"
+              "internalType": "uint256",
+              "name": "earnedHexitAmount",
+              "type": "uint256"
             },
             {
-              "internalType": "address",
-              "name": "stakeToken",
-              "type": "address"
+              "internalType": "uint256",
+              "name": "claimableHexAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "claimableHexitAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "stakedTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalLockedUSD",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalLockedAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint16",
+              "name": "shareOfPool",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint16",
+              "name": "hexAPR",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint16",
+              "name": "hexitAPR",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint16",
+              "name": "hexMultiplier",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint16",
+              "name": "hexitMultiplier",
+              "type": "uint16"
             }
           ],
-          "internalType": "struct IHexOneStaking.Rewards[]",
+          "internalType": "struct IHexOneStaking.UserStakingStatus[]",
           "name": "",
           "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "hexOneBootstrap",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "hexOnePriceFeed",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "hexOneProtocol",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "hexRewardsRatePerShare",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "hexToken",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "hexitDistRate",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "hexitRewardsRatePerShare",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "hexitToken",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -130,18 +386,23 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_baseToken",
+          "name": "_hexToken",
           "type": "address"
         },
         {
           "internalType": "address",
-          "name": "_stakingMaster",
+          "name": "_hexitToken",
           "type": "address"
         },
         {
-          "internalType": "bool",
-          "name": "_isERC721",
-          "type": "bool"
+          "internalType": "address",
+          "name": "_hexOnePriceFeed",
+          "type": "address"
+        },
+        {
+          "internalType": "uint16",
+          "name": "_hexitDistRate",
+          "type": "uint16"
         }
       ],
       "name": "initialize",
@@ -150,8 +411,14 @@
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "launchedTime",
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "lockedTokenAmounts",
       "outputs": [
         {
           "internalType": "uint256",
@@ -176,6 +443,45 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "purchaseHex",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "purchaseHexit",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address[]",
+          "name": "_allowedTokens",
+          "type": "address[]"
+        }
+      ],
+      "name": "removeAllowedTokens",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "renounceOwnership",
       "outputs": [],
@@ -183,14 +489,47 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "rewardsPool",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "hexPool",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "hexitPool",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "distributedHex",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "distributedHexit",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
-          "name": "_stakingMaster",
+          "name": "_hexOneProtocol",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_hexOneBootstrap",
           "type": "address"
         }
       ],
-      "name": "setStakingMaster",
+      "name": "setBaseData",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -199,46 +538,7 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_staker",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_rewardToken",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_stakeId",
-          "type": "uint256"
-        }
-      ],
-      "name": "stakeERC20End",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "stakedAmount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "claimableAmount",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_staker",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_rewardToken",
+          "name": "_token",
           "type": "address"
         },
         {
@@ -247,76 +547,117 @@
           "type": "uint256"
         }
       ],
-      "name": "stakeERC20Start",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_staker",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_rewardToken",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_stakeId",
-          "type": "uint256"
-        }
-      ],
-      "name": "stakeERC721End",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "claimableAmount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256[]",
-          "name": "tokenIds",
-          "type": "uint256[]"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_staker",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_rewardToken",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256[]",
-          "name": "_tokenIds",
-          "type": "uint256[]"
-        }
-      ],
-      "name": "stakeERC721Start",
+      "name": "stakeToken",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [],
-      "name": "stakingMaster",
+      "name": "stakingEnable",
       "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
         {
           "internalType": "address",
           "name": "",
           "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "stakingInfos",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "stakedTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "claimedHexAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "claimedHexitAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "stakedAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "hexShareAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "hexitShareAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "stakedToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "staker",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "stakingLaunchTime",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalHexShareAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalHexitShareAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -334,5 +675,24 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_unstakeAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "unstake",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
   ]
+}

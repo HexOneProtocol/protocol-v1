@@ -5,234 +5,485 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-import "./utils/TokenUtils.sol";
+import "./interfaces/IHexOnePriceFeed.sol";
 import "./interfaces/IHexOneStaking.sol";
-import "./interfaces/IHexOneStakingMaster.sol";
+import "./utils/TokenUtils.sol";
 
-contract HexOneStaking is OwnableUpgradeable, IHexOneStaking {
+contract HexOneStaking is
+    OwnableUpgradeable,
+    ReentrancyGuardUpgradeable,
+    IHexOneStaking
+{
+    using EnumerableSet for EnumerableSet.AddressSet;
     using EnumerableSet for EnumerableSet.UintSet;
     using SafeERC20 for IERC20;
 
-    address public override baseToken;
-    
-    uint256 public launchedTime;
-    // uint256 public stakedAmount;
-    uint16 public FIXED_POINT;
+    EnumerableSet.AddressSet private allowedTokens;
 
-    /// @dev rewardTokenAddr => stakeId => tokenIds
-    /// @dev This is for staking ERC721.
-    mapping(address => mapping(uint256 => EnumerableSet.UintSet)) private stakedTokenIds;
+    RewardsPool public rewardsPool;
 
-    /// @dev rewardTokenAddr => poolId => PoolInfo
-    mapping(address => mapping(uint256 => PoolInfo)) private poolInfos;
-    
-    /// @dev rewardTokenAddr => userAddr => stakeIds
-    mapping(address => mapping(address => EnumerableSet.UintSet)) private userStakeIds;
+    mapping(address => DistTokenWeight) public distTokenWeights;
+    mapping(address => uint256) public lockedTokenAmounts;
+    mapping(address => mapping(address => StakingInfo)) public stakingInfos;
 
-    /// @dev rewardTokenAddr => userAddr => stakeId => StakeInfo
-    mapping(address => mapping(address => mapping(uint256 => StakeInfo))) private userStakeInfos;
+    uint256 public hexRewardsRatePerShare;
+    uint256 public hexitRewardsRatePerShare;
+    uint256 public totalHexShareAmount; // decimals 18
+    uint256 public totalHexitShareAmount; // decimals 18
+    uint256 public stakingLaunchTime;
 
-    /// @dev Based on reward token, stakeId is different.
-    mapping(address => uint256) private stakeIds;
+    address public hexOneProtocol;
+    address public hexOneBootstrap;
+    address public hexToken;
+    address public hexitToken;
+    address public hexOnePriceFeed;
 
-    /// @dev Based on reward token, poolId is different.
-    mapping(address => uint256) private poolIds;
+    uint16 public constant FIXED_POINT = 1000;
+    uint16 public hexitDistRate;
+    bool public stakingEnable;
 
-    mapping(address => uint256) private stakedAmounts;
-
-    address public stakingMaster;
-
-    bool public NFTStaking;
-
-    modifier onlyStakingMaster {
-        require (msg.sender == stakingMaster, "no permission");
+    modifier onlyHexOneProtocol() {
+        require(msg.sender == hexOneProtocol, "only HexOneProtocol");
         _;
     }
 
-    constructor () {
+    modifier whenOnlyStakingEnable() {
+        require(stakingEnable, "staking is not enabled");
+        _;
+    }
+
+    constructor() {
         _disableInitializers();
     }
 
-    function initialize (
-        address _baseToken,
-        address _stakingMaster,
-        bool _isERC721
+    function initialize(
+        address _hexToken,
+        address _hexitToken,
+        address _hexOnePriceFeed,
+        uint16 _hexitDistRate
     ) public initializer {
-        require (_baseToken != address(0), "zero baseToken address");
-        require (_stakingMaster != address(0), "zero staking master address");
-        launchedTime = block.timestamp;
-        stakingMaster = _stakingMaster;
-        baseToken = _baseToken;
-        NFTStaking = _isERC721;
+        require(_hexToken != address(0), "zero hex token address");
+        require(_hexitToken != address(0), "zero hexit token address");
+        require(_hexOnePriceFeed != address(0), "zero priceFeed address");
+        require(_hexitDistRate <= FIXED_POINT, "invalid hexit dist rate");
 
-        FIXED_POINT = 1000;
+        hexOnePriceFeed = _hexOnePriceFeed;
+        hexitDistRate = _hexitDistRate;
+        hexToken = _hexToken;
+        hexitToken = _hexitToken;
 
         __Ownable_init();
     }
 
-    /// @inheritdoc IHexOneStaking
-    function setStakingMaster(address _stakingMaster) external onlyOwner override {
-        require (_stakingMaster != address(0), "zero staking master address");
-        stakingMaster = _stakingMaster;
+    function setBaseData(
+        address _hexOneProtocol,
+        address _hexOneBootstrap
+    ) external onlyOwner {
+        require(_hexOneProtocol != address(0), "zero hexOneProtocol address");
+        require(_hexOneBootstrap != address(0), "zero hexOneBootstrap address");
+        hexOneProtocol = _hexOneProtocol;
+        hexOneBootstrap = _hexOneBootstrap;
     }
 
-    /// @inheritdoc IHexOneStaking
-    function stakeERC20Start(
-        address _staker,
-        address _rewardToken,
-        uint256 _amount
-    ) external onlyStakingMaster override {
-        _stakeStart(_staker, _rewardToken, _amount);
-    }
-
-    /// @inheritdoc IHexOneStaking
-    function stakeERC721Start(
-        address _staker,
-        address _rewardToken,
-        uint256[] memory _tokenIds
-    ) external onlyStakingMaster override {
-        uint256 amount = _tokenIds.length;
-        uint256 curStakeId = stakeIds[_rewardToken];
-        for (uint256 i = 0; i < amount; i ++) {
-            uint256 tokenId = _tokenIds[i];
-            stakedTokenIds[_rewardToken][curStakeId].add(tokenId);
-        }
-
-        _stakeStart(_staker, _rewardToken, amount);
-    }
-
-    /// @inheritdoc IHexOneStaking
-    function stakeERC20End(
-        address _staker,
-        address _rewardToken, 
-        uint256 _stakeId
-    ) external override returns (uint256 stakedAmount, uint256 claimableAmount) {
-        claimableAmount = _stakeEnd(_staker, _rewardToken, _stakeId);
-        stakedAmount = userStakeInfos[_rewardToken][_staker][_stakeId].stakedAmount;
-    }
-
-    /// @inheritdoc IHexOneStaking
-    function stakeERC721End(
-        address _staker,
-        address _rewardToken, 
-        uint256 _stakeId
-    ) external override returns (uint256 claimableAmount, uint256[] memory tokenIds) {
-        return (
-            _stakeEnd(_staker, _rewardToken, _stakeId),
-            stakedTokenIds[_rewardToken][_stakeId].values()
+    function enableStaking() external onlyOwner {
+        require(!stakingEnable, "already enabled");
+        stakingEnable = true;
+        stakingLaunchTime = block.timestamp;
+        require(
+            rewardsPool.hexPool > 0 && rewardsPool.hexitPool > 0,
+            "no rewards pool"
         );
     }
-    
 
-    /// @inheritdoc IHexOneStaking
-    function claimableRewards(
-        address _staker,
-        address _rewardToken
-    ) external view override returns (Rewards[] memory) {
-        require (_staker != address(0), "zero staker address");
-        require (userStakeIds[_rewardToken][_staker].length() > 0, "no staking pool");
+    function purchaseHex(uint256 _amount) external override {
+        address sender = msg.sender;
+        require(sender == hexOneProtocol, "no permission");
+        require(_amount > 0, "invalid purchase amount");
+        IERC20(hexToken).safeTransferFrom(sender, address(this), _amount);
+        rewardsPool.hexPool += _amount;
+        _updateRewardsPerShareRate();
+    }
 
-        uint256[] memory ids = userStakeIds[_rewardToken][_staker].values();
-        Rewards[] memory rewardsData = new Rewards[](ids.length);
-        for (uint256 i = 0; i < ids.length; i ++) {
-            uint256 _stakeId = ids[i];
-            StakeInfo memory stakeInfo = userStakeInfos[_rewardToken][_staker][_stakeId];
-            rewardsData[i] = Rewards(
-                _stakeId, 
-                stakeInfo.stakedAmount,
-                _getClaimableRewards(_staker, _rewardToken, ids[i]),
-                _rewardToken,
-                baseToken
+    function purchaseHexit(uint256 _amount) external override {
+        address sender = msg.sender;
+        require(sender == hexOneBootstrap, "no permission");
+        require(_amount > 0, "invalid purchase amount");
+        IERC20(hexitToken).safeTransferFrom(sender, address(this), _amount);
+        rewardsPool.hexitPool += _amount;
+        _updateRewardsPerShareRate();
+    }
+
+    function addAllowedTokens(
+        address[] calldata _allowedTokens,
+        DistTokenWeight[] calldata _distTokenWeights
+    ) external onlyOwner {
+        uint256 length = _allowedTokens.length;
+        require(length > 0, "invalid length array");
+        require(length == _distTokenWeights.length, "mismatched array");
+
+        for (uint256 i = 0; i < length; i++) {
+            address allowedToken = _allowedTokens[i];
+            DistTokenWeight memory distTokenWeight = _distTokenWeights[i];
+            require(!allowedTokens.contains(allowedToken), "already added");
+            require(
+                distTokenWeight.hexDistRate == 0 ||
+                    distTokenWeight.hexDistRate >= FIXED_POINT,
+                "invalid hexDistRate"
             );
-        }
+            require(
+                distTokenWeight.hexitDistRate == 0 ||
+                    distTokenWeight.hexitDistRate >= FIXED_POINT,
+                "invalid hexitDistRate"
+            );
 
-        return rewardsData;
+            allowedTokens.add(allowedToken);
+            distTokenWeights[allowedToken] = distTokenWeight;
+        }
     }
 
-    function _getClaimableRewards(
-        address _staker, 
-        address _rewardToken,
-        uint256 _stakeId
-    ) internal view returns (uint256) {
-        StakeInfo memory stakeInfo = userStakeInfos[_rewardToken][_staker][_stakeId];
-        uint256 curStakeId = stakeIds[_rewardToken];
-        if (_stakeId == curStakeId - 1) {
-            PoolInfo memory poolInfo = poolInfos[_rewardToken][_stakeId];
-            uint256 totalPoolAmount = _getTotalPoolAmount(_rewardToken);
-            uint256 rewardsAmount = totalPoolAmount - stakeInfo.currentPoolAmount;
-            rewardsAmount = rewardsAmount * stakeInfo.stakedAmount / poolInfo.totalStakedAmount;
+    function removeAllowedTokens(
+        address[] calldata _allowedTokens
+    ) external onlyOwner {
+        uint256 length = _allowedTokens.length;
+        require(length > 0, "invalid length array");
 
-            return rewardsAmount;
+        for (uint256 i = 0; i < length; i++) {
+            address allowedToken = _allowedTokens[i];
+            require(
+                allowedTokens.contains(allowedToken),
+                "not exists allowedToken"
+            );
+            require(
+                lockedTokenAmounts[allowedToken] == 0,
+                "live staking pools exist"
+            );
+            allowedTokens.remove(allowedToken);
         }
-
-        uint256 claimableAmount = 0;
-        for (uint256 id = _stakeId; id < curStakeId - 1; id ++) {
-            PoolInfo memory pointPoolInfo = poolInfos[_rewardToken][id];
-            PoolInfo memory nextPoolInfo = poolInfos[_rewardToken][id + 1];
-            uint256 rewardsAmount = nextPoolInfo.poolAmount - pointPoolInfo.poolAmount;
-            uint256 rewardRate = _getRewardRate(_rewardToken);
-            rewardsAmount = rewardsAmount * rewardRate / FIXED_POINT;
-            rewardsAmount = rewardsAmount * stakeInfo.stakedAmount / pointPoolInfo.totalStakedAmount;
-            claimableAmount += rewardsAmount;
-        }
-
-        {
-            PoolInfo memory poolInfo = poolInfos[_rewardToken][curStakeId - 1];
-            uint256 totalPoolAmount = _getTotalPoolAmount(_rewardToken);
-            uint256 rewardsAmount = totalPoolAmount - stakeInfo.currentPoolAmount;
-            rewardsAmount = rewardsAmount * stakeInfo.stakedAmount / poolInfo.totalStakedAmount;
-            claimableAmount += rewardsAmount;
-        }
-
-        return claimableAmount;
     }
 
-    function _getRewardRate(address _rewardToken) internal view returns (uint16) {
-        return IHexOneStakingMaster(stakingMaster).getRewardRate(_rewardToken);
+    function currentStakingDay() external view returns (uint256) {
+        if (stakingLaunchTime == 0) {
+            return 0;
+        } else {
+            return (block.timestamp - stakingLaunchTime) / 1 days + 1;
+        }
     }
 
-    function _getTotalPoolAmount(address _rewardToken) internal view returns (uint256) {
-        return IHexOneStakingMaster(stakingMaster).getTotalPoolAmount(_rewardToken);
-    }
-
-    function _stakeStart(
-        address _staker, 
-        address _rewardToken, 
+    function stakeToken(
+        address _token,
         uint256 _amount
-    ) internal {
-        uint256 curStakeId = stakeIds[_rewardToken];
-        uint256 curPoolId = poolIds[_rewardToken];
-        uint256 totalPoolAmount = _getTotalPoolAmount(_rewardToken);
-        userStakeInfos[_rewardToken][_staker][curStakeId] = StakeInfo(
-            block.timestamp, 
-            _amount, 
-            totalPoolAmount
-        );
-        stakedAmounts[_rewardToken] += _amount;
-        poolInfos[_rewardToken][curPoolId] = PoolInfo(stakedAmounts[_rewardToken], totalPoolAmount);
-        userStakeIds[_rewardToken][_staker].add(curStakeId);
+    ) external nonReentrant whenOnlyStakingEnable {
+        address sender = msg.sender;
+        require(sender != address(0), "zero caller address");
 
-        stakeIds[_rewardToken] = curStakeId + 1;
-        poolIds[_rewardToken] = curPoolId + 1;
+        uint256 stakeAmount = _transferERC20(
+            sender,
+            address(this),
+            _token,
+            _amount
+        );
+        lockedTokenAmounts[_token] += stakeAmount;
+
+        DistTokenWeight memory tokenWeight = distTokenWeights[_token];
+        uint256 hexShare = (tokenWeight.hexDistRate * stakeAmount) /
+            FIXED_POINT;
+        hexShare = _convertToShare(_token, hexShare);
+        totalHexShareAmount += hexShare;
+
+        uint256 hexitShare = (tokenWeight.hexitDistRate * stakeAmount) /
+            FIXED_POINT;
+        hexitShare = _convertToShare(_token, hexitShare);
+        totalHexitShareAmount += hexitShare;
+
+        StakingInfo storage stakingInfo = stakingInfos[sender][_token];
+        if (stakingInfo.stakedTime == 0) {
+            stakingInfo.stakedTime = block.timestamp;
+        }
+        stakingInfo.stakedAmount += stakeAmount;
+        stakingInfo.hexShareAmount += hexShare;
+        stakingInfo.hexitShareAmount += hexitShare;
+        if (stakingInfo.stakedToken == address(0)) {
+            stakingInfo.stakedToken = _token;
+        }
+        if (stakingInfo.staker == address(0)) {
+            stakingInfo.staker = sender;
+        }
+
+        _updateRewardsPerShareRate();
     }
 
-    function _stakeEnd(
-        address _staker, 
-        address _rewardToken, 
-        uint256 _stakeId
+    function claimableRewardsAmount(
+        address _user,
+        address _token
+    ) external view returns (uint256 hexAmount, uint256 hexitAmount) {
+        require(allowedTokens.contains(_token), "not allowed token");
+        return _calcRewardsAmount(_user, _token);
+    }
+
+    function claimRewards(
+        address _token
+    ) external nonReentrant whenOnlyStakingEnable {
+        address sender = msg.sender;
+        StakingInfo storage info = stakingInfos[sender][_token];
+        require(allowedTokens.contains(_token), "not allowed token");
+        require(info.stakedTime > 0, "no staking pool");
+
+        uint256 hexAmount = (info.hexShareAmount * hexRewardsRatePerShare) /
+            totalHexShareAmount;
+        uint256 hexitAmount = (info.hexitShareAmount *
+            hexitRewardsRatePerShare) / totalHexitShareAmount;
+
+        hexAmount = hexAmount / 10 ** 10;
+        hexAmount = hexAmount > info.claimedHexAmount
+            ? hexAmount - info.claimedHexAmount
+            : 0;
+        hexitAmount = hexitAmount > info.claimedHexitAmount
+            ? hexitAmount - info.claimedHexitAmount
+            : 0;
+
+        require(hexAmount > 0 || hexitAmount > 0, "no rewards");
+        info.claimedHexAmount += hexAmount;
+        info.claimedHexitAmount += hexitAmount;
+
+        if (hexAmount > 0) {
+            IERC20(hexToken).safeTransfer(info.staker, hexAmount);
+        }
+
+        if (hexitAmount > 0) {
+            IERC20(hexitToken).safeTransfer(info.staker, hexitAmount);
+        }
+    }
+
+    function unstake(
+        address _token,
+        uint256 _unstakeAmount
+    ) external nonReentrant whenOnlyStakingEnable {
+        address sender = msg.sender;
+        StakingInfo storage info = stakingInfos[sender][_token];
+        DistTokenWeight memory tokenWeight = distTokenWeights[_token];
+        require(allowedTokens.contains(_token), "not allowed token");
+        require(info.stakedTime > 0, "no staking pool");
+        require(
+            _unstakeAmount > 0 && info.stakedAmount >= _unstakeAmount,
+            "invalid unstake amount"
+        );
+
+        uint256 hexShareAmount = (_unstakeAmount * tokenWeight.hexDistRate) /
+            FIXED_POINT;
+        uint256 hexitShareAmount = (_unstakeAmount *
+            tokenWeight.hexitDistRate) / FIXED_POINT;
+        hexShareAmount = _convertToShare(_token, hexShareAmount);
+        hexitShareAmount = _convertToShare(_token, hexitShareAmount);
+
+        (uint256 hexAmount, uint256 hexitAmount) = _calcRewardsAmount(
+            sender,
+            _token
+        );
+
+        if (info.hexShareAmount > 0) {
+            hexAmount = (hexAmount * hexShareAmount) / info.hexShareAmount;
+        }
+
+        if (info.hexitShareAmount > 0) {
+            hexitAmount =
+                (hexitAmount * hexitShareAmount) /
+                info.hexitShareAmount;
+        }
+
+        if (hexAmount > 0) {
+            IERC20(hexToken).safeTransfer(info.staker, hexAmount);
+        }
+
+        if (hexitAmount > 0) {
+            IERC20(hexitToken).safeTransfer(info.staker, hexitAmount);
+        }
+
+        info.claimedHexAmount += hexAmount;
+        info.claimedHexitAmount += hexitAmount;
+        info.hexShareAmount -= hexShareAmount;
+        info.hexitShareAmount -= hexitShareAmount;
+        info.stakedAmount -= _unstakeAmount;
+
+        totalHexShareAmount -= hexShareAmount;
+        totalHexitShareAmount -= hexitShareAmount;
+
+        if (info.hexShareAmount == 0 && info.hexitShareAmount == 0) {
+            info.stakedTime = 0;
+        }
+
+        lockedTokenAmounts[info.stakedToken] -= _unstakeAmount;
+        IERC20(info.stakedToken).safeTransfer(sender, _unstakeAmount);
+
+        _updateRewardsPerShareRate();
+    }
+
+    function getUserStakingStatus(
+        address _user
+    ) external view returns (UserStakingStatus[] memory) {
+        uint256 allowedTokenCnt = allowedTokens.length();
+        UserStakingStatus[] memory status = new UserStakingStatus[](
+            allowedTokenCnt
+        );
+
+        for (uint256 i = 0; i < allowedTokenCnt; i++) {
+            address token = allowedTokens.at(i);
+            StakingInfo memory info = stakingInfos[_user][token];
+            DistTokenWeight memory tokenWeight = distTokenWeights[token];
+            (
+                uint256 claimableHexAmount,
+                uint256 claimableHexitAmount
+            ) = _calcRewardsAmount(_user, token);
+
+            (uint16 hexAPR, uint16 hexitAPR) = _calcAPR(token);
+
+            uint16 shareOfPool = 0;
+            if (lockedTokenAmounts[token] > 0) {
+                shareOfPool = uint16(
+                    (info.stakedAmount * FIXED_POINT) /
+                        lockedTokenAmounts[token]
+                );
+            }
+
+            uint256 stakedTime = 0;
+            if (info.stakedTime > 0) {
+                stakedTime = (block.timestamp - info.stakedTime) / 1 days + 1;
+            }
+
+            uint256 lockedUSD = IHexOnePriceFeed(hexOnePriceFeed)
+                .getBaseTokenPrice(token, lockedTokenAmounts[token]);
+            status[i] = UserStakingStatus({
+                token: token,
+                stakedAmount: info.stakedAmount,
+                earnedHexAmount: info.claimedHexAmount,
+                earnedHexitAmount: info.claimedHexitAmount,
+                claimableHexAmount: claimableHexAmount,
+                claimableHexitAmount: claimableHexitAmount,
+                stakedTime: stakedTime,
+                totalLockedUSD: lockedUSD,
+                totalLockedAmount: lockedTokenAmounts[token],
+                shareOfPool: shareOfPool,
+                hexAPR: hexAPR,
+                hexitAPR: hexitAPR,
+                hexMultiplier: tokenWeight.hexDistRate,
+                hexitMultiplier: tokenWeight.hexitDistRate
+            });
+        }
+
+        return status;
+    }
+
+    function _calcRewardsAmount(
+        address _user,
+        address _token
+    ) internal view returns (uint256 hexAmount, uint256 hexitAmount) {
+        StakingInfo memory info = stakingInfos[_user][_token];
+        if (info.stakedTime == 0) {
+            return (0, 0);
+        }
+
+        if (totalHexShareAmount > 0) {
+            hexAmount =
+                (info.hexShareAmount * hexRewardsRatePerShare) /
+                totalHexShareAmount;
+            hexAmount = hexAmount / 10 ** 10;
+            hexAmount = hexAmount > info.claimedHexAmount
+                ? hexAmount - info.claimedHexAmount
+                : 0;
+        }
+
+        if (totalHexitShareAmount > 0) {
+            hexitAmount =
+                (info.hexitShareAmount * hexitRewardsRatePerShare) /
+                totalHexitShareAmount;
+            hexitAmount = hexitAmount > info.claimedHexitAmount
+                ? hexitAmount - info.claimedHexitAmount
+                : 0;
+        }
+    }
+
+    function _updateRewardsPerShareRate() internal {
+        if (totalHexShareAmount == 0 && totalHexitShareAmount == 0) {
+            return;
+        }
+
+        uint256 curHexPool = rewardsPool.hexPool;
+        uint256 curHexitPool = rewardsPool.hexitPool;
+        curHexitPool -= rewardsPool.distributedHexit;
+
+        uint256 hexAmountForDist = curHexPool - rewardsPool.distributedHex;
+        uint256 hexitAmountForDist = (curHexitPool * hexitDistRate) /
+            FIXED_POINT;
+
+        if (totalHexShareAmount > 0) {
+            hexRewardsRatePerShare +=
+                (hexAmountForDist * 10 ** 28) /
+                totalHexShareAmount;
+        }
+
+        if (totalHexitShareAmount > 0) {
+            hexitRewardsRatePerShare +=
+                (hexitAmountForDist * 10 ** 18) /
+                totalHexitShareAmount;
+        }
+
+        rewardsPool.distributedHex += hexAmountForDist;
+        rewardsPool.distributedHexit += hexitAmountForDist;
+    }
+
+    function _transferERC20(
+        address _from,
+        address _to,
+        address _token,
+        uint256 _amount
     ) internal returns (uint256) {
-        require (userStakeIds[_rewardToken][_staker].contains(_stakeId), "not exist stakeId");
-        uint256 curPoolId = poolIds[_rewardToken];
-        uint256 claimableAmount = _getClaimableRewards(_staker, _rewardToken, _stakeId);
-        userStakeIds[_rewardToken][_staker].remove(_stakeId);
-        stakedAmounts[_rewardToken] -= userStakeInfos[_rewardToken][_staker][_stakeId].stakedAmount;
-        poolInfos[_rewardToken][curPoolId] = PoolInfo(
-            stakedAmounts[_rewardToken], 
-            _getTotalPoolAmount(_rewardToken)
-        );
-        poolIds[_rewardToken] = curPoolId + 1;
+        require(_token != address(0), "invalid token address");
+        require(_amount > 0, "invalid staking amount");
+        require(allowedTokens.contains(_token), "not allowed token");
 
-        return claimableAmount;
+        uint256 beforeBal = IERC20(_token).balanceOf(_to);
+        IERC20(_token).safeTransferFrom(_from, _to, _amount);
+        uint256 afterBal = IERC20(_token).balanceOf(_to);
+
+        return afterBal - beforeBal;
     }
+
+    function _calcAPR(
+        address _token
+    ) internal view returns (uint16 hexAPR, uint16 hexitAPR) {
+        /// total rewards for token / total deposited token %
+        uint256 depositedAmount = lockedTokenAmounts[_token];
+        DistTokenWeight memory tokenWeight = distTokenWeights[_token];
+        uint256 hexShare = (depositedAmount * tokenWeight.hexDistRate) /
+            FIXED_POINT;
+        uint256 hexitShare = (depositedAmount * tokenWeight.hexitDistRate) /
+            FIXED_POINT;
+
+        uint256 distributedHex = rewardsPool.distributedHex;
+        uint256 distributedHexit = rewardsPool.distributedHexit;
+
+        if (hexShare > 0) {
+            hexAPR = uint16((distributedHex * 10 ** 18) / hexShare);
+        }
+
+        if (hexitShare > 0) {
+            hexitAPR = uint16((distributedHexit * 10 ** 8) / hexitShare);
+        }
+    }
+
+    function _convertToShare(
+        address _token,
+        uint256 _amount
+    ) internal view returns (uint256) {
+        uint8 tokenDecimals = TokenUtils.expectDecimals(_token);
+        if (tokenDecimals >= 18) {
+            return _amount / (10 ** (tokenDecimals - 18));
+        } else {
+            return _amount * (10 ** (18 - tokenDecimals));
+        }
+    }
+
+    uint256[100] private __gaps;
 }

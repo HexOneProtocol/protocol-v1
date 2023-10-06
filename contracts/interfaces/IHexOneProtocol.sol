@@ -14,6 +14,10 @@ interface IHexOneProtocol {
     /// @param _add Add/Remove = true/false.
     function setVaults(address[] memory _vaults, bool _add) external;
 
+    /// @notice Set HexOneEscrow conract address.
+    /// @dev Only owner can call this function.
+    function setEscrowContract(address _escrowCA) external;
+
     /// @notice Set stakingMaster contract address.
     /// @dev Only owner can call this function.
     /// @param _stakingMaster The address of staking Pool.
@@ -41,29 +45,14 @@ interface IHexOneProtocol {
     /// @param _enable Enable/Disable = true/false
     function setDepositFeeEnable(address _token, bool _enable) external;
 
-    /// @notice Add collateral to certain deposit pool to cover loss.
-    /// @dev Depositors can't deposit as commitType. as only uncommit.
-    /// @param _token The address of collateral to deposit.
-    /// @param _amount The amount of collateral to deposit.
-    /// @param _depositId The id of deposit to add collateral.
-    /// @param _duration The duration days.
-    function addCollateralForLiquidate(
-        address _token,
-        uint256 _amount,
-        uint256 _depositId,
-        uint16 _duration
-    ) external;
-
     /// @notice Deposit collateral and receive $HEX1 token.
     /// @param _token The address of collateral to deposit.
     /// @param _amount The amount of collateral to deposit.
     /// @param _duration The duration days.
-    /// @param _isCommit Present commit or uncommit. true/false.
     function depositCollateral(
         address _token, 
         uint256 _amount, 
-        uint16 _duration,
-        bool _isCommit
+        uint16 _duration
     ) external;
 
     /// @notice Borrow more $HEX1 token based on already deposited collateral.
@@ -82,7 +71,7 @@ interface IHexOneProtocol {
     function claimCollateral(
         address _token,
         uint256 _depositId
-    ) external;
+    ) external returns (uint256);
 
     /// @notice Check that token is allowed or not.
     function isAllowedToken(

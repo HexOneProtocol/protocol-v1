@@ -5,3 +5,5 @@ package-lock.json
 coverage
 coverage.json
 .env
+test/emergency.test.js
+scripts/emergency.js

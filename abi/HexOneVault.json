@@ -1,3 +1,4 @@
+{
   "Vault_abi": [
     {
       "inputs": [],
@@ -61,9 +62,9 @@
         },
         {
           "indexed": false,
-          "internalType": "uint256",
+          "internalType": "uint16",
           "name": "restakeDuration",
-          "type": "uint256"
+          "type": "uint16"
         }
       ],
       "name": "CollateralRestaked",
@@ -116,7 +117,7 @@
     },
     {
       "inputs": [],
-      "name": "LIMIT_CLAIM_DURATION",
+      "name": "FIXED_POINT_PAYOUT",
       "outputs": [
         {
           "internalType": "uint256",
@@ -129,7 +130,7 @@
     },
     {
       "inputs": [],
-      "name": "LIMIT_PRICE_PERCENT",
+      "name": "GRACE_DURATION",
       "outputs": [
         {
           "internalType": "uint16",
@@ -138,40 +139,6 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_depositor",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_amount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_vaultDepositId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_duration",
-          "type": "uint256"
-        }
-      ],
-      "name": "addCollateralForLiquidate",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "burnAmount",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -221,6 +188,11 @@
           "internalType": "uint256",
           "name": "_vaultDepositId",
           "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "_restake",
+          "type": "bool"
         }
       ],
       "name": "claimCollateral",
@@ -257,26 +229,16 @@
           "type": "uint256"
         },
         {
-          "internalType": "uint256",
+          "internalType": "uint16",
           "name": "_duration",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_restakeDuration",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bool",
-          "name": "_isCommit",
-          "type": "bool"
+          "type": "uint16"
         }
       ],
       "name": "depositCollateral",
       "outputs": [
         {
           "internalType": "uint256",
-          "name": "mintAmount",
+          "name": "",
           "type": "uint256"
         }
       ],
@@ -353,29 +315,74 @@
         {
           "components": [
             {
-              "internalType": "uint256",
-              "name": "depositId",
-              "type": "uint256"
-            },
-            {
               "internalType": "address",
               "name": "depositor",
               "type": "address"
             },
             {
               "internalType": "uint256",
-              "name": "hexOneTokenAmount",
+              "name": "depositId",
               "type": "uint256"
             },
             {
               "internalType": "uint256",
-              "name": "hexTokenAmount",
+              "name": "curHexDay",
               "type": "uint256"
             },
             {
               "internalType": "uint256",
-              "name": "liquidateAmount",
+              "name": "endDay",
               "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "effectiveHex",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "borrowedHexOne",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "initHexPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "currentHexPrice",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "depositedHexAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "currentValue",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "initUSDValue",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "currentUSDValue",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint16",
+              "name": "graceDay",
+              "type": "uint16"
+            },
+            {
+              "internalType": "bool",
+              "name": "liquidable",
+              "type": "bool"
             }
           ],
           "internalType": "struct IHexOneVault.LiquidateInfo[]",
@@ -439,7 +446,17 @@
             },
             {
               "internalType": "uint256",
-              "name": "liquidateAmount",
+              "name": "borrowableAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "effectiveAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "initialHexPrice",
               "type": "uint256"
             },
             {
@@ -456,16 +473,24 @@
               "internalType": "uint256",
               "name": "curHexDay",
               "type": "uint256"
-            },
-            {
-              "internalType": "bool",
-              "name": "commitType",
-              "type": "bool"
             }
           ],
           "internalType": "struct IHexOneVault.DepositShowInfo[]",
           "name": "",
           "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "hexDecimals",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
         }
       ],
       "stateMutability": "view",
@@ -551,25 +576,12 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "_duration",
-          "type": "uint256"
-        }
-      ],
-      "name": "setLimitClaimDuration",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "uint16",
-          "name": "_percent",
+          "name": "_duration",
           "type": "uint16"
         }
       ],
-      "name": "setLimitPricePercent",
+      "name": "setLimitClaimDuration",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -588,3 +600,4 @@
       "type": "function"
     }
   ]
+}

@@ -1,3 +1,4 @@
+{
   "Bootstrap_abi": [
     {
       "inputs": [],
@@ -135,6 +136,45 @@
     },
     {
       "inputs": [],
+      "name": "HEXITAmountForSacrifice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "additionalRateForStaking",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "additionalRateForTeam",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "afterSacrificeDuration",
       "outputs": [
         {
@@ -200,6 +240,19 @@
     },
     {
       "inputs": [],
+      "name": "airdropId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "airdropStartTime",
       "outputs": [
         {
@@ -248,11 +301,24 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_sacrificeId",
+          "type": "uint256"
+        }
+      ],
+      "name": "claimRewardsForSacrifice",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "dexRouter",
       "outputs": [
         {
-          "internalType": "contract IUniswapV2Router02",
+          "internalType": "contract IPulseXRouter02",
           "name": "",
           "type": "address"
         }
@@ -275,19 +341,90 @@
     },
     {
       "inputs": [],
-      "name": "distributeRewardsForSacrifice",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
       "name": "escrowCA",
       "outputs": [
         {
           "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "generateAdditionalTokens",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_user",
+          "type": "address"
+        }
+      ],
+      "name": "getAirdropClaimHistory",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "airdropId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "requestedDay",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sacrificeUSD",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sacrificeMultiplier",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "hexShares",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "hexShareMultiplier",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalUSD",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "dailySupplyAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "claimedAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint16",
+              "name": "shareOfPool",
+              "type": "uint16"
+            }
+          ],
+          "internalType": "struct IHexOneAirdrop.AirdropClaimHistory",
+          "name": "",
+          "type": "tuple"
         }
       ],
       "stateMutability": "view",
@@ -307,6 +444,131 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_dayIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "getAirdropSupplyAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_dayIndex",
+          "type": "uint256"
+        }
+      ],
+      "name": "getAmountForSacrifice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getCurrentAirdropDay",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_user",
+          "type": "address"
+        }
+      ],
+      "name": "getCurrentAirdropInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "sacrificedAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "stakingShareAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "curAirdropDay",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "curDayPoolAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "curDaySupplyHEXIT",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint16",
+              "name": "sacrificeDistRate",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint16",
+              "name": "stakingDistRate",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint16",
+              "name": "shareOfPool",
+              "type": "uint16"
+            }
+          ],
+          "internalType": "struct IHexOneAirdrop.AirdropPoolInfo",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getCurrentSacrificeDay",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "getSacrificeParticipants",
       "outputs": [
@@ -314,6 +576,82 @@
           "internalType": "address[]",
           "name": "",
           "type": "address[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_user",
+          "type": "address"
+        }
+      ],
+      "name": "getUserSacrificeInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "sacrificeId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "day",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "supplyAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sacrificedAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "sacrificedWeight",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "usdValue",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalHexitAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "sacrificeToken",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "sacrificeTokenSymbol",
+              "type": "string"
+            },
+            {
+              "internalType": "uint16",
+              "name": "multiplier",
+              "type": "uint16"
+            },
+            {
+              "internalType": "bool",
+              "name": "claimed",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct IHexOneSacrifice.SacrificeInfo[]",
+          "name": "",
+          "type": "tuple[]"
         }
       ],
       "stateMutability": "view",
@@ -340,6 +678,19 @@
           "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "hexitPurchased",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
@@ -388,6 +739,16 @@
               "type": "address"
             },
             {
+              "internalType": "address",
+              "name": "stakingContract",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "teamWallet",
+              "type": "address"
+            },
+            {
               "internalType": "uint256",
               "name": "sacrificeStartTime",
               "type": "uint256"
@@ -414,7 +775,7 @@
             },
             {
               "internalType": "uint16",
-              "name": "rateforAirdrop",
+              "name": "rateForAirdrop",
               "type": "uint16"
             },
             {
@@ -429,12 +790,12 @@
             },
             {
               "internalType": "uint16",
-              "name": "airdropDistRateforHexHolder",
+              "name": "airdropDistRateForHexHolder",
               "type": "uint16"
             },
             {
               "internalType": "uint16",
-              "name": "airdropDistRateforHEXITHolder",
+              "name": "airdropDistRateForHEXITHolder",
               "type": "uint16"
             }
           ],
@@ -527,13 +888,7 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "bool",
-          "name": "_isShareHolder",
-          "type": "bool"
-        }
-      ],
+      "inputs": [],
       "name": "requestAirdrop",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -551,18 +906,43 @@
       "outputs": [
         {
           "internalType": "uint256",
-          "name": "requestDay",
+          "name": "airdropId",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "balance",
+          "name": "requestedDay",
           "type": "uint256"
         },
         {
-          "internalType": "bool",
-          "name": "isShareHolder",
-          "type": "bool"
+          "internalType": "uint256",
+          "name": "sacrificeUSD",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "sacrificeMultiplier",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "hexShares",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "hexShareMultiplier",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalUSD",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "claimedAmount",
+          "type": "uint256"
         },
         {
           "internalType": "bool",
@@ -585,12 +965,7 @@
       "outputs": [
         {
           "internalType": "uint256",
-          "name": "amountByHexHolder",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amountByHEXITHolder",
+          "name": "",
           "type": "uint256"
         }
       ],
@@ -625,12 +1000,81 @@
     },
     {
       "inputs": [],
-      "name": "sacrificeHEXITAmount",
+      "name": "sacrificeId",
       "outputs": [
         {
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "sacrificeInfos",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "sacrificeId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "day",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "supplyAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "sacrificedAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "sacrificedWeight",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "usdValue",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalHexitAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "sacrificeToken",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "sacrificeTokenSymbol",
+          "type": "string"
+        },
+        {
+          "internalType": "uint16",
+          "name": "multiplier",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bool",
+          "name": "claimed",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
@@ -781,12 +1225,75 @@
     },
     {
       "inputs": [],
+      "name": "sliceRate",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "stakingContract",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "supplyCropRateForSacrifice",
       "outputs": [
         {
           "internalType": "uint16",
           "name": "",
           "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "teamWallet",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "totalSacrificeTokenAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -847,6 +1354,25 @@
       "inputs": [
         {
           "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "userSacrificedUSD",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "_token",
           "type": "address"
         }
@@ -861,3 +1387,4 @@
       "type": "receive"
     }
   ]
+}

@@ -1,3 +1,4 @@
+{
   "HexMock_abi": [
     {
       "inputs": [],
@@ -201,6 +202,34 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "newStakedHearts",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "newStakedDays",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "customStakedDay",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "staker",
+          "type": "address"
+        }
+      ],
+      "name": "emergencyStakeStart",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "globals",
       "outputs": [
@@ -310,6 +339,24 @@
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "mintTo",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -534,3 +581,4 @@
       "type": "function"
     }
   ]
+}
