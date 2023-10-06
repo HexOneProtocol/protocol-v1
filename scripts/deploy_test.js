@@ -614,7 +614,7 @@ async function main() {
 
     await initializeSacrifice();
 
-    await updateHexOneBootstrap();
+    // await updateHexOneBootstrap();
 
     console.log("Deployed successfully");
 }

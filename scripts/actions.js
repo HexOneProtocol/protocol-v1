@@ -86,13 +86,23 @@ async function createHexStakingPool() {
         "HexOneStaking",
         network.name
     );
+    let hexit = await getContract("HEXIT", "HEXIT", network.name);
     let param = getDeploymentParam();
     let hexTokenAddr = param.hexToken;
+    let hexitTokenAddr = hexit.address
 
     console.log("add hex token to allowToken list");
     let tx = await hexOneStaking.addAllowedTokens(
-        [hexTokenAddr],
-        [{ hexDistRate: 1000, hexitDistRate: 0 }]
+        [hexitTokenAddr, hexTokenAddr],
+        [
+            {
+                hexDistRate: 1500,
+                hexitDistRate: 3000,
+            },
+            {
+                hexDistRate: 1000,
+                hexitDistRate: 2000,
+            },]
     );
     await tx.wait();
     console.log("processed successfully!");
