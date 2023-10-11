@@ -87,21 +87,33 @@ async function createHexStakingPool() {
         network.name
     );
     let hexit = await getContract("HEXIT", "HEXIT", network.name);
+    let hexone = await getContract("HexOne", "HexOne", network.name);
     let param = getDeploymentParam();
-    let hexTokenAddr = param.hexToken;
+    let hex1TokenAddr = hexone.address;
     let hexitTokenAddr = hexit.address
+    let hexdai = '0x37a30908C77Bc1da05478317026ED84F6Bb1ADbE'
+    let hexhex1 = '0x15f566711E2B703011BaF7f878dd0ce1e30E0753'
 
-    console.log("add hex token to allowToken list");
+    console.log(hex1TokenAddr, hexitTokenAddr)
+    console.log("add hex1 hexit hex1/hex hex/dai token to allowToken list");
     let tx = await hexOneStaking.addAllowedTokens(
-        [hexitTokenAddr, hexTokenAddr],
+        [hexitTokenAddr, hex1TokenAddr, hexdai, hexhex1],
         [
             {
-                hexDistRate: 1500,
-                hexitDistRate: 3000,
+                hexDistRate: 100,
+                hexitDistRate: 100,
             },
             {
-                hexDistRate: 1000,
-                hexitDistRate: 2000,
+                hexDistRate: 100,
+                hexitDistRate: 100,
+            },
+            {
+                hexDistRate: 600,
+                hexitDistRate: 600,
+            },
+            {
+                hexDistRate: 200,
+                hexitDistRate: 200,
             },]
     );
     await tx.wait();
@@ -178,9 +190,9 @@ async function main() {
     // await setHexTokenFeeInfo(50); // set feeRate as 5%
     // await getHexTokenFeeInfo();
 
-    // await getRewardsPoolInfo();
-    // await generateAdditionalTokens();
-    // await getRewardsPoolInfo();
+    await getRewardsPoolInfo();
+    await generateAdditionalTokens();
+    await getRewardsPoolInfo();
 
     await enableStaking();
 
