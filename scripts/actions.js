@@ -87,7 +87,7 @@ async function createHexStakingPool() {
         network.name
     );
     let hexit = await getContract("HEXIT", "HEXIT", network.name);
-    let hexone = await getContract("HexOne", "HexOne", network.name);
+    let hexone = await getContract("HexOneToken", "HexOneToken", network.name);
     let param = getDeploymentParam();
     let hex1TokenAddr = hexone.address;
     let hexitTokenAddr = hexit.address
