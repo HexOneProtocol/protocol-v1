@@ -613,7 +613,7 @@ async function main() {
     await addLiquidity();
 
     await initializeSacrifice();
-
+    // await updateHexOnePriceFeedTest()
     // await updateHexOneBootstrap();
 
     console.log("Deployed successfully");

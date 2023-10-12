@@ -45,17 +45,42 @@ contract HexOnePriceFeed is OwnableUpgradeable, IHexOnePriceFeed {
         address _baseToken,
         uint256 _amount
     ) external view override returns (uint256) {
-        if (_baseToken == hexToken) {
-            return getHexTokenPrice(_amount);
-        } else if (_baseToken == pairToken) {
-            uint8 pairTokenDecimals = TokenUtils.expectDecimals(pairToken);
-            return (FIXED_POINT_SCALAR * _amount) / 10 ** pairTokenDecimals; // 1 USD
-        } else if (_baseToken == address(0)) {
-            /// native token
-            _baseToken = dexRouter.WPLS();
+        // if (_baseToken == hexToken) {
+        //     return getHexTokenPrice(_amount);
+        // } else if (_baseToken == pairToken) {
+        //     uint8 pairTokenDecimals = TokenUtils.expectDecimals(pairToken);
+        //     return (FIXED_POINT_SCALAR * _amount) / 10 ** pairTokenDecimals; // 1 USD
+        // } else if (_baseToken == address(0)) {
+        //     /// native token
+        //     _baseToken = dexRouter.WPLS();
+        // }
+        if (_baseToken == pairToken) return _amount;
+        IPulseXPair tokenPair = IPulseXPair(
+            IPulseXFactory(dexRouter.factory()).getPair(pairToken, _baseToken)
+        );
+        require(
+            address(tokenPair) != address(0),
+            "no liquidity pool with pairToken"
+        );
+        (uint112 reserve0, uint112 reserve1, ) = tokenPair.getReserves();
+        uint256 baseTokenReserve;
+        uint256 pairTokenReserve;
+        if (tokenPair.token0() == _baseToken) {
+            baseTokenReserve = uint256(reserve0);
+            pairTokenReserve = uint256(reserve1);
+        } else {
+            baseTokenReserve = uint256(reserve1);
+            pairTokenReserve = uint256(reserve0);
         }
+        uint256 pairTokenAmount = (pairTokenReserve * _amount) /
+            baseTokenReserve;
+        uint8 pairTokenDecimals = TokenUtils.expectDecimals(pairToken);
 
-        return _getBaseTokenPriceFromPairToken(_baseToken, _amount);
+        if (pairTokenDecimals > 18) {
+            return pairTokenAmount / 10 ** (pairTokenDecimals - 18);
+        } else {
+            return pairTokenAmount * 10 ** (18 - pairTokenDecimals);
+        }
     }
 
     /// @inheritdoc IHexOnePriceFeed
