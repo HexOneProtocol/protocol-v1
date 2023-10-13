@@ -168,7 +168,7 @@ contract HexOneStaking is
         if (stakingLaunchTime == 0) {
             return 0;
         } else {
-            return (block.timestamp - stakingLaunchTime) / 1 days + 1;
+            return (block.timestamp - stakingLaunchTime) / 1 hours + 1;
         }
     }
 
@@ -349,7 +349,7 @@ contract HexOneStaking is
 
             uint256 stakedTime = 0;
             if (info.stakedTime > 0) {
-                stakedTime = (block.timestamp - info.stakedTime) / 1 days + 1;
+                stakedTime = (block.timestamp - info.stakedTime) / 1 hours + 1;
             }
 
             uint256 lockedUSD = IHexOnePriceFeed(hexOnePriceFeed)

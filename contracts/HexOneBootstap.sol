@@ -167,7 +167,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         sacrificeEndTime =
             _param.sacrificeStartTime +
             _param.sacrificeDuration *
-            1 days;
+            1 hours;
 
         require(
             _param.airdropStartTime > sacrificeEndTime,
@@ -178,7 +178,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         airdropEndTime =
             _param.airdropStartTime +
             _param.airdropDuration *
-            1 days;
+            1 hours;
 
         require(_param.dexRouter != address(0), "zero dexRouter address");
         dexRouter = IPulseXRouter02(_param.dexRouter);
@@ -330,7 +330,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             ? sacrificeEndTime
             : block.timestamp;
         uint256 elapsedTime = endTime - sacrificeStartTime;
-        return elapsedTime / 1 days + 1;
+        return elapsedTime / 1 hours + 1;
     }
 
     /// @inheritdoc IHexOneSacrifice
@@ -388,7 +388,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         uint256 sacrificeRewardsAmount = (rewardsAmount * rateForSacrifice) /
             FIXED_POINT;
         userRewardsForSacrifice[sender] += sacrificeRewardsAmount;
-        IHEXIT(hexitToken).mintToken(sacrificeRewardsAmount, sender);
+        IHEXIT(hexitToken).mintToken(info.totalHexitAmount, sender);
 
         emit RewardsDistributed();
     }
@@ -399,7 +399,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         uint256 endTime = block.timestamp > airdropEndTime
             ? airdropEndTime
             : block.timestamp;
-        return (endTime - airdropStartTime) / 1 days;
+        return (endTime - airdropStartTime) / 1 hours;
     }
 
     /// @inheritdoc IHexOneAirdrop
@@ -764,7 +764,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
 
     function _distributeHEXITAmount() internal {
         uint256 sacrificeDuration = sacrificeEndTime - sacrificeStartTime;
-        sacrificeDuration = sacrificeDuration / 1 days;
+        sacrificeDuration = sacrificeDuration / 1 hours;
         for (uint256 i = 0; i < sacrificeDuration; i++) {
             uint256 supplyAmount = _calcSupplyAmountForSacrifice(i);
             uint256 sacrificeRewardsAmount = (supplyAmount * rateForSacrifice) /

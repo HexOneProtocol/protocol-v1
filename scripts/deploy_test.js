@@ -44,7 +44,7 @@ async function deployBootstrap() {
 
     let airdropStartTime =
         BigInt(sacrificeStartTime) +
-        BigInt(day) * BigInt(param.sacrificeDuration) +
+        BigInt(hour) * BigInt(param.sacrificeDuration) +
         BigInt(param.airdropStartTime);
 
     let bootstrapParam = {
