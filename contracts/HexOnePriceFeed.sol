@@ -10,6 +10,22 @@ import "./interfaces/pulsex/IPulseXFactory.sol";
 import "./interfaces/pulsex/IPulseXRouter.sol";
 import "./interfaces/pulsex/IPulseXPair.sol";
 
+library Math {
+    function sqrt(uint y) internal pure returns (uint z) {
+        if (y > 3) {
+            z = y;
+            uint x = y / 2 + 1;
+            while (x < z) {
+                z = x;
+                x = (y / x + x) / 2;
+            }
+        } else if (y != 0) {
+            z = 1;
+        }
+        // else z = 0 (default value)
+    }
+}
+
 contract HexOnePriceFeed is OwnableUpgradeable, IHexOnePriceFeed {
     uint256 public FIXED_POINT_SCALAR;
 
@@ -58,28 +74,45 @@ contract HexOnePriceFeed is OwnableUpgradeable, IHexOnePriceFeed {
         IPulseXPair tokenPair = IPulseXPair(
             IPulseXFactory(dexRouter.factory()).getPair(pairToken, _baseToken)
         );
-        require(
-            address(tokenPair) != address(0),
-            "no liquidity pool with pairToken"
-        );
-        (uint112 reserve0, uint112 reserve1, ) = tokenPair.getReserves();
-        uint256 baseTokenReserve;
-        uint256 pairTokenReserve;
-        if (tokenPair.token0() == _baseToken) {
-            baseTokenReserve = uint256(reserve0);
-            pairTokenReserve = uint256(reserve1);
-        } else {
-            baseTokenReserve = uint256(reserve1);
-            pairTokenReserve = uint256(reserve0);
-        }
-        uint256 pairTokenAmount = (pairTokenReserve * _amount) /
-            baseTokenReserve;
-        uint8 pairTokenDecimals = TokenUtils.expectDecimals(pairToken);
+        if (address(tokenPair) != address(0)) {
+            (uint112 reserve0, uint112 reserve1, ) = tokenPair.getReserves();
+            uint256 baseTokenReserve;
+            uint256 pairTokenReserve;
+            if (tokenPair.token0() == _baseToken) {
+                baseTokenReserve = uint256(reserve0);
+                pairTokenReserve = uint256(reserve1);
+            } else {
+                baseTokenReserve = uint256(reserve1);
+                pairTokenReserve = uint256(reserve0);
+            }
+            uint256 pairTokenAmount = (pairTokenReserve * _amount) /
+                baseTokenReserve;
+            uint8 pairTokenDecimals = TokenUtils.expectDecimals(pairToken);
 
-        if (pairTokenDecimals > 18) {
-            return pairTokenAmount / 10 ** (pairTokenDecimals - 18);
+            if (pairTokenDecimals > 18) {
+                return pairTokenAmount / 10 ** (pairTokenDecimals - 18);
+            } else {
+                return pairTokenAmount * 10 ** (18 - pairTokenDecimals);
+            }
         } else {
-            return pairTokenAmount * 10 ** (18 - pairTokenDecimals);
+            IPulseXPair tokenPair = IPulseXPair(_baseToken);
+            (uint112 reserve0, uint112 reserve1, ) = tokenPair.getReserves();
+            if (tokenPair.token1() == pairToken) {
+                // in case of hex1/dai lp token
+                uint256 rewardTokenPrice = reserve0 / reserve1;
+                uint256 lpPrice = (Math.sqrt(reserve0 * reserve1) *
+                    Math.sqrt(1 * rewardTokenPrice) *
+                    2) / tokenPair.totalSupply();
+                return lpPrice;
+            } else {
+                // in case of hex1/hex lp token
+                uint256 rewardTokenPrice = (reserve0 / reserve1) *
+                    getHexTokenPrice(1);
+                uint256 lpPrice = (Math.sqrt(reserve0 * reserve1) *
+                    Math.sqrt(1 * rewardTokenPrice) *
+                    2) / tokenPair.totalSupply();
+                return lpPrice;
+            }
         }
     }
 
