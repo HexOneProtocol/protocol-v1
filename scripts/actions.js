@@ -186,26 +186,26 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Action contract with the account: ", deployer.address);
 
-    // await getHexTokenFeeInfo();
-    // await setHexTokenFeeInfo(50); // set feeRate as 5%
-    // await getHexTokenFeeInfo();
+    await getHexTokenFeeInfo();
+    await setHexTokenFeeInfo(50); // set feeRate as 5%
+    await getHexTokenFeeInfo();
 
-    await getRewardsPoolInfo();
-    await generateAdditionalTokens();
-    await getRewardsPoolInfo();
+    // await getRewardsPoolInfo();
+    // await generateAdditionalTokens();
+    // await getRewardsPoolInfo();
 
-    await enableStaking();
+    // await enableStaking();
 
-    await createHexStakingPool();
+    // await createHexStakingPool();
 
     // await increasePriceFeedRate();
     // await decreasePriceFeedRate();
 
-    // await setHexOneEscrowAddress();
+    await setHexOneEscrowAddress();
 
-    // await depositEscrowHexToProtocol();
+    await depositEscrowHexToProtocol();
 
-    // await getLiquidableDeposits();
+    await getLiquidableDeposits();
 
     // await generateAdditionalTokens();
 
