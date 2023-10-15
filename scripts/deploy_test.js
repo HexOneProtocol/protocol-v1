@@ -512,7 +512,7 @@ async function initializeSacrifice() {
         [5555, 3000, 3000, 1000, 2000]
     );
     await tx.wait();
-
+    console.log('------------set token weight already')
     tx = await hexOneBootstrap.setAllowedTokens(
         [
             param.hexToken,
@@ -524,6 +524,7 @@ async function initializeSacrifice() {
         true
     );
     await tx.wait();
+    console.log('-------set allowed tokens')
 }
 
 async function updateHexOneBootstrap() {
@@ -638,14 +639,14 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
 
-    // console.log("deploy protocol");
-    // await deployProtocol();
+    console.log("deploy protocol");
+    await deployProtocol();
 
-    // console.log("deploy Bootstrap");
-    // await deployBootstrap();
+    console.log("deploy Bootstrap");
+    await deployBootstrap();
 
-    // console.log("initialize contracts");
-    // await initialize();
+    console.log("initialize contracts");
+    await initialize();
 
     await initializeSacrifice();
     // await updateHexOnePriceFeedTest()
