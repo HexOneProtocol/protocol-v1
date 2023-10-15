@@ -32,6 +32,7 @@ const DEPLOYMENT_PARAM = {
         hexitDistRateForStaking: 50, // 5%
     },
     pulse: {
+        factory: "0x29eA7545DEf87022BAdc76323F373EA1e707C523",
         dexRouter: "0x165C3410fC91EF562C50559f7d2289fEbed552d9",
         hexToken: "0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39", // HEX
         usdcAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",  // USDC
@@ -43,9 +44,9 @@ const DEPLOYMENT_PARAM = {
         feeRate: 300, // 30%
         minStakingDuration: 1, // 1 day
         maxStakingDuration: 10, // 10 days
-        sacrificeStartTime: hour / 3, // means after 0 seconds
+        sacrificeStartTime: hour / 30, // means after 0 seconds
         sacrificeDuration: 1, // 2 day
-        airdropStartTime: hour / 3, // means after 0 seconds
+        airdropStartTime: hour / 30, // means after 0 seconds
         airdropDuration: 1, // 3 days
         rateForSacrifice: 850,
         rateForAirdrop: 150,
