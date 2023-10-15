@@ -429,7 +429,7 @@ async function addHexOneLiquidity() {
     let hexToken = new ethers.Contract(param.hexToken, erc20_abi, deployer);
 
     console.log("addLiquidity HEX1/DAI LP");
-    hexOneForLiquidity = bigNum(5, 18);
+    let hexOneForLiquidity = bigNum(5, 18);
     let daiAmountForLiquidity = bigNum(5, 18);
     console.log(hexOneForLiquidity, daiAmountForLiquidity);
 
@@ -461,7 +461,7 @@ async function addHexOneLiquidity() {
     console.log(price)
     console.log('adding Hex1/Hex LP')
     let hexAmountForLiquidity = bigNum(5, 8);
-    let hexOneForLiquidity = bigNum(5 * price, 18);
+    hexOneForLiquidity = bigNum(5 * price, 18);
     console.log(smallNum(hexAmountForLiquidity, 8), smallNum(hexOneForLiquidity, 18));
 
     tx = await hexOne.approve(uniswapRouter.address, BigInt(hexOneForLiquidity));
