@@ -42,5 +42,8 @@
     "hardhat-contract-sizer": "^2.5.1",
     "hardhat-gas-reporter": "^1.0.9",
     "solidity-coverage": "^0.7.20"
+  },
+  "dependencies": {
+    "bignumber.js": "^9.1.2"
   }
 }
