@@ -92,6 +92,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     address public hexOnePriceFeed;
     address public hexitToken;
     address public hexToken;
+    address public hexOneToken;
     address public pairToken;
     address public escrowCA;
     address public stakingContract;
@@ -184,9 +185,11 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         dexRouter = IPulseXRouter02(_param.dexRouter);
 
         require(_param.hexToken != address(0), "zero hexToken address");
+        require(_param.hexOneToken != address(0), "zero hexOneToken address");
         require(_param.pairToken != address(0), "zero pairToken address");
         require(_param.hexitToken != address(0), "zero hexit token address");
         hexToken = _param.hexToken;
+        hexOneToken = _param.hexOneToken;
         pairToken = _param.pairToken;
         hexitToken = _param.hexitToken;
 
@@ -684,18 +687,20 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
 
         /// liquidity
         uint256 swapAmountForLiquidity = amountForLiquidity / 2;
-        _swapToken(_token, hexToken, address(this), swapAmountForLiquidity);
+        _swapToken(_token, hexOneToken, address(this), swapAmountForLiquidity);
         _swapToken(_token, pairToken, address(this), swapAmountForLiquidity);
         uint256 pairTokenBalance = IERC20(pairToken).balanceOf(address(this));
-        uint256 hexTokenBalance = IERC20(hexToken).balanceOf(address(this));
-        if (pairTokenBalance > 0 && hexTokenBalance > 0) {
+        uint256 hexOneTokenBalance = IERC20(hexOneToken).balanceOf(
+            address(this)
+        );
+        if (pairTokenBalance > 0 && hexOneTokenBalance > 0) {
             IERC20(pairToken).approve(address(dexRouter), pairTokenBalance);
-            IERC20(hexToken).approve(address(dexRouter), hexTokenBalance);
+            IERC20(hexOneToken).approve(address(dexRouter), hexOneTokenBalance);
             dexRouter.addLiquidity(
                 pairToken,
-                hexToken,
+                hexOneToken,
                 pairTokenBalance,
-                hexTokenBalance,
+                hexOneTokenBalance,
                 0,
                 0,
                 address(this),

@@ -15,6 +15,7 @@ interface IHexOneBootstrap is IHexOneSacrifice, IHexOneAirdrop {
         address hexOnePriceFeed;
         address dexRouter;
         address hexToken;
+        address hexOneToken;
         address pairToken;
         address hexitToken;
         address stakingContract;

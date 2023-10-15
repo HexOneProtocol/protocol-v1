@@ -47,8 +47,8 @@ const DEPLOYMENT_PARAM = {
         sacrificeDuration: 1, // 2 day
         airdropStartTime: hour / 3, // means after 0 seconds
         airdropDuration: 1, // 3 days
-        rateForSacrifice: 800,
-        rateForAirdrop: 200,
+        rateForSacrifice: 850,
+        rateForAirdrop: 150,
         sacrificeDistRate: 750,
         sacrificeLiquidityRate: 250,
         airdropDistRateForHexHolder: 100,
