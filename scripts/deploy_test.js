@@ -95,13 +95,13 @@ async function deployProtocol() {
     //     "HexMockToken"
     // )
 
-    let hexOneToken = await deploy(
-        "HexOneToken",
-        "HexOneToken",
-        "test1",
-        "test1"
-    );
-    // let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
+    // let hexOneToken = await deploy(
+    //     "HexOneToken",
+    //     "HexOneToken",
+    //     "test1",
+    //     "test1"
+    // );
+    let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
 
     let hexOnePriceFeed = await deployProxy(
         "HexOnePriceFeedTest",
@@ -647,12 +647,12 @@ async function main() {
     // console.log("initialize contracts");
     // await initialize();
 
-    // await initializeSacrifice();
+    await initializeSacrifice();
     // await updateHexOnePriceFeedTest()
     // await updateHexOneBootstrap();
 
-    console.log("add liquidity");
-    await addHexOneLiquidity();
+    // console.log("add liquidity");
+    // await addHexOneLiquidity();
 
     console.log("Deployed successfully");
 }
