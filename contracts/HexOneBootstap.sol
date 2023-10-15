@@ -635,7 +635,13 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
 
         /// liquidity
         uint256 swapAmountForLiquidity = amountForLiquidity / 2;
-        _swapToken(_token, hexOneToken, address(this), swapAmountForLiquidity);
+        _swapToken(_token, hexToken, address(this), swapAmountForLiquidity);
+        _swapToken(
+            hexToken,
+            hexOneToken,
+            address(this),
+            swapAmountForLiquidity
+        );
         _swapToken(_token, pairToken, address(this), swapAmountForLiquidity);
         uint256 pairTokenBalance = IERC20(pairToken).balanceOf(address(this));
         uint256 hexOneTokenBalance = IERC20(hexOneToken).balanceOf(
@@ -643,7 +649,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         );
         if (pairTokenBalance > 0 && hexOneTokenBalance > 0) {
             IERC20(pairToken).approve(address(dexRouter), pairTokenBalance);
-            IERC20(hexOneToken).approve(address(dexRouter), hexOneTokenBalance);
+            IERC20(hexOneTn).approve(address(dexRouter), hexOneTokenBalance);
             dexRouter.addLiquidity(
                 pairToken,
                 hexOneToken,
