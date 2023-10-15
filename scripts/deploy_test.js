@@ -51,6 +51,7 @@ async function deployBootstrap() {
         hexOnePriceFeed: hexOnePriceFeed.address,
         dexRouter: param.dexRouter,
         hexToken: param.hexToken,
+        hexOneToken: hexOneToken.address,
         pairToken: param.daiAddress,
         hexitToken: HEXIT.address,
         stakingContract: stakingPool.address,
