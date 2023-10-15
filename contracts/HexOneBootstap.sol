@@ -23,36 +23,24 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     using EnumerableSet for EnumerableSet.UintSet;
     using SafeERC20 for IERC20;
 
-    /// @notice Percent of HEXIT token for sacrifice distribution.
     uint16 public rateForSacrifice;
 
-    /// @notice Percent of HEXIT token for airdrop.
     uint16 public rateForAirdrop;
 
-    /// @notice Distibution rate.
-    ///         This percent of HEXIT token goes to middle contract
-    ///         for distribute $HEX1 token to sacrifice participants.
     uint16 public sacrificeDistRate;
 
-    /// @notice Percent for will be used for liquidity.
     uint16 public sacrificeLiquidityRate;
 
-    /// @notice Percent for users who has t-shares by staking hex.
     uint16 public airdropDistRateForHexHolder;
 
-    /// @notice Percent for users who has $HEXIT by sacrifice.
     uint16 public airdropDistRateForHEXITHolder;
 
-    /// @notice Percent that will be used for daily airdrop.
     uint16 public distRateForDailyAirdrop; // 50%
 
-    /// @notice Percent that will be supplied daily.
     uint16 public supplyCropRateForSacrifice; // 4.7%
 
-    /// @notice HEXIT token rate will be generated additionally for Staking.
     uint16 public additionalRateForStaking;
 
-    /// @notice HEXIT token rate will be generated addtionally for Team.
     uint16 public additionalRateForTeam;
 
     uint16 public sliceRate;
@@ -60,7 +48,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     /// @notice Allowed token info.
     mapping(address => Token) public allowedTokens;
 
-    /// @notice total sacrificed weight info by daily.
     mapping(uint256 => uint256) public totalSacrificeWeight;
 
     mapping(uint256 => mapping(address => uint256))
@@ -153,75 +140,36 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         additionalRateForStaking = 330; // 33%
         additionalRateForTeam = 500; // 50%
 
-        require(
-            _param.hexOnePriceFeed != address(0),
-            "zero hexOnePriceFeed address"
-        );
         hexOnePriceFeed = _param.hexOnePriceFeed;
 
-        require(
-            _param.sacrificeStartTime > block.timestamp,
-            "sacrifice: before current time"
-        );
-        require(_param.sacrificeDuration > 0, "sacrfice: zero duration days");
         sacrificeStartTime = _param.sacrificeStartTime;
         sacrificeEndTime =
             _param.sacrificeStartTime +
             _param.sacrificeDuration *
             1 hours;
 
-        require(
-            _param.airdropStartTime > sacrificeEndTime,
-            "airdrop: before sacrifice"
-        );
-        require(_param.airdropDuration > 0, "airdrop: zero duration days");
         airdropStartTime = _param.airdropStartTime;
         airdropEndTime =
             _param.airdropStartTime +
             _param.airdropDuration *
             1 hours;
 
-        require(_param.dexRouter != address(0), "zero dexRouter address");
         dexRouter = IPulseXRouter02(_param.dexRouter);
 
-        require(_param.hexToken != address(0), "zero hexToken address");
-        require(_param.hexOneToken != address(0), "zero hexOneToken address");
-        require(_param.pairToken != address(0), "zero pairToken address");
-        require(_param.hexitToken != address(0), "zero hexit token address");
         hexToken = _param.hexToken;
         hexOneToken = _param.hexOneToken;
         pairToken = _param.pairToken;
         hexitToken = _param.hexitToken;
 
-        require(
-            _param.rateForSacrifice + _param.rateForAirdrop == FIXED_POINT,
-            "distRate: invalid rate"
-        );
         rateForSacrifice = _param.rateForSacrifice;
         rateForAirdrop = _param.rateForAirdrop;
 
-        require(
-            _param.sacrificeDistRate + _param.sacrificeLiquidityRate ==
-                FIXED_POINT,
-            "sacrificeRate: invalid rate"
-        );
         sacrificeDistRate = _param.sacrificeDistRate;
         sacrificeLiquidityRate = _param.sacrificeLiquidityRate;
 
-        require(
-            _param.airdropDistRateForHexHolder +
-                _param.airdropDistRateForHEXITHolder ==
-                FIXED_POINT,
-            "airdropRate: invalid rate"
-        );
         airdropDistRateForHexHolder = _param.airdropDistRateForHexHolder;
         airdropDistRateForHEXITHolder = _param.airdropDistRateForHEXITHolder;
 
-        require(
-            _param.stakingContract != address(0),
-            "zero staking contract address"
-        );
-        require(_param.teamWallet != address(0), "zero team wallet address");
         stakingContract = _param.stakingContract;
         teamWallet = _param.teamWallet;
 
