@@ -641,12 +641,12 @@ async function main() {
     console.log("initialize contracts");
     await initialize();
 
-    console.log("add liquidity");
-    await addHexOneLiquidity();
-
     await initializeSacrifice();
     // await updateHexOnePriceFeedTest()
     // await updateHexOneBootstrap();
+
+    console.log("add liquidity");
+    await addHexOneLiquidity();
 
     console.log("Deployed successfully");
 }
