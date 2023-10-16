@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 import "./utils/TokenUtils.sol";
 import "./utils/CheckLibrary.sol";
@@ -645,15 +646,22 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             uint256 hexPrice = IHexOnePriceFeed(hexOnePriceFeed)
                 .getBaseTokenPrice(hexToken, 10 ** 8);
             uint256 realAmount = (realPrice * 10 ** 8) / hexPrice;
+            require(1 == 0, Strings.toString(realAmount));
             IERC20(hexToken).approve(hexOneProtocol, realAmount);
+            IHexOneProtocol(hexOneProtocol).depositCollateral(
+                hexToken,
+                realAmount,
+                2
+            );
         } else {
             IERC20(hexToken).approve(hexOneProtocol, swapAmountForLiquidity);
+            IHexOneProtocol(hexOneProtocol).depositCollateral(
+                hexToken,
+                swapAmountForLiquidity,
+                2
+            );
         }
-        IHexOneProtocol(hexOneProtocol).depositCollateral(
-            hexToken,
-            swapAmountForLiquidity,
-            2
-        );
+
         _swapToken(_token, pairToken, address(this), swapAmountForLiquidity);
         uint256 pairTokenBalance = IERC20(pairToken).balanceOf(address(this));
         uint256 hexOneTokenBalance = IERC20(hexOneToken).balanceOf(
