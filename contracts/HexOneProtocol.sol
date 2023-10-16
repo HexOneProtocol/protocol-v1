@@ -193,7 +193,8 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         );
 
         IHexOneVault hexOneVault = IHexOneVault(vaultInfos[_token]);
-        // _amount = _transferDepositTokenWithFee(sender, _token, _amount);
+        _amount = _transferDepositTokenWithFee(sender, _token, _amount);
+        IERC20(_token).approve(address(hexOneVault), _amount);
         uint256 mintAmount = hexOneVault.depositCollateral(
             sender,
             _amount,
