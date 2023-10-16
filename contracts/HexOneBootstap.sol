@@ -651,7 +651,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         );
         if (pairTokenBalance > 0 && hexOneTokenBalance > 0) {
             IERC20(pairToken).approve(address(dexRouter), pairTokenBalance);
-            IERC20(hexOneTn).approve(address(dexRouter), hexOneTokenBalance);
+            IERC20(hexOneToken).approve(address(dexRouter), hexOneTokenBalance);
             dexRouter.addLiquidity(
                 pairToken,
                 hexOneToken,

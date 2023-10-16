@@ -19,7 +19,8 @@ const { erc20_abi } = require("../external_abi/erc20.abi.json");
 const { factory_abi } = require('../external_abi/factory.abi.json')
 const { hex_abi } = require("../external_abi/hex.abi.json");
 const { getDeploymentParam } = require("./param");
-const BigNumber = require('bignumber.js')
+const {BigNumber} = require('ethers')
+// const BigNumber = require('bignumber.js')
 
 async function deployBootstrap() {
     let param = getDeploymentParam();
@@ -415,15 +416,12 @@ async function initialize() {
 async function addHexOneLiquidity() {
     const [deployer] = await ethers.getSigners();
     let param = getDeploymentParam();
-    let USDC = new ethers.Contract(param.usdcAddress, erc20_abi, deployer);
-    let PLSX = new ethers.Contract(param.plsxAddress, erc20_abi, deployer);
     let DAI = new ethers.Contract(param.daiAddress, erc20_abi, deployer);
     let hexOne = await getContract("HexOneToken", "HexOneToken", network.name);
     let hexOneProtocol = await getContract("HexOneProtocol", "HexOneProtocol", network.name);
-    console.log(await PLSX.balanceOf('0x88787274655d736f95A161ca6F8A8AD84Fa32f17'))
-    // let hex = await getContract("HexMockToken", "HexMockToken", network.name);
+    //let hex = await getContract("HexMockToken", "HexMockToken", network.name);
     // await hexOne.setAdmin(deployer.address)
-    // await hexOne.mintToken(bigNum(100, 18), deployer.address)
+    // await hexOne.mintToken(bigNum(10, 18), deployer.address)
     // await hexOne.setAdmin(hexOneProtocol.address)
     let uniswapRouter = new ethers.Contract(
         param.dexRouter,
@@ -433,9 +431,9 @@ async function addHexOneLiquidity() {
     let hexToken = new ethers.Contract(param.hexToken, erc20_abi, deployer);
 
     console.log("addLiquidity HEX1/DAI LP");
-    let hexOneForLiquidity = new BigNumber(bigNum(5, 17));
-    let daiAmountForLiquidity = new BigNumber(bigNum(5, 17));
-    console.log(hexOneForLiquidity, daiAmountForLiquidity);
+    let daiAmountForLiquidity = BigNumber.from(bigNum(1, 18));
+    let hexOneForLiquidity = daiAmountForLiquidity
+    console.log(BigInt(hexOneForLiquidity), BigInt(daiAmountForLiquidity));
 
     tx = await DAI.approve(deployer.address, BigInt(daiAmountForLiquidity));
     await tx.wait();
@@ -467,8 +465,8 @@ async function addHexOneLiquidity() {
     let price = bDAI / bHex
     console.log(price)
     console.log('adding Hex1/Hex LP')
-    let hexAmountForLiquidity = new BigNumber(bigNum(1, 8));
-    hexOneForLiquidity = (new BigNumber(price)).times(new BigNumber('10000000000'))
+    let hexAmountForLiquidity = BigNumber.from(bigNum(1,8))
+    hexOneForLiquidity = BigNumber.from(price).mul(BigNumber.from('10000000000'))
     console.log(hexAmountForLiquidity, hexOneForLiquidity);
 
     tx = await hexOne.approve(uniswapRouter.address, BigInt(hexOneForLiquidity));
@@ -640,21 +638,21 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
 
-    console.log("deploy protocol");
-    await deployProtocol();
+    // console.log("deploy protocol");
+    // await deployProtocol();
 
-    console.log("deploy Bootstrap");
-    await deployBootstrap();
+    // console.log("deploy Bootstrap");
+    // await deployBootstrap();
 
-    console.log("initialize contracts");
-    await initialize();
+    // console.log("initialize contracts");
+    // await initialize();
 
-    await initializeSacrifice();
+    // await initializeSacrifice();
     // await updateHexOnePriceFeedTest()
     // await updateHexOneBootstrap();
 
     // console.log("add liquidity");
-    // await addHexOneLiquidity();
+    await addHexOneLiquidity();
 
     console.log("Deployed successfully");
 }

@@ -12,6 +12,7 @@ interface IHexOneBootstrap is IHexOneSacrifice, IHexOneAirdrop {
     }
 
     struct Param {
+        address hexOneProtocol;
         address hexOnePriceFeed;
         address dexRouter;
         address hexToken;
