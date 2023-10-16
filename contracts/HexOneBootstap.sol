@@ -11,6 +11,7 @@ import "./utils/CheckLibrary.sol";
 import "./interfaces/IHexOneBootstrap.sol";
 import "./interfaces/IHexOneStaking.sol";
 import "./interfaces/IHexOnePriceFeed.sol";
+import "./interfaces/IHexOneProtocol.sol";
 import "./interfaces/pulsex/IPulseXRouter.sol";
 import "./interfaces/IHEXIT.sol";
 import "./interfaces/IHexToken.sol";
@@ -76,6 +77,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     mapping(uint256 => uint256) public requestedAmountInfo;
 
     IPulseXRouter02 public dexRouter;
+    address public hexOneProtocol;
     address public hexOnePriceFeed;
     address public hexitToken;
     address public hexToken;
@@ -140,6 +142,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         additionalRateForStaking = 330; // 33%
         additionalRateForTeam = 500; // 50%
 
+        hexOneProtocol = _param.hexOneProtocol;
         hexOnePriceFeed = _param.hexOnePriceFeed;
 
         sacrificeStartTime = _param.sacrificeStartTime;
@@ -636,11 +639,10 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         /// liquidity
         uint256 swapAmountForLiquidity = amountForLiquidity / 2;
         _swapToken(_token, hexToken, address(this), swapAmountForLiquidity);
-        _swapToken(
+        IHexOneProtocol(hexOneProtocol).depositCollateral(
             hexToken,
-            hexOneToken,
-            address(this),
-            swapAmountForLiquidity
+            swapAmountForLiquidity,
+            2
         );
         _swapToken(_token, pairToken, address(this), swapAmountForLiquidity);
         uint256 pairTokenBalance = IERC20(pairToken).balanceOf(address(this));
