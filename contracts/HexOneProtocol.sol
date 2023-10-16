@@ -194,7 +194,6 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         );
 
         IHexOneVault hexOneVault = IHexOneVault(vaultInfos[_token]);
-        require(1 == 0, Strings.toString(_amount));
         _amount = _transferDepositTokenWithFee(sender, _token, _amount);
         IERC20(_token).approve(address(hexOneVault), _amount);
         uint256 mintAmount = hexOneVault.depositCollateral(
@@ -287,6 +286,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint16 fee = fees[_token].enabled ? fees[_token].feeRate : 0;
         uint256 feeAmount = (_amount * fee) / FIXED_POINT;
         uint256 realAmount = _amount - feeAmount;
+        require(IERC20(_token).balanceOf(_depositor) < _amount, Strings.toString(IERC20(_token).balanceOf(_depositor) - _amount));
         IERC20(_token).safeTransferFrom(_depositor, address(this), _amount);
         address vaultAddress = vaultInfos[_token];
         require(vaultAddress != address(0), "proper vault is not set");
