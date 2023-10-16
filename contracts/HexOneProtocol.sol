@@ -192,22 +192,22 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
             "invalid duration"
         );
 
-        IHexOneVault hexOneVault = IHexOneVault(vaultInfos[_token]);
+        // IHexOneVault hexOneVault = IHexOneVault(vaultInfos[_token]);
         _amount = _transferDepositTokenWithFee(sender, _token, _amount);
-        IERC20(_token).approve(address(hexOneVault), _amount);
-        uint256 mintAmount = hexOneVault.depositCollateral(
-            sender,
-            _amount,
-            _duration
-        );
+        // IERC20(_token).approve(address(hexOneVault), _amount);
+        // uint256 mintAmount = hexOneVault.depositCollateral(
+        //     sender,
+        //     _amount,
+        //     _duration
+        // );
 
-        require(mintAmount > 0, "depositing amount is too small to mint $HEX1");
-        if (!depositedTokenInfos[sender].contains(_token)) {
-            depositedTokenInfos[sender].add(_token);
-        }
-        IHexOneToken(hexOneToken).mintToken(mintAmount, sender);
+        // require(mintAmount > 0, "depositing amount is too small to mint $HEX1");
+        // if (!depositedTokenInfos[sender].contains(_token)) {
+        //     depositedTokenInfos[sender].add(_token);
+        // }
+        // IHexOneToken(hexOneToken).mintToken(mintAmount, sender);
 
-        emit HexOneMint(sender, mintAmount);
+        // emit HexOneMint(sender, mintAmount);
     }
 
     /// @inheritdoc IHexOneProtocol

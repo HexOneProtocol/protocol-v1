@@ -44,9 +44,9 @@ const DEPLOYMENT_PARAM = {
         feeRate: 300, // 30%
         minStakingDuration: 1, // 1 day
         maxStakingDuration: 10, // 10 days
-        sacrificeStartTime: hour / 10, // means after 0 seconds
+        sacrificeStartTime: hour / 15, // means after 0 seconds
         sacrificeDuration: 1, // 2 day
-        airdropStartTime: hour / 10, // means after 0 seconds
+        airdropStartTime: hour / 15, // means after 0 seconds
         airdropDuration: 1, // 3 days
         rateForSacrifice: 850,
         rateForAirdrop: 150,
