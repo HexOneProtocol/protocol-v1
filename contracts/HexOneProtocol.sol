@@ -286,8 +286,6 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint16 fee = fees[_token].enabled ? fees[_token].feeRate : 0;
         uint256 feeAmount = (_amount * fee) / FIXED_POINT;
         uint256 realAmount = _amount - feeAmount;
-        uint256 all = IERC20(_token).allowance(msg.sender, address(this));
-        require(1 == 0, Strings.toString(all));
         IERC20(_token).safeTransferFrom(_depositor, address(this), _amount);
         address vaultAddress = vaultInfos[_token];
         require(vaultAddress != address(0), "proper vault is not set");
