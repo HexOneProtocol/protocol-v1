@@ -161,7 +161,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint256 _amount
     ) external override {
         address sender = msg.sender;
-        // CheckLibrary.checkEOA();
+        CheckLibrary.checkEOA();
         require(sender != address(0), "zero caller address");
         require(allowedTokens.contains(_token), "not allowed token");
         require(

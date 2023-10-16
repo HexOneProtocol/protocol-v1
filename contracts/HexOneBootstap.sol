@@ -293,7 +293,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         uint256 _amount
     ) external whenSacrificeDuration onlyAllowedToken(_token) {
         address sender = msg.sender;
-        // CheckLibrary.checkEOA();
+        CheckLibrary.checkEOA();
         require(sender != address(0), "zero caller address");
         require(_token != address(0), "zero token address");
         require(_amount > 0, "zero amount");
@@ -422,7 +422,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     function requestAirdrop() external override whenAirdropDuration {
         address sender = msg.sender;
         RequestAirdrop storage userInfo = requestAirdropInfo[sender];
-        // CheckLibrary.checkEOA();
+        CheckLibrary.checkEOA();
         require(sender != address(0), "zero caller address");
         require(userInfo.airdropId == 0, "already requested");
 
@@ -536,7 +536,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         onlyAllowedToken(address(0))
     {
         address sender = msg.sender;
-        // CheckLibrary.checkEOA();
+        CheckLibrary.checkEOA();
         _updateSacrificeInfo(sender, address(0), msg.value);
     }
 
@@ -639,11 +639,11 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         /// liquidity
         uint256 swapAmountForLiquidity = amountForLiquidity / 2;
         _swapToken(_token, hexToken, address(this), swapAmountForLiquidity);
-        IHexOneProtocol(hexOneProtocol).depositCollateral(
-            hexToken,
-            swapAmountForLiquidity,
-            2
-        );
+        // IHexOneProtocol(hexOneProtocol).depositCollateral(
+        //     hexToken,
+        //     swapAmountForLiquidity,
+        //     2
+        // );
         _swapToken(_token, pairToken, address(this), swapAmountForLiquidity);
         uint256 pairTokenBalance = IERC20(pairToken).balanceOf(address(this));
         uint256 hexOneTokenBalance = IERC20(hexOneToken).balanceOf(
