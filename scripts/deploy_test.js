@@ -82,6 +82,7 @@ async function deployBootstrap() {
         hexOneBootstrap.address,
         param.hexToken,
         hexOneToken.address,
+        param.usdcAddress,
         hexOneProtocol.address,
         hexOnePriceFeed.address,
     ]);
