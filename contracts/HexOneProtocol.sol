@@ -285,11 +285,12 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint16 fee = fees[_token].enabled ? fees[_token].feeRate : 0;
         uint256 feeAmount = (_amount * fee) / FIXED_POINT;
         uint256 realAmount = _amount - feeAmount;
-        IERC20(_token).approve(_depositor, _amount);
         IERC20(_token).safeTransferFrom(_depositor, address(this), _amount);
         address vaultAddress = vaultInfos[_token];
         require(vaultAddress != address(0), "proper vault is not set");
+        IERC20(_token).safeApprove(vaultAddress, 0);
         IERC20(_token).safeApprove(vaultAddress, realAmount);
+        IERC20(_token).safeApprove(stakingMaster, 0);
         IERC20(_token).safeApprove(stakingMaster, feeAmount);
         require(version != 1 || _token == hexToken, "wrong purchase token");
         if (feeAmount > 0) {
