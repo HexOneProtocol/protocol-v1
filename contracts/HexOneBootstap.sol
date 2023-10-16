@@ -293,7 +293,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         uint256 _amount
     ) external whenSacrificeDuration onlyAllowedToken(_token) {
         address sender = msg.sender;
-        CheckLibrary.checkEOA();
+        // CheckLibrary.checkEOA();
         require(sender != address(0), "zero caller address");
         require(_token != address(0), "zero token address");
         require(_amount > 0, "zero amount");
