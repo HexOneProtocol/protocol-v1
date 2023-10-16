@@ -6,18 +6,6 @@ const { pulsex_abi } = require("../external_abi/pulsex.abi.json");
 const { erc20_abi } = require("../external_abi/erc20.abi.json");
 const { factory_abi } = require("../external_abi/factory.abi.json")
 
-async function getHexTokenFeeInfo() {
-    const hexOneProtocol = await getContract(
-        "HexOneProtocol",
-        "HexOneProtocol",
-        network.name
-    );
-
-    let param = getDeploymentParam();
-    let hexTokenAddr = param.hexToken;
-    console.log(await hexOneProtocol.fees(hexTokenAddr));
-}
-
 async function getRewardsPoolInfo() {
     const hexOneStaking = await getContract(
         "HexOneStaking",
@@ -26,23 +14,6 @@ async function getRewardsPoolInfo() {
     );
 
     console.log("rewardsPool info: ", await hexOneStaking.rewardsPool());
-}
-
-async function setHexTokenFeeInfo(feeRate) {
-    const hexOneProtocol = await getContract(
-        "HexOneProtocol",
-        "HexOneProtocol",
-        network.name
-    );
-    let param = getDeploymentParam();
-    let hexTokenAddr = param.hexToken;
-    console.log("set depositFeeRate");
-    let tx = await hexOneProtocol.setDepositFee(hexTokenAddr, feeRate);
-    await tx.wait();
-    console.log("enable DepositFee");
-    tx = await hexOneProtocol.setDepositFeeEnable(hexTokenAddr, true);
-    await tx.wait();
-    console.log("setHexTokenDepositFee successfully");
 }
 
 async function enableStaking() {
@@ -188,127 +159,9 @@ async function getLiquidableDeposits() {
     console.log(await hexOneVault.getLiquidableDeposits());
 }
 
-async function addHexOneLiquidity() {
-    const [deployer] = await ethers.getSigners();
-    let param = getDeploymentParam();
-    let USDC = new ethers.Contract(param.usdcAddress, erc20_abi, deployer);
-    let PLSX = new ethers.Contract(param.plsxAddress, erc20_abi, deployer);
-    let DAI = new ethers.Contract(param.daiAddress, erc20_abi, deployer);
-    let hexOne = await getContract("HexOneToken", "HexOneToken", network.name);
-    let uniswapRouter = new ethers.Contract(
-        param.dexRouter,
-        pulsex_abi,
-        deployer
-    );
-    let hexToken = new ethers.Contract(param.hexToken, erc20_abi, deployer);
-
-    console.log("add liquidity Hex1/Hex");
-    let plsAmountForSwap = bigNum(3000, 18);
-    let WPLS = await uniswapRouter.WPLS();
-    let tx = await uniswapRouter.swapExactETHForTokens(
-        0,
-        [WPLS, hexOne.address],
-        deployer.address,
-        BigInt(await getCurrentTimestamp()) + BigInt(100),
-        {
-            value: BigInt(plsAmountForSwap)
-        }
-    );
-    await tx.wait();
-
-    tx = await uniswapRouter.swapExactETHForTokens(
-        0,
-        [WPLS, hexToken.address],
-        deployer.address,
-        BigInt(await getCurrentTimestamp()) + BigInt(100),
-        {
-            value: BigInt(plsAmountForSwap)
-        }
-    );
-    await tx.wait();
-
-    let hexAmountForLiquidity = await hexToken.balanceOf(deployer.address);
-    let hexOneForLiquidity = await hexOne.balanceOf(deployer.address);
-    console.log(smallNum(hexAmountForLiquidity, 8), smallNum(hexOneForLiquidity, 18));
-
-    tx = await hexOne.approve(uniswapRouter.address, BigInt(hexOneForLiquidity));
-    await tx.wait();
-
-    tx = await hexToken.approve(
-        uniswapRouter.address,
-        BigInt(hexAmountForLiquidity)
-    );
-    await tx.wait();
-    tx = await uniswapRouter.addLiquidity(
-        hexOne.address,
-        hexToken.address,
-        BigInt(hexOneForLiquidity),
-        BigInt(hexAmountForLiquidity),
-        0,
-        0,
-        deployer.address,
-        BigInt(await getCurrentTimestamp()) + BigInt(100)
-    );
-    await tx.wait();
-
-    console.log("addLiquidity HEX1/DAI");
-    tx = await uniswapRouter.swapExactETHForTokens(
-        0,
-        [WPLS, DAI.address],
-        deployer.address,
-        BigInt(await getCurrentTimestamp()) + BigInt(100),
-        {
-            value: BigInt(plsAmountForSwap)
-        }
-    );
-    await tx.wait();
-
-    tx = await uniswapRouter.swapExactETHForTokens(
-        0,
-        [WPLS, hexOne.address],
-        deployer.address,
-        BigInt(await getCurrentTimestamp()) + BigInt(100),
-        {
-            value: BigInt(plsAmountForSwap)
-        }
-    );
-    await tx.wait();
-
-    hexOneForLiquidity = await hexOne.balanceOf(deployer.address);
-    let daiAmountForLiquidity = await DAI.balanceOf(deployer.address);
-    console.log(hexOneForLiquidity, daiAmountForLiquidity);
-
-    tx = await DAI.approve(uniswapRouter.address, BigInt(daiAmountForLiquidity));
-    await tx.wait();
-
-    tx = await hexOne.approve(
-        uniswapRouter.address,
-        BigInt(hexOneForLiquidity)
-    );
-    await tx.wait();
-    tx = await uniswapRouter.addLiquidity(
-        hexOne.address,
-        DAI.address,
-        BigInt(hexOneForLiquidity),
-        BigInt(daiAmountForLiquidity),
-        0,
-        0,
-        deployer.address,
-        BigInt(await getCurrentTimestamp()) + BigInt(100)
-    );
-    await tx.wait();
-    console.log("processed successfully!");
-}
-
 async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Action contract with the account: ", deployer.address);
-
-    await addHexOneLiquidity()
-
-    await getHexTokenFeeInfo();
-    await setHexTokenFeeInfo(50); // set feeRate as 5%
-    await getHexTokenFeeInfo();
 
     // await getRewardsPoolInfo();
     // await generateAdditionalTokens();

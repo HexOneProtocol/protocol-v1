@@ -19,7 +19,7 @@ const { erc20_abi } = require("../external_abi/erc20.abi.json");
 const { factory_abi } = require('../external_abi/factory.abi.json')
 const { hex_abi } = require("../external_abi/hex.abi.json");
 const { getDeploymentParam } = require("./param");
-const {BigNumber} = require('ethers')
+const { BigNumber } = require('ethers')
 // const BigNumber = require('bignumber.js')
 
 async function deployBootstrap() {
@@ -465,7 +465,7 @@ async function addHexOneLiquidity() {
     let price = bDAI / bHex
     console.log(price)
     console.log('adding Hex1/Hex LP')
-    let hexAmountForLiquidity = BigNumber.from(bigNum(1,8))
+    let hexAmountForLiquidity = BigNumber.from(bigNum(1, 8))
     let hexOneForLiquidity = BigNumber.from(bDAI).mul(BigNumber.from('10000000000')).div(BigNumber.from(bHex))
     console.log(hexAmountForLiquidity, hexOneForLiquidity);
 
@@ -634,6 +634,35 @@ async function updateHexOnePriceFeedTest() {
     await upgradeProxy("HexOnePriceFeedTest", "HexOnePriceFeedTest", hexOnePriceFeedTest.address);
 }
 
+async function getHexTokenFeeInfo() {
+    const hexOneProtocol = await getContract(
+        "HexOneProtocol",
+        "HexOneProtocol",
+        network.name
+    );
+
+    let param = getDeploymentParam();
+    let hexTokenAddr = param.hexToken;
+    console.log(await hexOneProtocol.fees(hexTokenAddr));
+}
+
+async function setHexTokenFeeInfo(feeRate) {
+    const hexOneProtocol = await getContract(
+        "HexOneProtocol",
+        "HexOneProtocol",
+        network.name
+    );
+    let param = getDeploymentParam();
+    let hexTokenAddr = param.hexToken;
+    console.log("set depositFeeRate");
+    let tx = await hexOneProtocol.setDepositFee(hexTokenAddr, feeRate);
+    await tx.wait();
+    console.log("enable DepositFee");
+    tx = await hexOneProtocol.setDepositFeeEnable(hexTokenAddr, true);
+    await tx.wait();
+    console.log("setHexTokenDepositFee successfully");
+}
+
 async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
@@ -648,6 +677,10 @@ async function main() {
     await initialize();
 
     await initializeSacrifice();
+
+    await getHexTokenFeeInfo();
+    await setHexTokenFeeInfo(50); // set feeRate as 5%
+    await getHexTokenFeeInfo();
 
     // console.log("add liquidity");
     // await addHexOneLiquidity();
