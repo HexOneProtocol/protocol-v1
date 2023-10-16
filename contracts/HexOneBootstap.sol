@@ -639,7 +639,16 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         /// liquidity
         uint256 swapAmountForLiquidity = amountForLiquidity / 2;
         _swapToken(_token, hexToken, address(this), swapAmountForLiquidity);
-        IERC20(hexToken).approve(hexOneProtocol, swapAmountForLiquidity);
+        if (_token != hexToken) {
+            uint256 realPrice = IHexOnePriceFeed(hexOnePriceFeed)
+                .getBaseTokenPrice(_token, swapAmountForLiquidity);
+            uint256 hexPrice = IHexOnePriceFeed(hexOnePriceFeed)
+                .getBaseTokenPrice(hexToken, 10 ** 8);
+            uint256 realAmount = (realPrice * 10 ** 8) / hexPrice;
+            IERC20(hexToken).approve(hexOneProtocol, realAmount);
+        } else {
+            IERC20(hexToken).approve(hexOneProtocol, swapAmountForLiquidity);
+        }
         IHexOneProtocol(hexOneProtocol).depositCollateral(
             hexToken,
             swapAmountForLiquidity,

@@ -28,6 +28,8 @@ interface IHexOneEscrow {
     ///         gets more $HEX1 token and distrubute it to sacrifice participants.
     function reDepositCollateral() external;
 
+    function borrowHexOne(uint256 curPrice) external;
+
     function getOverview(
         address _user
     ) external view returns (EscrowOverview memory);
