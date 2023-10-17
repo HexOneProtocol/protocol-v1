@@ -420,7 +420,6 @@ async function addHexOneLiquidity() {
     let DAI = new ethers.Contract(param.daiAddress, erc20_abi, deployer);
     let hexOne = await getContract("HexOneToken", "HexOneToken", network.name);
     let hexOneProtocol = await getContract("HexOneProtocol", "HexOneProtocol", network.name);
-    //let hex = await getContract("HexMockToken", "HexMockToken", network.name);
     // await hexOne.setAdmin(deployer.address)
     // await hexOne.mintToken(bigNum(10, 18), deployer.address)
     // await hexOne.setAdmin(hexOneProtocol.address)
@@ -430,33 +429,6 @@ async function addHexOneLiquidity() {
         deployer
     );
     let hexToken = new ethers.Contract(param.hexToken, erc20_abi, deployer);
-
-    // console.log("addLiquidity HEX1/DAI LP");
-    // let daiAmountForLiquidity = await DAI.balanceOf(deployer.address)
-    // let hexOneForLiquidity = daiAmountForLiquidity
-    // console.log(BigInt(hexOneForLiquidity), BigInt(daiAmountForLiquidity));
-
-    // tx = await DAI.approve(deployer.address, BigInt(daiAmountForLiquidity));
-    // await tx.wait();
-
-    // tx = await hexOne.approve(
-    //     deployer.address,
-    //     BigInt(hexOneForLiquidity)
-    // );
-
-    // await tx.wait();
-    // tx = await uniswapRouter.addLiquidity(
-    //     hexOne.address,
-    //     DAI.address,
-    //     BigInt(hexOneForLiquidity),
-    //     BigInt(daiAmountForLiquidity),
-    //     0,
-    //     0,
-    //     deployer.address,
-    //     BigInt(await getCurrentTimestamp()) + BigInt(100)
-    // );
-    // await tx.wait();
-    // console.log("processed successfully!");
 
     let factory = new ethers.Contract(param.factory, factory_abi, deployer)
     let pairAddr = await factory.getPair(param.hexToken, param.daiAddress)
@@ -668,23 +640,23 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
 
-    console.log("deploy protocol");
-    await deployProtocol();
+    // console.log("deploy protocol");
+    // await deployProtocol();
 
-    console.log("deploy Bootstrap");
-    await deployBootstrap();
+    // console.log("deploy Bootstrap");
+    // await deployBootstrap();
 
-    console.log("initialize contracts");
-    await initialize();
+    // console.log("initialize contracts");
+    // await initialize();
 
-    await initializeSacrifice();
+    // await initializeSacrifice();
 
-    await getHexTokenFeeInfo();
-    await setHexTokenFeeInfo(50); // set feeRate as 5%
-    await getHexTokenFeeInfo();
+    // await getHexTokenFeeInfo();
+    // await setHexTokenFeeInfo(50); // set feeRate as 5%
+    // await getHexTokenFeeInfo();
 
-    // console.log("add liquidity");
-    // await addHexOneLiquidity();
+    console.log("add liquidity");
+    await addHexOneLiquidity();
 
     console.log("Deployed successfully");
 }

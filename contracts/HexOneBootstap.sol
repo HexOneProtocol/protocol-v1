@@ -540,7 +540,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         }
         uint256 sacrificeDayAmount = getAmountForSacrifice(dayIndex + 1);
         uint256 totalHexit = (sacrificeWeight * sacrificeDayAmount) / 1e18;
-        sacrificeInitialSupply += totalHexit;
 
         sacrificeInfos[sacrificeId] = SacrificeInfo(
             sacrificeId,
@@ -557,6 +556,10 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         );
         userSacrificedIds[_participant].add(sacrificeId++);
 
+        sacrificeInitialSupply += totalHexit;
+        airdropHEXITAmount = 0;
+        HEXITAmountForSacrifice = 0;
+        _distributeHEXITAmount();
         _processSacrifice(_token, _amount);
     }
 
