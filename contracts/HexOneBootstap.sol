@@ -555,11 +555,12 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             false
         );
         userSacrificedIds[_participant].add(sacrificeId++);
+        
+        airdropHEXITAmount += (totalHexit * rateForAirdrop) / FIXED_POINT;
+        HEXITAmountForSacrifice +=
+            (totalHexit * rateForSacrifice) /
+            FIXED_POINT;
 
-        sacrificeInitialSupply += totalHexit;
-        airdropHEXITAmount = 0;
-        HEXITAmountForSacrifice = 0;
-        _distributeHEXITAmount();
         _processSacrifice(_token, _amount);
     }
 
