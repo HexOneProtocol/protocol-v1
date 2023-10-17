@@ -65,11 +65,10 @@ async function createHexStakingPool() {
     );
     let hexit = await getContract("HEXIT", "HEXIT", network.name);
     let hexone = await getContract("HexOneToken", "HexOneToken", network.name);
-    let factory = await ethers.Contract('0x29eA7545DEf87022BAdc76323F373EA1e707C523', factory_abi, deployer)
-    let hex1dai = factory.getPair(hexone, param.daiAddress)
-    let hex1hex = factory.getPair(hexone, param.hexToken)
-    //let hex1dai = '0x37a30908C77Bc1da05478317026ED84F6Bb1ADbE'
-    //let hex1hex = '0x15f566711E2B703011BaF7f878dd0ce1e30E0753'
+    let factory = new ethers.Contract('0x29eA7545DEf87022BAdc76323F373EA1e707C523', factory_abi, deployer)
+
+    let hex1dai = await factory.getPair(hexone.address, param.daiAddress)
+    let hex1hex = await factory.getPair(hexone.address, param.hexToken)
     console.log(hex1dai, hex1hex)
 
     console.log("add hex1 hexit hex1/hex hex1/dai token to allowToken list");
@@ -163,11 +162,11 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Action contract with the account: ", deployer.address);
 
-    await setHexOneEscrowAddress();
+    // await setHexOneEscrowAddress();
 
-    await depositEscrowHexToProtocol();
+    // await depositEscrowHexToProtocol();
 
-    await getLiquidableDeposits();
+    // await getLiquidableDeposits();
 
     // await getRewardsPoolInfo();
     // await generateAdditionalTokens();
@@ -175,7 +174,7 @@ async function main() {
 
     // await enableStaking();
 
-    // await createHexStakingPool();
+    await createHexStakingPool();
 
     // await increasePriceFeedRate();
     // await decreasePriceFeedRate();

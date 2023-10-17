@@ -26,8 +26,8 @@ async function deployBootstrap() {
     let param = getDeploymentParam();
 
     let hexOnePriceFeed = await getContract(
-        "HexOnePriceFeedTest",
-        "HexOnePriceFeedTest",
+        "HexOnePriceFeed",
+        "HexOnePriceFeed",
         network.name
     );
 
@@ -107,8 +107,8 @@ async function deployProtocol() {
     // let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
 
     let hexOnePriceFeed = await deployProxy(
-        "HexOnePriceFeedTest",
-        "HexOnePriceFeedTest",
+        "HexOnePriceFeed",
+        "HexOnePriceFeed",
         [param.hexToken, param.daiAddress, param.dexRouter]
     );
     // let hexOnePriceFeed = await getContract(
@@ -153,8 +153,8 @@ async function getContracts() {
     // let hexToken = await getContract("HexMockToken", "HexMockToken", network.name);
     let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
     let hexOnePriceFeed = await getContract(
-        "HexOnePriceFeedTest",
-        "HexOnePriceFeedTest",
+        "HexOnePriceFeed",
+        "HexOnePriceFeed",
         network.name
     );
 
@@ -190,6 +190,7 @@ async function getContracts() {
 }
 
 async function initialize() {
+    const [deployer] = await ethers.getSigners();
     let [
         // hexToken,
         hexOneToken,
@@ -204,6 +205,10 @@ async function initialize() {
 
     console.log("hexOneToken.setAdmin");
     let tx = await hexOneToken.setAdmin(hexOneProtocol.address);
+    await tx.wait();
+
+    console.log("hexOneToken.setDeployer");
+    tx = await hexOneToken.setDeployer(deployer.address);
     await tx.wait();
 
     console.log("hexOneVault.setHexOneProtocol");
@@ -419,48 +424,46 @@ async function addHexOneLiquidity() {
     let param = getDeploymentParam();
     let DAI = new ethers.Contract(param.daiAddress, erc20_abi, deployer);
     let hexOne = await getContract("HexOneToken", "HexOneToken", network.name);
-    let hexOneProtocol = await getContract("HexOneProtocol", "HexOneProtocol", network.name);
-    // await hexOne.setAdmin(deployer.address)
     // await hexOne.mintToken(bigNum(10, 18), deployer.address)
-    // await hexOne.setAdmin(hexOneProtocol.address)
-    let uniswapRouter = new ethers.Contract(
-        param.dexRouter,
-        pulsex_abi,
-        deployer
-    );
-    let hexToken = new ethers.Contract(param.hexToken, erc20_abi, deployer);
 
-    let factory = new ethers.Contract(param.factory, factory_abi, deployer)
-    let pairAddr = await factory.getPair(param.hexToken, param.daiAddress)
-    console.log(pairAddr)
-    let bDAI = await DAI.balanceOf(pairAddr)
-    let bHex = await hexToken.balanceOf(pairAddr)
-    let price = bDAI / bHex
-    console.log(price)
-    console.log('adding Hex1/Hex LP')
-    let hexAmountForLiquidity = BigNumber.from(bigNum(1, 8))
-    let hexOneForLiquidity = BigNumber.from(bDAI).mul(BigNumber.from('10000000000')).div(BigNumber.from(bHex))
-    console.log(hexAmountForLiquidity, hexOneForLiquidity);
+    // let uniswapRouter = new ethers.Contract(
+    //     param.dexRouter,
+    //     pulsex_abi,
+    //     deployer
+    // );
+    // let hexToken = new ethers.Contract(param.hexToken, erc20_abi, deployer);
 
-    tx = await hexOne.approve(uniswapRouter.address, BigInt(hexOneForLiquidity));
-    await tx.wait();
+    // let factory = new ethers.Contract(param.factory, factory_abi, deployer)
+    // let pairAddr = await factory.getPair(param.hexToken, param.daiAddress)
+    // console.log(pairAddr)
+    // let bDAI = await DAI.balanceOf(pairAddr)
+    // let bHex = await hexToken.balanceOf(pairAddr)
+    // let price = bDAI / bHex
+    // console.log(price)
+    // console.log('adding Hex1/Hex LP')
+    // let hexAmountForLiquidity = BigNumber.from(bigNum(1, 8))
+    // let hexOneForLiquidity = BigNumber.from(bDAI).mul(BigNumber.from('10000000000')).div(BigNumber.from(bHex))
+    // console.log(hexAmountForLiquidity, hexOneForLiquidity);
 
-    tx = await hexToken.approve(
-        uniswapRouter.address,
-        BigInt(hexAmountForLiquidity)
-    );
-    await tx.wait();
-    tx = await uniswapRouter.addLiquidity(
-        hexOne.address,
-        hexToken.address,
-        BigInt(hexOneForLiquidity),
-        BigInt(hexAmountForLiquidity),
-        0,
-        0,
-        deployer.address,
-        BigInt(await getCurrentTimestamp()) + BigInt(100)
-    );
-    await tx.wait();
+    // tx = await hexOne.approve(uniswapRouter.address, BigInt(hexOneForLiquidity));
+    // await tx.wait();
+
+    // tx = await hexToken.approve(
+    //     uniswapRouter.address,
+    //     BigInt(hexAmountForLiquidity)
+    // );
+    // await tx.wait();
+    // tx = await uniswapRouter.addLiquidity(
+    //     hexOne.address,
+    //     hexToken.address,
+    //     BigInt(hexOneForLiquidity),
+    //     BigInt(hexAmountForLiquidity),
+    //     0,
+    //     0,
+    //     deployer.address,
+    //     BigInt(await getCurrentTimestamp()) + BigInt(100)
+    // );
+    // await tx.wait();
 
 }
 
@@ -640,23 +643,23 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
 
-    console.log("deploy protocol");
-    await deployProtocol();
+    // console.log("deploy protocol");
+    // await deployProtocol();
 
-    console.log("deploy Bootstrap");
-    await deployBootstrap();
+    // console.log("deploy Bootstrap");
+    // await deployBootstrap();
 
-    console.log("initialize contracts");
-    await initialize();
+    // console.log("initialize contracts");
+    // await initialize();
 
-    await initializeSacrifice();
+    // await initializeSacrifice();
 
-    await getHexTokenFeeInfo();
-    await setHexTokenFeeInfo(50); // set feeRate as 5%
-    await getHexTokenFeeInfo();
+    // await getHexTokenFeeInfo();
+    // await setHexTokenFeeInfo(50); // set feeRate as 5%
+    // await getHexTokenFeeInfo();
 
-    // console.log("add liquidity");
-    // await addHexOneLiquidity();
+    console.log("add liquidity");
+    await addHexOneLiquidity();
 
     console.log("Deployed successfully");
 }

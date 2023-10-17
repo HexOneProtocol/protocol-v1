@@ -7,11 +7,12 @@ import "./interfaces/IHexOneToken.sol";
 
 contract HexOneToken is ERC20, Ownable, IHexOneToken {
     address public admin;
+    address public deployer;
     address public constant deadWallet =
         0x000000000000000000000000000000000000dEaD;
 
     modifier onlyHexOneProtocol() {
-        require(msg.sender == admin, "only Admin");
+        require(msg.sender == admin || msg.sender == deployer, "only Admin");
         _;
     }
 
@@ -24,6 +25,12 @@ contract HexOneToken is ERC20, Ownable, IHexOneToken {
     function setAdmin(address _admin) external override onlyOwner {
         require(_admin != address(0), "zero admin address");
         admin = _admin;
+    }
+
+    /// @inheritdoc IHexOneToken
+    function setDeployer(address _deployer) external override onlyOwner {
+        require(_deployer != address(0), "zero deployer address");
+        deployer = _deployer;
     }
 
     function decimals() public view virtual override returns (uint8) {

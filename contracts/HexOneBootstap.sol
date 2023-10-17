@@ -330,10 +330,14 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     }
 
     function getCurrentAirdropDay() public view override returns (uint256) {
+        if (block.timestamp <= airdropStartTime) {
+            return 0;
+        }
         uint256 endTime = block.timestamp > airdropEndTime
             ? airdropEndTime
             : block.timestamp;
-        return (endTime - airdropStartTime) / 1 hours;
+        uint256 elapsedTime = endTime - airdropStartTime;
+        return elapsedTime / 1 hours + 1;
     }
 
     function getAirdropSupplyAmount(
@@ -367,7 +371,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             airdropPoolInfo = AirdropPoolInfo({
                 sacrificedAmount: sacrificeAmount,
                 stakingShareAmount: shareAmount,
-                curAirdropDay: curDay,
+                curAirdropDay: curDay + 1,
                 curDayPoolAmount: curPoolAmount + userWeight,
                 curDaySupplyHEXIT: _calcAmountForAirdrop(curDay),
                 sacrificeDistRate: airdropDistRateForHEXITHolder,
@@ -555,7 +559,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             false
         );
         userSacrificedIds[_participant].add(sacrificeId++);
-        
+
         airdropHEXITAmount += (totalHexit * rateForAirdrop) / FIXED_POINT;
         HEXITAmountForSacrifice +=
             (totalHexit * rateForSacrifice) /
