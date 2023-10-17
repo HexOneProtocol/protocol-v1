@@ -619,7 +619,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
                 .getBaseTokenPrice(hexToken, 10 ** 8);
             uint256 realAmount = (realPrice * 10 ** 8) / hexPrice;
             uint256 total = IERC20(hexToken).balanceOf(address(this));
-            require(total >= realAmount, Strings.toString(realAmount - total));
             if (total < realAmount) realAmount = total;
             IERC20(hexToken).approve(hexOneProtocol, realAmount);
             IHexOneProtocol(hexOneProtocol).depositCollateral(
