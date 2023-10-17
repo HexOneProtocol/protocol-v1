@@ -367,7 +367,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             airdropPoolInfo = AirdropPoolInfo({
                 sacrificedAmount: sacrificeAmount,
                 stakingShareAmount: shareAmount,
-                curAirdropDay: curDay + 1,
+                curAirdropDay: curDay,
                 curDayPoolAmount: curPoolAmount + userWeight,
                 curDaySupplyHEXIT: _calcAmountForAirdrop(curDay),
                 sacrificeDistRate: airdropDistRateForHEXITHolder,
@@ -384,7 +384,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             airdropPoolInfo = AirdropPoolInfo({
                 sacrificedAmount: userInfo.sacrificeUSD,
                 stakingShareAmount: userInfo.hexShares,
-                curAirdropDay: day + 1,
+                curAirdropDay: day,
                 curDayPoolAmount: curPoolAmount,
                 curDaySupplyHEXIT: _calcAmountForAirdrop(day),
                 sacrificeDistRate: airdropDistRateForHEXITHolder,
@@ -539,6 +539,8 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             sacrificeParticipants.add(_participant);
         }
         uint256 sacrificeDayAmount = getAmountForSacrifice(dayIndex + 1);
+        uint256 totalHexit = (sacrificeWeight * sacrificeDayAmount) / 1e18;
+        sacrificeInitialSupply += totalHexit;
 
         sacrificeInfos[sacrificeId] = SacrificeInfo(
             sacrificeId,
@@ -547,7 +549,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             _amount,
             sacrificeWeight,
             usdValue,
-            (sacrificeWeight * sacrificeDayAmount) / 1e18,
+            totalHexit,
             _token,
             IToken(_token).symbol(),
             weight,

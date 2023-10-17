@@ -163,6 +163,12 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Action contract with the account: ", deployer.address);
 
+    await setHexOneEscrowAddress();
+
+    await depositEscrowHexToProtocol();
+
+    await getLiquidableDeposits();
+
     // await getRewardsPoolInfo();
     // await generateAdditionalTokens();
     // await getRewardsPoolInfo();
@@ -173,12 +179,6 @@ async function main() {
 
     // await increasePriceFeedRate();
     // await decreasePriceFeedRate();
-
-    await setHexOneEscrowAddress();
-
-    await depositEscrowHexToProtocol();
-
-    await getLiquidableDeposits();
 
     // await generateAdditionalTokens();
 
