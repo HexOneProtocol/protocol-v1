@@ -185,36 +185,30 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         __Ownable_init();
     }
 
-    /// @inheritdoc IHexOneSacrifice
     function afterSacrificeDuration() external view override returns (bool) {
         return block.timestamp > sacrificeEndTime;
     }
 
-    /// @inheritdoc IHexOneBootstrap
     function setEscrowContract(address _escrowCA) external override onlyOwner {
         require(_escrowCA != address(0), "zero escrow contract address");
         escrowCA = _escrowCA;
     }
 
-    /// @inheritdoc IHexOneBootstrap
     function setPriceFeedCA(address _priceFeed) external override onlyOwner {
         require(_priceFeed != address(0), "zero priceFeed contract address");
         hexOnePriceFeed = _priceFeed;
     }
 
-    /// @inheritdoc IHexOneSacrifice
     function isSacrificeParticipant(
         address _user
     ) external view returns (bool) {
         return sacrificeParticipants.contains(_user);
     }
 
-    /// @inheritdoc IHexOneAirdrop
     function getAirdropRequestors() external view returns (address[] memory) {
         return airdropRequestors.values();
     }
 
-    /// @inheritdoc IHexOneSacrifice
     function getSacrificeParticipants()
         external
         view
@@ -223,7 +217,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         return sacrificeParticipants.values();
     }
 
-    /// @inheritdoc IHexOneBootstrap
     function setAllowedTokens(
         address[] calldata _tokens,
         bool _enable
@@ -234,10 +227,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         for (uint256 i = 0; i < length; i++) {
             address token = _tokens[i];
             if (_enable) {
-                require(
-                    allowedTokens[token].weight != 0,
-                    "token weight is not set yet"
-                );
                 allowedTokens[token].decimals = TokenUtils.expectDecimals(
                     token
                 );
@@ -247,14 +236,12 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         emit AllowedTokensSet(_tokens, _enable);
     }
 
-    /// @inheritdoc IHexOneBootstrap
     function setTokenWeight(
         address[] calldata _tokens,
         uint16[] calldata _weights
     ) external override onlyOwner {
         uint256 length = _tokens.length;
         require(length > 0, "invalid length");
-        require(length == _weights.length, "array mismatched");
         require(block.timestamp < sacrificeStartTime, "too late to set");
 
         for (uint256 i = 0; i < length; i++) {
@@ -266,8 +253,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         emit TokenWeightSet(_tokens, _weights);
     }
 
-    //! Sacrifice Logic
-    /// @inheritdoc IHexOneSacrifice
     function getAmountForSacrifice(
         uint256 _dayIndex
     ) public view override returns (uint256) {
@@ -276,7 +261,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         return _calcSupplyAmountForSacrifice(_dayIndex - 1);
     }
 
-    /// @inheritdoc IHexOneSacrifice
     function getCurrentSacrificeDay() public view override returns (uint256) {
         if (block.timestamp <= sacrificeStartTime) {
             return 0;
@@ -288,7 +272,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         return elapsedTime / 1 hours + 1;
     }
 
-    /// @inheritdoc IHexOneSacrifice
     function sacrificeToken(
         address _token,
         uint256 _amount
@@ -303,7 +286,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         _updateSacrificeInfo(sender, _token, _amount);
     }
 
-    /// @inheritdoc IHexOneSacrifice
     function getUserSacrificeInfo(
         address _user
     ) external view override returns (SacrificeInfo[] memory) {
@@ -319,7 +301,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         return info;
     }
 
-    /// @inheritdoc IHexOneSacrifice
     function claimRewardsForSacrifice(uint256 _sacrificeId) external override {
         address sender = msg.sender;
         SacrificeInfo storage info = sacrificeInfos[_sacrificeId];
@@ -348,8 +329,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         emit RewardsDistributed();
     }
 
-    //! Airdrop logic
-    /// @inheritdoc IHexOneAirdrop
     function getCurrentAirdropDay() public view override returns (uint256) {
         uint256 endTime = block.timestamp > airdropEndTime
             ? airdropEndTime
@@ -357,7 +336,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         return (endTime - airdropStartTime) / 1 hours;
     }
 
-    /// @inheritdoc IHexOneAirdrop
     function getAirdropSupplyAmount(
         uint256 _dayIndex
     ) external view override returns (uint256) {
@@ -366,7 +344,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         return _calcAmountForAirdrop(_dayIndex);
     }
 
-    /// @inheritdoc IHexOneAirdrop
     function getCurrentAirdropInfo(
         address _user
     ) external view override returns (AirdropPoolInfo memory) {
@@ -419,7 +396,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         return airdropPoolInfo;
     }
 
-    /// @inheritdoc IHexOneAirdrop
     function requestAirdrop() external override whenAirdropDuration {
         address sender = msg.sender;
         RequestAirdrop storage userInfo = requestAirdropInfo[sender];
@@ -444,7 +420,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         airdropRequestors.add(sender);
     }
 
-    /// @inheritdoc IHexOneAirdrop
     function claimAirdrop() external override {
         address sender = msg.sender;
         RequestAirdrop storage userInfo = requestAirdropInfo[sender];
@@ -465,7 +440,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         airdropRequestors.remove(sender);
     }
 
-    /// @inheritdoc IHexOneAirdrop
     function getAirdropClaimHistory(
         address _user
     ) external view override returns (AirdropClaimHistory memory) {
@@ -494,7 +468,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         return history;
     }
 
-    /// @inheritdoc IHexOneBootstrap
     function generateAdditionalTokens() external onlyOwner {
         require(block.timestamp > airdropEndTime, "before airdrop ends");
         require(!hexitPurchased, "already purchased");
@@ -512,7 +485,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         IHexOneStaking(stakingContract).purchaseHexit(amountForStaking);
     }
 
-    /// @inheritdoc IHexOneBootstrap
     function withdrawToken(address _token) external override onlyOwner {
         require(block.timestamp > sacrificeEndTime, "sacrifice duration");
 
@@ -646,6 +618,9 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             uint256 hexPrice = IHexOnePriceFeed(hexOnePriceFeed)
                 .getBaseTokenPrice(hexToken, 10 ** 8);
             uint256 realAmount = (realPrice * 10 ** 8) / hexPrice;
+            uint256 total = IERC20(hexToken).balanceOf(address(this));
+            require(total >= realAmount, Strings.toString(realAmount - total));
+            if (total < realAmount) realAmount = total;
             IERC20(hexToken).approve(hexOneProtocol, realAmount);
             IHexOneProtocol(hexOneProtocol).depositCollateral(
                 hexToken,
