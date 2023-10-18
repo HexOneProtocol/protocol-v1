@@ -371,7 +371,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             airdropPoolInfo = AirdropPoolInfo({
                 sacrificedAmount: sacrificeAmount,
                 stakingShareAmount: shareAmount,
-                curAirdropDay: curDay + 1,
+                curAirdropDay: curDay,
                 curDayPoolAmount: curPoolAmount + userWeight,
                 curDaySupplyHEXIT: _calcAmountForAirdrop(curDay),
                 sacrificeDistRate: airdropDistRateForHEXITHolder,
@@ -603,7 +603,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         uint256 _dayIndex
     ) internal view returns (uint256) {
         uint256 airdropAmount = airdropHEXITAmount;
-        for (uint256 i = 0; i <= _dayIndex; i++) {
+        for (uint256 i = 1; i <= _dayIndex; i++) {
             airdropAmount =
                 (airdropAmount * distRateForDailyAirdrop) /
                 FIXED_POINT;
