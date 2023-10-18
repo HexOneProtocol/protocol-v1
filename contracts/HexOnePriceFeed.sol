@@ -3,28 +3,13 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 import "./utils/TokenUtils.sol";
 import "./interfaces/IHexOnePriceFeed.sol";
 import "./interfaces/pulsex/IPulseXFactory.sol";
 import "./interfaces/pulsex/IPulseXRouter.sol";
 import "./interfaces/pulsex/IPulseXPair.sol";
-
-library Math {
-    function sqrt(uint y) internal pure returns (uint z) {
-        if (y > 3) {
-            z = y;
-            uint x = y / 2 + 1;
-            while (x < z) {
-                z = x;
-                x = (y / x + x) / 2;
-            }
-        } else if (y != 0) {
-            z = 1;
-        }
-        // else z = 0 (default value)
-    }
-}
 
 contract HexOnePriceFeed is OwnableUpgradeable, IHexOnePriceFeed {
     uint256 public FIXED_POINT_SCALAR;
@@ -54,6 +39,15 @@ contract HexOnePriceFeed is OwnableUpgradeable, IHexOnePriceFeed {
         pairToken = _pairToken;
         dexRouter = IPulseXRouter02(_dexRouter);
         __Ownable_init();
+    }
+
+    function sqrt(uint256 x) public view returns (uint256 y) {
+        uint256 z = (x + 1) / 2;
+        y = x;
+        while (z < y) {
+            y = z;
+            z = (x / z + z) / 2;
+        }
     }
 
     /// @inheritdoc IHexOnePriceFeed
@@ -100,16 +94,18 @@ contract HexOnePriceFeed is OwnableUpgradeable, IHexOnePriceFeed {
             if (tokenPair.token1() == pairToken) {
                 // in case of hex1/dai lp token
                 uint256 rewardTokenPrice = reserve0 / reserve1;
-                uint256 lpPrice = (Math.sqrt(reserve0 * reserve1) *
-                    Math.sqrt(1 * rewardTokenPrice) *
+                uint256 lpPrice = (sqrt(reserve0) *
+                    sqrt(reserve1) *
+                    sqrt(rewardTokenPrice) *
                     2) / tokenPair.totalSupply();
                 return lpPrice;
             } else {
                 // in case of hex1/hex lp token
                 uint256 rewardTokenPrice = (reserve0 / reserve1) *
-                    getHexTokenPrice(1);
-                uint256 lpPrice = (Math.sqrt(reserve0 * reserve1) *
-                    Math.sqrt(1 * rewardTokenPrice) *
+                    getHexTokenPrice(10 ** 8);
+                uint256 lpPrice = (sqrt(reserve0) *
+                    sqrt(reserve1) *
+                    sqrt(rewardTokenPrice) *
                     2) / tokenPair.totalSupply();
                 return lpPrice;
             }

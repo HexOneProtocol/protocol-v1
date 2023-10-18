@@ -172,7 +172,7 @@ async function main() {
     // await generateAdditionalTokens();
     // await getRewardsPoolInfo();
 
-    // await enableStaking();
+    await enableStaking();
 
     await createHexStakingPool();
 

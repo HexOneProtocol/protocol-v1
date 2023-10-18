@@ -426,44 +426,44 @@ async function addHexOneLiquidity() {
     let hexOne = await getContract("HexOneToken", "HexOneToken", network.name);
     // await hexOne.mintToken(bigNum(10, 18), deployer.address)
 
-    // let uniswapRouter = new ethers.Contract(
-    //     param.dexRouter,
-    //     pulsex_abi,
-    //     deployer
-    // );
-    // let hexToken = new ethers.Contract(param.hexToken, erc20_abi, deployer);
+    let uniswapRouter = new ethers.Contract(
+        param.dexRouter,
+        pulsex_abi,
+        deployer
+    );
+    let hexToken = new ethers.Contract(param.hexToken, erc20_abi, deployer);
 
-    // let factory = new ethers.Contract(param.factory, factory_abi, deployer)
-    // let pairAddr = await factory.getPair(param.hexToken, param.daiAddress)
-    // console.log(pairAddr)
-    // let bDAI = await DAI.balanceOf(pairAddr)
-    // let bHex = await hexToken.balanceOf(pairAddr)
-    // let price = bDAI / bHex
-    // console.log(price)
-    // console.log('adding Hex1/Hex LP')
-    // let hexAmountForLiquidity = BigNumber.from(bigNum(1, 8))
-    // let hexOneForLiquidity = BigNumber.from(bDAI).mul(BigNumber.from('10000000000')).div(BigNumber.from(bHex))
-    // console.log(hexAmountForLiquidity, hexOneForLiquidity);
+    let factory = new ethers.Contract(param.factory, factory_abi, deployer)
+    let pairAddr = await factory.getPair(param.hexToken, param.daiAddress)
+    console.log(pairAddr)
+    let bDAI = await DAI.balanceOf(pairAddr)
+    let bHex = await hexToken.balanceOf(pairAddr)
+    let price = bDAI / bHex
+    console.log(price)
+    console.log('adding Hex1/Hex LP')
+    let hexAmountForLiquidity = BigNumber.from(bigNum(1, 8))
+    let hexOneForLiquidity = BigNumber.from(bDAI).mul(BigNumber.from('10000000000')).div(BigNumber.from(bHex))
+    console.log(hexAmountForLiquidity, hexOneForLiquidity);
 
-    // tx = await hexOne.approve(uniswapRouter.address, BigInt(hexOneForLiquidity));
-    // await tx.wait();
+    tx = await hexOne.approve(uniswapRouter.address, BigInt(hexOneForLiquidity));
+    await tx.wait();
 
-    // tx = await hexToken.approve(
-    //     uniswapRouter.address,
-    //     BigInt(hexAmountForLiquidity)
-    // );
-    // await tx.wait();
-    // tx = await uniswapRouter.addLiquidity(
-    //     hexOne.address,
-    //     hexToken.address,
-    //     BigInt(hexOneForLiquidity),
-    //     BigInt(hexAmountForLiquidity),
-    //     0,
-    //     0,
-    //     deployer.address,
-    //     BigInt(await getCurrentTimestamp()) + BigInt(100)
-    // );
-    // await tx.wait();
+    tx = await hexToken.approve(
+        uniswapRouter.address,
+        BigInt(hexAmountForLiquidity)
+    );
+    await tx.wait();
+    tx = await uniswapRouter.addLiquidity(
+        hexOne.address,
+        hexToken.address,
+        BigInt(hexOneForLiquidity),
+        BigInt(hexAmountForLiquidity),
+        0,
+        0,
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100)
+    );
+    await tx.wait();
 
 }
 
@@ -642,21 +642,27 @@ async function setHexTokenFeeInfo(feeRate) {
 async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
+    const param = getDeploymentParam();
+    let hexOnePriceFeed = await deployProxy(
+        "HexOnePriceFeed",
+        "HexOnePriceFeed",
+        [param.hexToken, param.daiAddress, param.dexRouter]
+    );
+    console.log(hexOnePriceFeed.address)
+    // console.log("deploy protocol");
+    // await deployProtocol();
 
-    console.log("deploy protocol");
-    await deployProtocol();
+    // console.log("deploy Bootstrap");
+    // await deployBootstrap();
 
-    console.log("deploy Bootstrap");
-    await deployBootstrap();
+    // console.log("initialize contracts");
+    // await initialize();
 
-    console.log("initialize contracts");
-    await initialize();
+    // await initializeSacrifice();
 
-    await initializeSacrifice();
-
-    await getHexTokenFeeInfo();
-    await setHexTokenFeeInfo(50); // set feeRate as 5%
-    await getHexTokenFeeInfo();
+    // await getHexTokenFeeInfo();
+    // await setHexTokenFeeInfo(50); // set feeRate as 5%
+    // await getHexTokenFeeInfo();
 
     // console.log("add liquidity");
     // await addHexOneLiquidity();
