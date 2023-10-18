@@ -33,4 +33,6 @@ interface IHexOneEscrow {
     function getOverview(
         address _user
     ) external view returns (EscrowOverview memory);
+
+    function distributeHexOne() external;
 }

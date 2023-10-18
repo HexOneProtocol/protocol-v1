@@ -1684,6 +1684,51 @@
       "address": "0x0BCde000B98595AAfB858E2dA8faE2a1142bdF94",
       "txHash": "0x0b6ee335b114480eaee4e0ee8c32e25493978cbe089b054a05e32b425e173f12",
       "kind": "transparent"
+    },
+    {
+      "address": "0x85887987af4F20fB219a29b6Cf003554F4895B13",
+      "txHash": "0xbc8f3eb707e74f7498927e707842515ce31ab1dccd8543ad9cecfcd4a2282c66",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xA82328eAF910C32e65C5e59C5A28Dd6bc8f4e026",
+      "txHash": "0xa7426f6178ff72c42c08f0ffb91b2c790086cba445cbb1e6519c04e603fb699c",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x4E71011793Da0e5EEfd9Bcd884C8fB3F415eE51a",
+      "txHash": "0xc60f088f430e1a8527ea9a6caae1d000b3f2b802277e859b894ea28e71cf78f0",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x2389593D2Da2717A3E4Dadb590E5352235DD71E2",
+      "txHash": "0x719f2d3a0e95c83e81f08d1d2a6961715a2558e707ac9b9e4cae3fbb2c4e72e1",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x836D48B31265cbB20D145eb0D227Fbe03acaB780",
+      "txHash": "0xd7783f5d53abf64db07802625540a3c2d844ac312cd1ecea5623963804b2ea62",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x1B156D4D28A4bD270F46D1261EC100cB80F727B3",
+      "txHash": "0x01d3e8d278cf079828f66827471bbef0fe1c28a5347649cbdd497595db60b450",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xa6813A0561881AF4a8a85805c86756153Ab9E2c0",
+      "txHash": "0x77ccda12a17d1fba03953136eb78267bdd0776f91e5ce190a74192aebd29e5b5",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xDfFaDd09996f376A296af7928A2577651D9300F2",
+      "txHash": "0xef65bb63b0fca22d59d99b04e753005e0f4b2cd5e1635aa6b97257ff5472d903",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x8419e4700A595bBD66E3A1B5bbC71090Fc8ac418",
+      "txHash": "0x8ce6d56067132db8bd3c188847368d6088f7eb4e846988be1807b7c8e6a729a8",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -20315,6 +20360,167 @@
           "t_uint16": {
             "label": "uint16",
             "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
+    },
+    "4f4f780a52840aeb366574268615aab209898e698da1d26db272e65b5f419b9f": {
+      "address": "0x01FDf7534340dE0748f7e034E034c673Fb853554",
+      "txHash": "0x4ba5e109665b71933bdd77533ef5476757774ed7cb882b89c2da78c964698127",
+      "layout": {
+        "solcVersion": "0.8.17",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "hexOneBootstrap",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:17"
+          },
+          {
+            "label": "hexToken",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:20"
+          },
+          {
+            "label": "hexOneToken",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:23"
+          },
+          {
+            "label": "hexOneProtocol",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:26"
+          },
+          {
+            "label": "usdToken",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:28"
+          },
+          {
+            "label": "hexOnePriceFeed",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:31"
+          },
+          {
+            "label": "borrowedAmount",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_uint256",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:33"
+          },
+          {
+            "label": "stakedHexAmount",
+            "offset": 0,
+            "slot": "108",
+            "type": "t_uint256",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:35"
+          },
+          {
+            "label": "collateralDeposited",
+            "offset": 0,
+            "slot": "109",
+            "type": "t_bool",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "110",
+            "type": "t_array(t_uint256)100_storage",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:209"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)100_storage": {
+            "label": "uint256[100]",
+            "numberOfBytes": "3200"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
           },
           "t_uint256": {
             "label": "uint256",

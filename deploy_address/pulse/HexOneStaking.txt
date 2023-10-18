@@ -1,4 +1,4 @@
 {
-  "contract": "0x7F63aeC4eE9306Ec804fB021e690d58acC61bab0",
+  "contract": "0xa6813A0561881AF4a8a85805c86756153Ab9E2c0",
   "proxyImp": "0xC638EEC2928193eaD4Aea46c77Ec8c495BbD2F27"
 }

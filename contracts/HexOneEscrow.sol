@@ -120,6 +120,11 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
     }
 
     /// @inheritdoc IHexOneEscrow
+    function distributeHexOne() external onlyAfterSacrifice {
+        _distributeHexOne();
+    }
+
+    /// @inheritdoc IHexOneEscrow
     function borrowHexOne(uint256 curPrice) external override {
         address sender = msg.sender;
         IHexOneVault hexOneVault = IHexOneVault(
