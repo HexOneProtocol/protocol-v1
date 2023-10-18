@@ -352,8 +352,8 @@ contract HexOneStaking is
                 stakedTime = (block.timestamp - info.stakedTime) / 1 hours + 1;
             }
 
-            uint256 lockedUSD = IHexOnePriceFeed(hexOnePriceFeed)
-                .getBaseTokenPrice(token, lockedTokenAmounts[token]);
+            // uint256 lockedUSD = IHexOnePriceFeed(hexOnePriceFeed)
+            // .getBaseTokenPrice(token, lockedTokenAmounts[token]);
             status[i] = UserStakingStatus({
                 token: token,
                 stakedAmount: info.stakedAmount,
@@ -362,7 +362,7 @@ contract HexOneStaking is
                 claimableHexAmount: claimableHexAmount,
                 claimableHexitAmount: claimableHexitAmount,
                 stakedTime: stakedTime,
-                totalLockedUSD: lockedUSD,
+                // totalLockedUSD: lockedUSD,
                 totalLockedAmount: lockedTokenAmounts[token],
                 shareOfPool: shareOfPool,
                 hexAPR: hexAPR,

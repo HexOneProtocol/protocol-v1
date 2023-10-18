@@ -33,7 +33,7 @@ interface IHexOneStaking {
         uint256 claimableHexAmount;
         uint256 claimableHexitAmount;
         uint256 stakedTime;
-        uint256 totalLockedUSD;
+        // uint256 totalLockedUSD;
         uint256 totalLockedAmount;
         uint16 shareOfPool;
         uint16 hexAPR;
