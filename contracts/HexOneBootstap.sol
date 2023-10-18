@@ -433,7 +433,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         require(sender != address(0), "zero caller address");
         require(userInfo.airdropId > 0, "not requested");
         require(!userInfo.claimed, "already claimed");
-        require(curDay > dayIndex, "too soon");
+        require(curDay >= dayIndex, "too soon");
 
         uint256 rewardsAmount = _calcUserRewardsForAirdrop(sender, dayIndex);
         if (rewardsAmount > 0) {
