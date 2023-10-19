@@ -14,6 +14,7 @@ import "./interfaces/IHexOneStaking.sol";
 import "./interfaces/IHexOnePriceFeed.sol";
 import "./interfaces/IHexOneProtocol.sol";
 import "./interfaces/pulsex/IPulseXRouter.sol";
+import "./interfaces/pulsex/IPulseXPair.sol";
 import "./interfaces/IHEXIT.sol";
 import "./interfaces/IHexToken.sol";
 import "./interfaces/IToken.sol";
@@ -651,18 +652,21 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             address(this)
         );
         if (pairTokenBalance > 0 && hexOneTokenBalance > 0) {
-            IERC20(pairToken).approve(address(dexRouter), pairTokenBalance);
-            IERC20(hexOneToken).approve(address(dexRouter), hexOneTokenBalance);
-            dexRouter.addLiquidity(
-                pairToken,
-                hexOneToken,
-                pairTokenBalance,
-                hexOneTokenBalance,
-                0,
-                0,
-                address(this),
-                block.timestamp
+            IPulseXPair tokenPair = IPulseXPair(
+                IPulseXFactory(dexRouter.factory()).getPair(
+                    hexOneToken,
+                    _baseToken
+                )
             );
+            require(
+                address(tokenPair) != 0,
+                "Hex1/DAI liquidity does not exist!"
+            );
+
+            IERC20(pairToken).approve(address(this), pairTokenBalance);
+            IERC20(hexOneToken).approve(address(this), hexOneTokenBalance);
+            IERC20(pairToken).safeTransfer(tokenPair, pairTokenBalance);
+            IERC20(hexOneToken).safeTransfer(tokenPair, hexOneTokenBalance);
         }
     }
 

@@ -93,7 +93,7 @@ async function createHexStakingPool() {
             },]
     );
     await tx.wait();
-    console.log("processed successfully!");
+    // console.log("processed successfully!");
 }
 
 async function increasePriceFeedRate() {
@@ -164,7 +164,7 @@ async function main() {
 
     // await setHexOneEscrowAddress();
 
-    await depositEscrowHexToProtocol();
+    // await depositEscrowHexToProtocol();
 
     // await getLiquidableDeposits();
 
@@ -174,7 +174,7 @@ async function main() {
 
     // await enableStaking();
 
-    // await createHexStakingPool();
+    await createHexStakingPool();
 
     // await increasePriceFeedRate();
     // await decreasePriceFeedRate();

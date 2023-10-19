@@ -466,6 +466,32 @@ async function addHexOneLiquidity() {
     );
     await tx.wait();
 
+    console.log("add Hex1/DAI liquidity")
+    let daiToken = new ethers.Contract(param.daiAddress, erc20_abi, deployer);
+    let daiAmountForLiquidity = BigNumber.from(bigNum(1, 16))
+    hexOneForLiquidity = daiAmountForLiquidity
+    console.log(daiAmountForLiquidity, hexOneForLiquidity);
+
+    tx = await hexOne.approve(uniswapRouter.address, BigInt(hexOneForLiquidity));
+    await tx.wait();
+
+    tx = await daiToken.approve(
+        uniswapRouter.address,
+        BigInt(daiAmountForLiquidity)
+    );
+    await tx.wait();
+    tx = await uniswapRouter.addLiquidity(
+        hexOne.address,
+        daiToken.address,
+        BigInt(hexOneForLiquidity),
+        BigInt(daiAmountForLiquidity),
+        0,
+        0,
+        deployer.address,
+        BigInt(await getCurrentTimestamp()) + BigInt(100)
+    );
+    await tx.wait();
+
 }
 
 async function initializeSacrifice() {
@@ -659,8 +685,8 @@ async function main() {
     await setHexTokenFeeInfo(50); // set feeRate as 5%
     await getHexTokenFeeInfo();
 
-    // console.log("add liquidity");
-    // await addHexOneLiquidity();
+    console.log("add liquidity");
+    await addHexOneLiquidity();
 
     console.log("Deployed successfully");
 }
