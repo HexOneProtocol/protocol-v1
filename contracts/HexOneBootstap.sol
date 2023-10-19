@@ -14,8 +14,6 @@ import "./interfaces/IHexOneStaking.sol";
 import "./interfaces/IHexOnePriceFeed.sol";
 import "./interfaces/IHexOneProtocol.sol";
 import "./interfaces/pulsex/IPulseXRouter.sol";
-import "./interfaces/pulsex/IPulseXFactory.sol";
-import "./interfaces/pulsex/IPulseXPair.sol";
 import "./interfaces/IHEXIT.sol";
 import "./interfaces/IHexToken.sol";
 import "./interfaces/IToken.sol";
@@ -620,55 +618,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
 
         /// distribution
         _swapToken(_token, hexToken, escrowCA, amountForDistribution);
-
-        /// liquidity
-        uint256 swapAmountForLiquidity = amountForLiquidity / 2;
-        _swapToken(_token, hexToken, address(this), swapAmountForLiquidity);
-        if (_token != hexToken) {
-            uint256 realPrice = IHexOnePriceFeed(hexOnePriceFeed)
-                .getBaseTokenPrice(_token, swapAmountForLiquidity);
-            uint256 hexPrice = IHexOnePriceFeed(hexOnePriceFeed)
-                .getBaseTokenPrice(hexToken, 10 ** 8);
-            uint256 realAmount = (realPrice * 10 ** 8) / hexPrice;
-            uint256 total = IERC20(hexToken).balanceOf(address(this));
-            if (total < realAmount) realAmount = total;
-            IERC20(hexToken).approve(hexOneProtocol, realAmount);
-            IHexOneProtocol(hexOneProtocol).depositCollateral(
-                hexToken,
-                realAmount,
-                2
-            );
-        } else {
-            IERC20(hexToken).approve(hexOneProtocol, swapAmountForLiquidity);
-            IHexOneProtocol(hexOneProtocol).depositCollateral(
-                hexToken,
-                swapAmountForLiquidity,
-                2
-            );
-        }
-
-        _swapToken(_token, pairToken, address(this), swapAmountForLiquidity);
-        uint256 pairTokenBalance = IERC20(pairToken).balanceOf(address(this));
-        uint256 hexOneTokenBalance = IERC20(hexOneToken).balanceOf(
-            address(this)
-        );
-        if (pairTokenBalance > 0 && hexOneTokenBalance > 0) {
-            IPulseXPair tokenPair = IPulseXPair(
-                IPulseXFactory(dexRouter.factory()).getPair(
-                    hexOneToken,
-                    pairToken
-                )
-            );
-            require(
-                address(tokenPair) != address(0),
-                "Hex1/DAI liquidity does not exist!"
-            );
-
-            IERC20(pairToken).approve(address(this), pairTokenBalance);
-            IERC20(hexOneToken).approve(address(this), hexOneTokenBalance);
-            IERC20(pairToken).safeTransfer(address(tokenPair), pairTokenBalance);
-            IERC20(hexOneToken).safeTransfer(address(tokenPair), hexOneTokenBalance);
-        }
+        _swapToken(_token, pairToken, address(this), amountForLiquidity);
     }
 
     /// @notice Swap sacrifice token to hex/pair token.

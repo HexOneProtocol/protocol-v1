@@ -422,7 +422,6 @@ async function initialize() {
 async function addHexOneLiquidity() {
     const [deployer] = await ethers.getSigners();
     let param = getDeploymentParam();
-    let DAI = new ethers.Contract(param.daiAddress, erc20_abi, deployer);
     let hexOne = await getContract("HexOneToken", "HexOneToken", network.name);
     let tx = await hexOne.mintToken(bigNum(10, 18), deployer.address)
     await tx.wait();
@@ -432,43 +431,11 @@ async function addHexOneLiquidity() {
         pulsex_abi,
         deployer
     );
-    let hexToken = new ethers.Contract(param.hexToken, erc20_abi, deployer);
-
-    let factory = new ethers.Contract(param.factory, factory_abi, deployer)
-    let pairAddr = await factory.getPair(param.hexToken, param.daiAddress)
-    let bDAI = await DAI.balanceOf(pairAddr)
-    let bHex = await hexToken.balanceOf(pairAddr)
-    let price = bDAI / bHex
-    console.log(price)
-    console.log('adding Hex1/Hex LP')
-    let hexAmountForLiquidity = BigNumber.from(bigNum(1, 8))
-    let hexOneForLiquidity = BigNumber.from(bDAI).mul(BigNumber.from('10000000000')).div(BigNumber.from(bHex))
-    console.log(hexAmountForLiquidity, hexOneForLiquidity);
-
-    tx = await hexOne.approve(uniswapRouter.address, BigInt(hexOneForLiquidity));
-    await tx.wait();
-
-    tx = await hexToken.approve(
-        uniswapRouter.address,
-        BigInt(hexAmountForLiquidity)
-    );
-    await tx.wait();
-    tx = await uniswapRouter.addLiquidity(
-        hexOne.address,
-        hexToken.address,
-        BigInt(hexOneForLiquidity),
-        BigInt(hexAmountForLiquidity),
-        0,
-        0,
-        deployer.address,
-        BigInt(await getCurrentTimestamp()) + BigInt(100)
-    );
-    await tx.wait();
 
     console.log("add Hex1/DAI liquidity")
     let daiToken = new ethers.Contract(param.daiAddress, erc20_abi, deployer);
     let daiAmountForLiquidity = BigNumber.from(bigNum(1, 16))
-    hexOneForLiquidity = daiAmountForLiquidity
+    let hexOneForLiquidity = daiAmountForLiquidity
     console.log(daiAmountForLiquidity, hexOneForLiquidity);
 
     tx = await hexOne.approve(uniswapRouter.address, BigInt(hexOneForLiquidity));

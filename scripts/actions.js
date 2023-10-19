@@ -51,7 +51,8 @@ async function generateAdditionalTokens() {
     console.log(
         "generateAdditionalTokens and purchase hexit to staking contract"
     );
-    await hexOneBootstrap.generateAdditionalTokens();
+    let tx = await hexOneBootstrap.generateAdditionalTokens();
+    await tx.wait()
     console.log("addtionalTokens generated successfully!");
 }
 
@@ -68,28 +69,23 @@ async function createHexStakingPool() {
     let factory = new ethers.Contract('0x29eA7545DEf87022BAdc76323F373EA1e707C523', factory_abi, deployer)
 
     let hex1dai = await factory.getPair(hexone.address, param.daiAddress)
-    let hex1hex = await factory.getPair(hexone.address, param.hexToken)
-    console.log(hex1dai, hex1hex)
+    console.log(hex1dai)
 
     console.log("add hex1 hexit hex1/hex hex1/dai token to allowToken list");
     let tx = await hexOneStaking.addAllowedTokens(
-        [hexit.address, hexone.address, hex1dai, hex1hex],
+        [hexit.address, hexone.address, hex1dai],
         [
             {
-                hexDistRate: 100,
-                hexitDistRate: 100,
-            },
-            {
-                hexDistRate: 100,
-                hexitDistRate: 100,
-            },
-            {
-                hexDistRate: 600,
-                hexitDistRate: 600,
+                hexDistRate: 200,
+                hexitDistRate: 200,
             },
             {
                 hexDistRate: 200,
                 hexitDistRate: 200,
+            },
+            {
+                hexDistRate: 600,
+                hexitDistRate: 600,
             },]
     );
     await tx.wait();
@@ -170,9 +166,9 @@ async function main() {
 
     // await getRewardsPoolInfo();
     // await generateAdditionalTokens();
-    // await getRewardsPoolInfo();
+    await getRewardsPoolInfo();
 
-    // await enableStaking();
+    await enableStaking();
 
     await createHexStakingPool();
 
