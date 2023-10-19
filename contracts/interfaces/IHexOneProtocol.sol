@@ -2,7 +2,6 @@
 pragma solidity ^0.8.17;
 
 interface IHexOneProtocol {
-
     struct Fee {
         uint16 feeRate;
         bool enabled;
@@ -50,8 +49,8 @@ interface IHexOneProtocol {
     /// @param _amount The amount of collateral to deposit.
     /// @param _duration The duration days.
     function depositCollateral(
-        address _token, 
-        uint256 _amount, 
+        address _token,
+        uint256 _amount,
         uint16 _duration
     ) external;
 
@@ -73,10 +72,13 @@ interface IHexOneProtocol {
         uint256 _depositId
     ) external returns (uint256);
 
+    function claimHex(
+        address _token,
+        uint256 _depositId
+    ) external returns (uint256);
+
     /// @notice Check that token is allowed or not.
-    function isAllowedToken(
-        address _token
-    ) external view returns (bool);
+    function isAllowedToken(address _token) external view returns (bool);
 
     /// @notice Get vault contract address by token.
     function getVaultAddress(address _token) external view returns (address);

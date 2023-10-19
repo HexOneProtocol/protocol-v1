@@ -246,6 +246,30 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         return receivedAmount;
     }
 
+    /// @inheritdoc IHexOneProtocol
+    function claimHex(
+        address _token,
+        uint256 _depositId
+    ) external override returns (uint256) {
+        address sender = msg.sender;
+        // if (sender != hexOneEscrow) {
+        //     CheckLibrary.checkEOA();
+        // }
+
+        require(sender != address(0), "zero caller address");
+        require(allowedTokens.contains(_token), "not allowed token");
+
+        (uint256 burnAmount, uint256 receivedAmount) = IHexOneVault(
+            vaultInfos[_token]
+        ).claimHex(sender, _depositId);
+
+        if (burnAmount > 0) {
+            IHexOneToken(hexOneToken).burnToken(burnAmount, sender);
+        }
+
+        return receivedAmount;
+    }
+
     /// @notice Add/Remove vault and base token addresses.
     function _setVaults(address[] memory _vaults, bool _add) internal {
         uint256 length = _vaults.length;

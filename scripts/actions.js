@@ -162,11 +162,11 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Action contract with the account: ", deployer.address);
 
-    await setHexOneEscrowAddress();
+    // await setHexOneEscrowAddress();
 
     await depositEscrowHexToProtocol();
 
-    await getLiquidableDeposits();
+    // await getLiquidableDeposits();
 
     // await getRewardsPoolInfo();
     // await generateAdditionalTokens();

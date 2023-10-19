@@ -169,6 +169,49 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
     }
 
     /// @inheritdoc IHexOneVault
+    function claimHex(
+        address _claimer,
+        uint256 _vaultDepositId
+    ) external override onlyHexOneProtocol returns (uint256, uint256) {
+        require(
+            availableDepositIds.contains(_vaultDepositId),
+            "no deposit pool"
+        );
+
+        VaultDepositInfo memory vaultDepositInfo = vaultDepositInfos[
+            _vaultDepositId
+        ];
+        address _depositor = vaultDepositInfo.userAddress;
+        uint256 _userDepositId = vaultDepositInfo.userDepositId;
+
+        UserInfo storage userInfo = userInfos[_depositor];
+        DepositInfo storage depositInfo = userInfo.depositInfos[_userDepositId];
+        require(!_beforeMaturity(depositInfo), "before maturity");
+        require(
+            (_claimer == _depositor) || _afterGraceDuration(depositInfo),
+            "not proper claimer"
+        );
+
+        /// unstake and claim rewards
+        uint256 receivedAmount = _unstake(depositInfo);
+        uint256 burnAmount = 0;
+
+        IERC20(hexToken).safeTransfer(_claimer, receivedAmount);
+        burnAmount = depositInfo.mintAmount;
+
+        /// update userInfo
+        depositInfo.exist = false;
+        availableDepositIds.remove(_vaultDepositId);
+
+        userInfo.shareBalance -= depositInfo.shares;
+        userInfo.depositedBalance -= depositInfo.amount;
+        userInfo.totalBorrowedAmount -= depositInfo.mintAmount;
+        userDepositIds[_depositor].remove(_vaultDepositId);
+
+        return (burnAmount, receivedAmount);
+    }
+
+    /// @inheritdoc IHexOneVault
     function borrowHexOne(
         address _depositor,
         uint256 _vaultDepositId,

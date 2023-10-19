@@ -426,7 +426,7 @@ async function addHexOneLiquidity() {
     let hexOne = await getContract("HexOneToken", "HexOneToken", network.name);
     let tx = await hexOne.mintToken(bigNum(10, 18), deployer.address)
     await tx.wait();
-    
+
     let uniswapRouter = new ethers.Contract(
         param.dexRouter,
         pulsex_abi,
@@ -644,23 +644,23 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
 
-    console.log("deploy protocol");
-    await deployProtocol();
+    // console.log("deploy protocol");
+    // await deployProtocol();
 
-    console.log("deploy Bootstrap");
-    await deployBootstrap();
+    // console.log("deploy Bootstrap");
+    // await deployBootstrap();
 
-    console.log("initialize contracts");
-    await initialize();
+    // console.log("initialize contracts");
+    // await initialize();
 
-    await initializeSacrifice();
+    // await initializeSacrifice();
 
-    await getHexTokenFeeInfo();
-    await setHexTokenFeeInfo(50); // set feeRate as 5%
-    await getHexTokenFeeInfo();
+    // await getHexTokenFeeInfo();
+    // await setHexTokenFeeInfo(50); // set feeRate as 5%
+    // await getHexTokenFeeInfo();
 
-    // console.log("add liquidity");
-    // await addHexOneLiquidity();
+    console.log("add liquidity");
+    await addHexOneLiquidity();
 
     console.log("Deployed successfully");
 }

@@ -126,6 +126,11 @@ interface IHexOneVault {
             uint256 receivedAmount
         );
 
+    function claimHex(
+        address _claimer,
+        uint256 _vaultDepositId
+    ) external returns (uint256 burnAmount, uint256 receivedAmount);
+
     /// @notice Get liquidable vault deposit Ids.
     function getLiquidableDeposits()
         external
