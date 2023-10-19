@@ -436,7 +436,6 @@ async function addHexOneLiquidity() {
 
     let factory = new ethers.Contract(param.factory, factory_abi, deployer)
     let pairAddr = await factory.getPair(param.hexToken, param.daiAddress)
-    console.log(pairAddr)
     let bDAI = await DAI.balanceOf(pairAddr)
     let bHex = await hexToken.balanceOf(pairAddr)
     let price = bDAI / bHex
