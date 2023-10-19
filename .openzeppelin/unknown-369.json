@@ -1729,6 +1729,31 @@
       "address": "0x8419e4700A595bBD66E3A1B5bbC71090Fc8ac418",
       "txHash": "0x8ce6d56067132db8bd3c188847368d6088f7eb4e846988be1807b7c8e6a729a8",
       "kind": "transparent"
+    },
+    {
+      "address": "0x03cFD8D192C52AFD326fDC537Dca968622B35484",
+      "txHash": "0x1a6d1bf2d41b69897651d9979675e79866db5c088851e3227da63dca6762c478",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x11E38e4e7D692da34d58280d1b9593B79D3e33Cf",
+      "txHash": "0xcab7aac3f49b862dc8079b0b498bd8e8603f9c44a07f4969a4bf04ae8ded9e77",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x70fe0645764DCFA6f8c7bD36c50058FA710DBbAd",
+      "txHash": "0x2fb01f007d0e02a0a1aadce4323f5b8a88e795b83519cb356fa0947090a20343",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xd39005378185087e87EEC7f9414045df44ef590D",
+      "txHash": "0x0b8f18911c753bb8ad46dcb659b6888f65c0da4f97801f12041f142a32ce7021",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x086Dcb415a4eA5012DA7bE5282f35A32E390415D",
+      "txHash": "0x387de0f8544da1ebb32fff396f07e38641fa89f12889f86852acaff06dee2295",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -20521,6 +20546,389 @@
           "t_bool": {
             "label": "bool",
             "numberOfBytes": "1"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
+    },
+    "4633dae4c091761c27bc8ac45273db5709c5dc2f6c1b837677ed6144a6782c0d": {
+      "address": "0x8770bAC7eB13b828C2b23bb49AA2a1a2CdCe2553",
+      "txHash": "0x11e15666c2ec76d8daab5f345030d989e70e9815dd24ddf60dc5699c19105011",
+      "layout": {
+        "solcVersion": "0.8.17",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "availableDepositIds",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_struct(UintSet)3650_storage",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:19"
+          },
+          {
+            "label": "hexOneProtocol",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_address",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:22"
+          },
+          {
+            "label": "hexToken",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_address",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:25"
+          },
+          {
+            "label": "hexOnePriceFeed",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_address",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:28"
+          },
+          {
+            "label": "totalLocked",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_uint256",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:31"
+          },
+          {
+            "label": "lockedUSDValue",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_uint256",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:34"
+          },
+          {
+            "label": "FIXED_POINT_PAYOUT",
+            "offset": 0,
+            "slot": "108",
+            "type": "t_uint256",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:36"
+          },
+          {
+            "label": "hexDecimals",
+            "offset": 0,
+            "slot": "109",
+            "type": "t_uint8",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:38"
+          },
+          {
+            "label": "GRACE_DURATION",
+            "offset": 1,
+            "slot": "109",
+            "type": "t_uint16",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:41"
+          },
+          {
+            "label": "FIXED_POINT",
+            "offset": 3,
+            "slot": "109",
+            "type": "t_uint16",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:43"
+          },
+          {
+            "label": "depositId",
+            "offset": 0,
+            "slot": "110",
+            "type": "t_uint256",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:45"
+          },
+          {
+            "label": "userInfos",
+            "offset": 0,
+            "slot": "111",
+            "type": "t_mapping(t_address,t_struct(UserInfo)10329_storage)",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:48"
+          },
+          {
+            "label": "vaultDepositInfos",
+            "offset": 0,
+            "slot": "112",
+            "type": "t_mapping(t_uint256,t_struct(VaultDepositInfo)10360_storage)",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:51"
+          },
+          {
+            "label": "userDepositIds",
+            "offset": 0,
+            "slot": "113",
+            "type": "t_mapping(t_address,t_struct(UintSet)3650_storage)",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:53"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "114",
+            "type": "t_array(t_uint256)100_storage",
+            "contract": "HexOneVault",
+            "src": "contracts\\HexOneVault.sol:576"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)100_storage": {
+            "label": "uint256[100]",
+            "numberOfBytes": "3200"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(UintSet)3650_storage)": {
+            "label": "mapping(address => struct EnumerableSet.UintSet)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(UserInfo)10329_storage)": {
+            "label": "mapping(address => struct IHexOneVault.UserInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(DepositInfo)10315_storage)": {
+            "label": "mapping(uint256 => struct IHexOneVault.DepositInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(VaultDepositInfo)10360_storage)": {
+            "label": "mapping(uint256 => struct IHexOneVault.VaultDepositInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(DepositInfo)10315_storage": {
+            "label": "struct IHexOneVault.DepositInfo",
+            "members": [
+              {
+                "label": "vaultDepositId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "stakeId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "shares",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "mintAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "depositedHexDay",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "initHexPrice",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "duration",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "graceDay",
+                "type": "t_uint16",
+                "offset": 2,
+                "slot": "7"
+              },
+              {
+                "label": "exist",
+                "type": "t_bool",
+                "offset": 4,
+                "slot": "7"
+              }
+            ],
+            "numberOfBytes": "256"
+          },
+          "t_struct(Set)3178_storage": {
+            "label": "struct EnumerableSet.Set",
+            "members": [
+              {
+                "label": "_values",
+                "type": "t_array(t_bytes32)dyn_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_indexes",
+                "type": "t_mapping(t_bytes32,t_uint256)",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(UintSet)3650_storage": {
+            "label": "struct EnumerableSet.UintSet",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)3178_storage",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(UserInfo)10329_storage": {
+            "label": "struct IHexOneVault.UserInfo",
+            "members": [
+              {
+                "label": "depositId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "shareBalance",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "depositedBalance",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "totalBorrowedAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "depositInfos",
+                "type": "t_mapping(t_uint256,t_struct(DepositInfo)10315_storage)",
+                "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_struct(VaultDepositInfo)10360_storage": {
+            "label": "struct IHexOneVault.VaultDepositInfo",
+            "members": [
+              {
+                "label": "userAddress",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "userDepositId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
           },
           "t_uint256": {
             "label": "uint256",
