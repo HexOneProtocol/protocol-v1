@@ -328,14 +328,17 @@ contract HexOneStaking is
             allowedTokenCnt
         );
 
+        uint256 totalHex = IERC20(hexToken).balanceOf(address(this));
+        uint256 totalHexit = IERC20(hexitToken).balanceOf(address(this)));
+        
         for (uint256 i = 0; i < allowedTokenCnt; i++) {
             address token = allowedTokens.at(i);
             StakingInfo memory info = stakingInfos[_user][token];
             DistTokenWeight memory tokenWeight = distTokenWeights[token];
-            (
-                uint256 claimableHexAmount,
-                uint256 claimableHexitAmount
-            ) = _calcRewardsAmount(_user, token);
+            // (
+            //     uint256 claimableHexAmount,
+            //     uint256 claimableHexitAmount
+            // ) = _calcRewardsAmount(_user, token);
 
             (uint16 hexAPR, uint16 hexitAPR) = _calcAPR(token);
 
@@ -346,6 +349,9 @@ contract HexOneStaking is
                         lockedTokenAmounts[token]
                 );
             }
+
+            uint256 claimableHexAmount = totalHex * 0.01 * tokenWeight * shareOfPool * / (FIXED_POINT * FIXED_POINT)
+            uint256 claimableHexitAmount = totalHexit * 0.01 * tokenWeight * shareOfPool * / (FIXED_POINT * FIXED_POINT)
 
             uint256 stakedTime = 0;
             if (info.stakedTime > 0) {
