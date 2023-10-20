@@ -658,7 +658,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             IPulseXPair tokenPair = IPulseXPair(
                 IPulseXFactory(dexRouter.factory()).getPair(
                     pairToken,
-                    _baseToken
+                    hexOneToken
                 )
             );
             IERC20(pairToken).transferFrom(
