@@ -13,7 +13,9 @@ import "./interfaces/IHexOneBootstrap.sol";
 import "./interfaces/IHexOneStaking.sol";
 import "./interfaces/IHexOnePriceFeed.sol";
 import "./interfaces/IHexOneProtocol.sol";
+import "./interfaces/pulsex/IPulseXPair.sol";
 import "./interfaces/pulsex/IPulseXRouter.sol";
+import "./interfaces/pulsex/IPulseXFactory.sol";
 import "./interfaces/IHEXIT.sol";
 import "./interfaces/IHexToken.sol";
 import "./interfaces/IToken.sol";
@@ -371,7 +373,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             airdropPoolInfo = AirdropPoolInfo({
                 sacrificedAmount: sacrificeAmount,
                 stakingShareAmount: shareAmount,
-                curAirdropDay: curDay,
+                curAirdropDay: curDay + 1,
                 curDayPoolAmount: curPoolAmount + userWeight,
                 curDaySupplyHEXIT: _calcAmountForAirdrop(curDay),
                 sacrificeDistRate: airdropDistRateForHEXITHolder,
@@ -433,7 +435,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         require(sender != address(0), "zero caller address");
         require(userInfo.airdropId > 0, "not requested");
         require(!userInfo.claimed, "already claimed");
-        require(curDay >= dayIndex, "too soon");
+        require(curDay > dayIndex, "too soon");
 
         uint256 rewardsAmount = _calcUserRewardsForAirdrop(sender, dayIndex);
         if (rewardsAmount > 0) {
@@ -603,7 +605,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         uint256 _dayIndex
     ) internal view returns (uint256) {
         uint256 airdropAmount = airdropHEXITAmount;
-        for (uint256 i = 1; i <= _dayIndex; i++) {
+        for (uint256 i = 0; i <= _dayIndex; i++) {
             airdropAmount =
                 (airdropAmount * distRateForDailyAirdrop) /
                 FIXED_POINT;
@@ -618,7 +620,58 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
 
         /// distribution
         _swapToken(_token, hexToken, escrowCA, amountForDistribution);
-        _swapToken(_token, pairToken, address(this), amountForLiquidity);
+
+        /// liquidity
+        uint256 swapAmountForLiquidity = amountForLiquidity / 2;
+        _swapToken(_token, hexToken, address(this), swapAmountForLiquidity);
+        if (_token != hexToken) {
+            uint256 realPrice = IHexOnePriceFeed(hexOnePriceFeed)
+                .getBaseTokenPrice(_token, swapAmountForLiquidity);
+            uint256 hexPrice = IHexOnePriceFeed(hexOnePriceFeed)
+                .getBaseTokenPrice(hexToken, 10 ** 8);
+            uint256 realAmount = (realPrice * 10 ** 8) / hexPrice;
+            uint256 total = IERC20(hexToken).balanceOf(address(this));
+            if (total < realAmount) realAmount = total;
+            IERC20(hexToken).approve(hexOneProtocol, realAmount);
+            IHexOneProtocol(hexOneProtocol).depositCollateral(
+                hexToken,
+                realAmount,
+                2
+            );
+        } else {
+            IERC20(hexToken).approve(hexOneProtocol, swapAmountForLiquidity);
+            IHexOneProtocol(hexOneProtocol).depositCollateral(
+                hexToken,
+                swapAmountForLiquidity,
+                2
+            );
+        }
+
+        _swapToken(_token, pairToken, address(this), swapAmountForLiquidity);
+        uint256 pairTokenBalance = IERC20(pairToken).balanceOf(address(this));
+        uint256 hexOneTokenBalance = IERC20(hexOneToken).balanceOf(
+            address(this)
+        );
+        if (pairTokenBalance > 0 && hexOneTokenBalance > 0) {
+            IERC20(pairToken).approve(address(this), pairTokenBalance);
+            IERC20(hexOneToken).approve(address(this), hexOneTokenBalance);
+            IPulseXPair tokenPair = IPulseXPair(
+                IPulseXFactory(dexRouter.factory()).getPair(
+                    pairToken,
+                    _baseToken
+                )
+            );
+            IERC20(pairToken).transferFrom(
+                address(this),
+                address(tokenPair),
+                pairTokenBalance
+            );
+            IERC20(hexOneToken).transferFrom(
+                address(this),
+                address(tokenPair),
+                hexOneTokenBalance
+            );
+        }
     }
 
     /// @notice Swap sacrifice token to hex/pair token.
