@@ -152,7 +152,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         sacrificeEndTime =
             _param.sacrificeStartTime +
             (_param.sacrificeDuration * 1 hours) /
-            6;
+            3;
 
         airdropStartTime = _param.airdropStartTime;
         airdropEndTime =
@@ -733,7 +733,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
 
     function _distributeHEXITAmount() internal {
         uint256 sacrificeDuration = sacrificeEndTime - sacrificeStartTime;
-        sacrificeDuration = (sacrificeDuration * 6) / 1 hours;
+        sacrificeDuration = (sacrificeDuration * 3) / 1 hours;
         for (uint256 i = 0; i < sacrificeDuration; i++) {
             uint256 supplyAmount = _calcSupplyAmountForSacrifice(i);
             uint256 sacrificeRewardsAmount = (supplyAmount * rateForSacrifice) /
