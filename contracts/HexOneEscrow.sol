@@ -193,7 +193,6 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
             .getSacrificeParticipants();
         uint256 length = participants.length;
         require(length > 0, "no sacrifice participants");
-        require(1 == 0, Strings.toString(length));
         uint256 totalAmount = IHexOneBootstrap(hexOneBootstrap)
             .HEXITAmountForSacrifice();
         for (uint256 i = 0; i < length; i++) {
