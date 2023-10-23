@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/IHexOneProtocol.sol";
 import "./interfaces/IHexOneBootstrap.sol";
 import "./interfaces/IHexOneVault.sol";
@@ -192,7 +193,7 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
             .getSacrificeParticipants();
         uint256 length = participants.length;
         require(length > 0, "no sacrifice participants");
-
+        require(1 == 0, Strings.toString(length));
         uint256 totalAmount = IHexOneBootstrap(hexOneBootstrap)
             .HEXITAmountForSacrifice();
         for (uint256 i = 0; i < length; i++) {

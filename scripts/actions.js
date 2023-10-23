@@ -164,13 +164,13 @@ async function main() {
 
     await getLiquidableDeposits();
 
-    await getRewardsPoolInfo();
-    await generateAdditionalTokens();
-    await getRewardsPoolInfo();
+    // await getRewardsPoolInfo();
+    // await generateAdditionalTokens();
+    // await getRewardsPoolInfo();
 
-    await enableStaking();
+    // await enableStaking();
 
-    await createHexStakingPool();
+    // await createHexStakingPool();
 
     // await increasePriceFeedRate();
     // await decreasePriceFeedRate();
