@@ -149,8 +149,8 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         airdropStartTime = _param.airdropStartTime;
         airdropEndTime =
             _param.airdropStartTime +
-            _param.airdropDuration *
-            1 hours;
+            (_param.airdropDuration * 1 hours) /
+            3;
 
         dexRouter = IPulseXRouter02(_param.dexRouter);
 
@@ -263,7 +263,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             ? sacrificeEndTime
             : block.timestamp;
         uint256 elapsedTime = endTime - sacrificeStartTime;
-        return elapsedTime / 1 hours + 1;
+        return elapsedTime / (1 hours / 3) + 1;
     }
 
     function sacrificeToken(
