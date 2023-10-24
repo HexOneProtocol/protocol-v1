@@ -57,26 +57,18 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     mapping(uint256 => mapping(address => uint256))
         public totalSacrificeTokenAmount;
 
-    //! For Sacrifice
-    /// @notice weight that user sacrificed by daily.
     mapping(uint256 => mapping(address => uint256)) public sacrificeUserWeight;
 
-    /// @notice received HEXIT token amount info per user.
     mapping(address => uint256) public userRewardsForSacrifice;
 
-    /// @notice sacrifice indexes that user sacrificed
     mapping(address => EnumerableSet.UintSet) private userSacrificedIds;
 
     mapping(address => uint256) public userSacrificedUSD;
 
     mapping(uint256 => SacrificeInfo) public sacrificeInfos;
 
-    //! For Airdrop
-    /// @notice dayIndex that a wallet requested airdrop.
-    /// @dev request dayIndex starts from 1.
     mapping(address => RequestAirdrop) public requestAirdropInfo;
 
-    /// @notice Requested amount by daily.
     mapping(uint256 => uint256) public requestedAmountInfo;
 
     IPulseXRouter02 public dexRouter;
