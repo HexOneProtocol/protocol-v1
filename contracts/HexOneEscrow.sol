@@ -175,7 +175,7 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
                 effectiveAmount: singleInfo.effectiveAmount,
                 borrowedAmount: singleInfo.mintAmount,
                 initUSDValue: singleInfo.initialHexPrice,
-                shareOfPool: uint16((participantAmount * 1000) / totalAmount)
+                shareOfPool: uint16((participantAmount * 100) / totalAmount)
             });
         }
 
