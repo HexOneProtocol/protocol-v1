@@ -2684,6 +2684,86 @@
       "address": "0x7F575b53fC78541e9aB9D313C5d7958840fB4276",
       "txHash": "0x1648f467430bb49499d93aa698486b7fe0258fc8f22ceb10f6d93ead4db85024",
       "kind": "transparent"
+    },
+    {
+      "address": "0x89a3b6ddD9a21547901E28F71F1dDF0d85df0431",
+      "txHash": "0xbccc528bed641f129aef9cd92677a9bd3175c3940e9a5bfc33cbfc96de844d54",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xcB4582BCC90636B2b920883C57dCf1Fa64596d82",
+      "txHash": "0xc9f7680e36bdec3e27343eb693c70cc5bdc605542cf81ceb109d158015379e81",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x264F57306D9C5740EDa0763293B7B1746B8de3a3",
+      "txHash": "0x5c7beead957c3f77d2fef125672caff105406b9c57a3adfbfedb107336854f65",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xfF02a380Dd2dFFF4276AEb5A809Da6ca78ef11F9",
+      "txHash": "0xfd01548c7af2e364854ccd1181de58ae85f53df1ca17c692aa0d7cad259273af",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x4f044d0e2bcF008beB66AE4Da2e002b57d3b23d4",
+      "txHash": "0x6c667cee0f172df7d237a4cdf164c7fb0fce51de11ee77fc316e715b33f60cb5",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xB3BcA292d03c337eB84b91E2b2B7e934A95d8419",
+      "txHash": "0x47fc0a3cb5f5624062393eeb18dec9c74a3364fc95943d953d310cbb1c9c2ac4",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x4Dc653e27499357a5bee2F482800f8EE22925a34",
+      "txHash": "0x3eb6cc22bb114456e9b0d9fea6bc17b10341bfe1af08ad5d1417e81097edcc20",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x732d9809c851845B61f3788eb4D9EA9F4B7f3322",
+      "txHash": "0xe5fada1aa0ddfdbeda6b6de854e4b5df673853c6253b7b07a1fc58fb80235c45",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x564eE06E00AA6667c05D6c8095F21Baa4B6b3C66",
+      "txHash": "0xf5f74967845de2a938f77d660655f769ca3e0cc6b0dc894126979e9e6794da1e",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x994f3E643eb85869DbC81836C2627954d06c0FC0",
+      "txHash": "0x00228b7fc1481feaab8faadc0725772703240e3e975551725c45c40754fbf0d4",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xefb5086811FA5Ae772b11e6c28be8bF0d3a3BD1f",
+      "txHash": "0xe16de3632e2b8213cabbd6ca1ee854eaad82ab6a42fdcf57d6437402cc5c4c3d",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xA47122D1B159E583beA2471C710c37E7011c813F",
+      "txHash": "0x16df04eceb777d33e0ede5f591f875cbf39f9c23a96964749787ed1325ac7363",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xB12C1D1140F4A9f98770cfbe925Da234Ce9eD38f",
+      "txHash": "0x3a800be13a9d218788b4b702b07debc106ad7632ec01e67b34513e15de48777b",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x5e92f1C4DBb99E3948E618d04Ac35454DE2C3BB8",
+      "txHash": "0x4bf11e869eb9d6212a0c69df35e86ad7f77348d7e990384a571476c6e21e4a9b",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x35D0ecaaA59c4b6bF9717917b11eeCCAC58A8c71",
+      "txHash": "0xca1be0d8cfbacb72242bc927990307ff4b2511e73bc1146f2fe800f96f939e4b",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xC39B36ecDc0Df3F146CEf19d828f48BbAab2821f",
+      "txHash": "0x44339f8abf3acb23dd33722369166a0687498fff97c59c083a6a0c5181f4cbb8",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -28017,6 +28097,167 @@
           "t_uint16": {
             "label": "uint16",
             "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
+    },
+    "7edb6469cc2b0098d7412b35169b948fe217fa01168ab8de410a8949bdb3a1e6": {
+      "address": "0xF28777FB6107831CCE973B286BC6f9281E640d45",
+      "txHash": "0x2a276fec9f0ba2966531759bad221735139946388a70b17d211fe44f3e5e778c",
+      "layout": {
+        "solcVersion": "0.8.17",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "hexOneBootstrap",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:18"
+          },
+          {
+            "label": "hexToken",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:21"
+          },
+          {
+            "label": "hexOneToken",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:24"
+          },
+          {
+            "label": "hexOneProtocol",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:27"
+          },
+          {
+            "label": "usdToken",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:29"
+          },
+          {
+            "label": "hexOnePriceFeed",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_address",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:32"
+          },
+          {
+            "label": "borrowedAmount",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_uint256",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:34"
+          },
+          {
+            "label": "stakedHexAmount",
+            "offset": 0,
+            "slot": "108",
+            "type": "t_uint256",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:36"
+          },
+          {
+            "label": "collateralDeposited",
+            "offset": 0,
+            "slot": "109",
+            "type": "t_bool",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:39"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "110",
+            "type": "t_array(t_uint256)100_storage",
+            "contract": "HexOneEscrow",
+            "src": "contracts\\HexOneEscrow.sol:209"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)100_storage": {
+            "label": "uint256[100]",
+            "numberOfBytes": "3200"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
           },
           "t_uint256": {
             "label": "uint256",
