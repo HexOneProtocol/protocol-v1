@@ -309,15 +309,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
 
         info.claimed = true;
 
-        uint256 dayIndex = info.day;
-        uint256 totalWeight = totalSacrificeWeight[dayIndex];
-        uint256 userWeight = info.sacrificedWeight;
-        uint256 supplyAmount = info.supplyAmount;
-        uint256 rewardsAmount = ((supplyAmount * userWeight) / totalWeight);
-
-        uint256 sacrificeRewardsAmount = (rewardsAmount * rateForSacrifice) /
-            FIXED_POINT;
-        userRewardsForSacrifice[sender] += sacrificeRewardsAmount;
+        userRewardsForSacrifice[sender] += info.totalHexitAmount;
         IHEXIT(hexitToken).mintToken(info.totalHexitAmount, sender);
 
         emit RewardsDistributed();
