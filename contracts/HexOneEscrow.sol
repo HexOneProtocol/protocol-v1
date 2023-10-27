@@ -136,11 +136,7 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
         require(depositInfos.length > 0, "not deposit pool");
         uint256 depositId = depositInfos[0].depositId;
         if (curPrice > depositInfos[0].initialHexPrice) {
-            uint256 _amount = IHexOnePriceFeed(hexOnePriceFeed)
-                .getBaseTokenPrice(
-                    usdToken,
-                    curPrice - depositInfos[0].initialHexPrice
-                );
+            uint256 _amount = 10 ** 8 * (curPrice - depositInfos[0].initialHexPrice) / IHexOnePriceFeed(hexOnePriceFeed).getHexTokenPrice(10 ** 8);
             IHexOneProtocol(hexOneProtocol).borrowHexOne(
                 hexToken,
                 depositId,
