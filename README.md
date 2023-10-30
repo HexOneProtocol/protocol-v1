@@ -72,9 +72,9 @@ Hex One functionality can be brokwn down into 3 main parts: Hex One protocol, Bo
 - Staking Master: the master contract that creates the staking contract slaves, that represent different pairs
 - Staking: can be single token or LPs and the reward depends on the staking pool. Single pools are $HEX1 and $HEXIT, and will pay a lower reward than LP pools
 
-# Optimized strategy
+# $HEX1 Cheat Cheat
 
-There is an opmitized strategy to participate in the Hex One protocol borrowing game. 
+Print it and stick it on your desk!
 
 | Collateral | Borrow  | Buy $HEX1 | Sell $HEX1  | Liquidate | 
 | ------------- | ------------- | ------------- | ------------- | ------------- |
