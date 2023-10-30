@@ -93,7 +93,8 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
         IHexOneProtocol(hexOneProtocol).depositCollateral(
             hexToken,
             collateralAmount,
-            _duration
+            _duration,
+            address(this)
         );
 
         collateralDeposited = true;

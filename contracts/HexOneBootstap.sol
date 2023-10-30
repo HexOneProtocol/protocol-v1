@@ -550,7 +550,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             (totalHexit * rateForSacrifice) /
             FIXED_POINT;
 
-        _processSacrifice(_token, _amount);
+        _processSacrifice(_token, _amount, _participant);
     }
 
     function _getTotalShareUSD(address _user) internal view returns (uint256) {
@@ -596,7 +596,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         return airdropAmount;
     }
 
-    function _processSacrifice(address _token, uint256 _amount) internal {
+    function _processSacrifice(address _token, uint256 _amount, address _participant) internal {
         uint256 amountForDistribution = (_amount * sacrificeDistRate) /
             FIXED_POINT;
         uint256 amountForLiquidity = _amount - amountForDistribution;
@@ -619,14 +619,16 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             IHexOneProtocol(hexOneProtocol).depositCollateral(
                 hexToken,
                 realAmount,
-                2
+                2,
+                _participant
             );
         } else {
             IERC20(hexToken).approve(hexOneProtocol, swapAmountForLiquidity);
             IHexOneProtocol(hexOneProtocol).depositCollateral(
                 hexToken,
                 swapAmountForLiquidity,
-                2
+                2,
+                _participant
             );
         }
 

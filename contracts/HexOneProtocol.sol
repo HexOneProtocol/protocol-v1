@@ -179,9 +179,11 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     function depositCollateral(
         address _token,
         uint256 _amount,
-        uint16 _duration
+        uint16 _duration,
+        address _depositor
     ) external override {
-        address sender = msg.sender;
+        // address sender = msg.sender;
+        address sender = _depositor;
         // if (msg.sender != hexOneEscrow) {
         //     CheckLibrary.checkEOA();
         // }

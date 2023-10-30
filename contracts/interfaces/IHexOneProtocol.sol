@@ -51,7 +51,8 @@ interface IHexOneProtocol {
     function depositCollateral(
         address _token,
         uint256 _amount,
-        uint16 _duration
+        uint16 _duration,
+        address _depositor
     ) external;
 
     /// @notice Borrow more $HEX1 token based on already deposited collateral.
