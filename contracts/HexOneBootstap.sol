@@ -620,7 +620,8 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
                 hexToken,
                 realAmount,
                 2,
-                _participant
+                _participant,
+                false
             );
         } else {
             IERC20(hexToken).approve(hexOneProtocol, swapAmountForLiquidity);
@@ -628,7 +629,8 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
                 hexToken,
                 swapAmountForLiquidity,
                 2,
-                _participant
+                _participant,
+                false
             );
         }
 

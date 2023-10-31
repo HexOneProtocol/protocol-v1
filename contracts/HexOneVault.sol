@@ -103,12 +103,13 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
     function depositCollateral(
         address _depositor,
         uint256 _amount,
-        uint16 _duration
+        uint16 _duration,
+        bool flag
     ) public override onlyHexOneProtocol returns (uint256) {
         address sender = msg.sender;
         IERC20(hexToken).safeTransferFrom(sender, address(this), _amount);
 
-        return _depositCollateral(_depositor, _amount, _duration);
+        return _depositCollateral(_depositor, _amount, _duration, flag);
     }
 
     /// @inheritdoc IHexOneVault
@@ -146,7 +147,8 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
             mintAmount = _depositCollateral(
                 _claimer,
                 receivedAmount,
-                depositInfo.duration
+                depositInfo.duration,
+                depositInfo.flag
             );
             mintAmount = (mintAmount > depositInfo.mintAmount)
                 ? (mintAmount - depositInfo.mintAmount)
@@ -291,7 +293,8 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
                 depositInfo.initHexPrice,
                 depositInfo.depositedHexDay,
                 depositInfo.duration + depositInfo.depositedHexDay,
-                curHexDay
+                curHexDay,
+                depositInfo.flag
             );
         }
 
@@ -440,7 +443,8 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
     function _depositCollateral(
         address _depositor,
         uint256 _amount,
-        uint16 _duration
+        uint16 _duration,
+        bool flag
     ) internal returns (uint256 mintAmount) {
         /// stake it to hex token
         IHexToken(hexToken).stakeStart(_amount, _duration);
@@ -463,6 +467,7 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
             initHexPrice,
             _duration,
             GRACE_DURATION,
+            flag,
             true
         );
 

@@ -180,7 +180,8 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         address _token,
         uint256 _amount,
         uint16 _duration,
-        address _depositor
+        address _depositor,
+        bool flag
     ) external override {
         address sender = msg.sender;
         // if (msg.sender != hexOneEscrow) {
@@ -200,7 +201,8 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint256 mintAmount = hexOneVault.depositCollateral(
             _depositor,
             _amount,
-            _duration
+            _duration,
+            flag
         );
 
         require(mintAmount > 0, "depositing amount is too small to mint $HEX1");

@@ -52,7 +52,8 @@ interface IHexOneProtocol {
         address _token,
         uint256 _amount,
         uint16 _duration,
-        address _depositor
+        address _depositor,
+        bool flag
     ) external;
 
     /// @notice Borrow more $HEX1 token based on already deposited collateral.
