@@ -182,8 +182,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint16 _duration,
         address _depositor
     ) external override {
-        // address sender = msg.sender;
-        address sender = _depositor;
+        address sender = msg.sender;
         // if (msg.sender != hexOneEscrow) {
         //     CheckLibrary.checkEOA();
         // }
@@ -199,14 +198,14 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         _amount = _transferDepositTokenWithFee(sender, _token, _amount);
         IERC20(_token).approve(address(hexOneVault), _amount);
         uint256 mintAmount = hexOneVault.depositCollateral(
-            sender,
+            _depositor,
             _amount,
             _duration
         );
 
         require(mintAmount > 0, "depositing amount is too small to mint $HEX1");
-        if (!depositedTokenInfos[sender].contains(_token)) {
-            depositedTokenInfos[sender].add(_token);
+        if (!depositedTokenInfos[_depositor].contains(_token)) {
+            depositedTokenInfos[_depositor].add(_token);
         }
         IHexOneToken(hexOneToken).mintToken(mintAmount, sender);
 
