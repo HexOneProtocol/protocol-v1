@@ -231,11 +231,13 @@ contract HexOneStaking is
         require(allowedTokens.contains(_token), "not allowed token");
         require(info.stakedTime > 0, "no staking pool");
 
-        uint256 hexAmount = (info.hexShareAmount * hexRewardsRatePerShare) /
-            totalHexShareAmount;
+        // uint256 hexAmount = (info.hexShareAmount * hexRewardsRatePerShare) /
+        //     totalHexShareAmount;
+        uint256 hexAmount = (info.hexShareAmount * hexRewardsRatePerShare);
+        // uint256 hexitAmount = (info.hexitShareAmount *
+        //     hexitRewardsRatePerShare) / totalHexitShareAmount;
         uint256 hexitAmount = (info.hexitShareAmount *
-            hexitRewardsRatePerShare) / totalHexitShareAmount;
-
+            hexitRewardsRatePerShare);
         hexAmount = hexAmount / 10 ** 10;
         hexAmount = hexAmount > info.claimedHexAmount
             ? hexAmount - info.claimedHexAmount
@@ -330,7 +332,7 @@ contract HexOneStaking is
 
         uint256 totalHex = IERC20(hexToken).balanceOf(address(this));
         uint256 totalHexit = IERC20(hexitToken).balanceOf(address(this));
-        
+
         for (uint256 i = 0; i < allowedTokenCnt; i++) {
             address token = allowedTokens.at(i);
             StakingInfo memory info = stakingInfos[_user][token];
@@ -350,8 +352,12 @@ contract HexOneStaking is
                 );
             }
 
-            uint256 claimableHexAmount = totalHex * tokenWeight.hexDistRate * shareOfPool / 100000000;
-            uint256 claimableHexitAmount = totalHexit * tokenWeight.hexitDistRate * shareOfPool / 100000000;
+            uint256 claimableHexAmount = (totalHex *
+                tokenWeight.hexDistRate *
+                shareOfPool) / 100000000;
+            uint256 claimableHexitAmount = (totalHexit *
+                tokenWeight.hexitDistRate *
+                shareOfPool) / 100000000;
 
             uint256 stakedTime = 0;
             if (info.stakedTime > 0) {
@@ -391,9 +397,10 @@ contract HexOneStaking is
         }
 
         if (totalHexShareAmount > 0) {
-            hexAmount =
-                (info.hexShareAmount * hexRewardsRatePerShare) /
-                totalHexShareAmount;
+            // hexAmount =
+            //     (info.hexShareAmount * hexRewardsRatePerShare) /
+            //     totalHexShareAmount;
+            hexAmount = (info.hexShareAmount * hexRewardsRatePerShare);
             hexAmount = hexAmount / 10 ** 10;
             hexAmount = hexAmount > info.claimedHexAmount
                 ? hexAmount - info.claimedHexAmount
@@ -401,9 +408,10 @@ contract HexOneStaking is
         }
 
         if (totalHexitShareAmount > 0) {
-            hexitAmount =
-                (info.hexitShareAmount * hexitRewardsRatePerShare) /
-                totalHexitShareAmount;
+            // hexitAmount =
+            //     (info.hexitShareAmount * hexitRewardsRatePerShare) /
+            //     totalHexitShareAmount;
+            hexitAmount = info.hexitShareAmount * hexitRewardsRatePerShare;
             hexitAmount = hexitAmount > info.claimedHexitAmount
                 ? hexitAmount - info.claimedHexitAmount
                 : 0;
@@ -419,7 +427,8 @@ contract HexOneStaking is
         uint256 curHexitPool = rewardsPool.hexitPool;
         curHexitPool -= rewardsPool.distributedHexit;
 
-        uint256 hexAmountForDist = curHexPool - rewardsPool.distributedHex;
+        // uint256 hexAmountForDist = curHexPool - rewardsPool.distributedHex;
+        uint256 hexAmountForDist = (curHexPool * hexitDistRate) / FIXED_POINT;
         uint256 hexitAmountForDist = (curHexitPool * hexitDistRate) /
             FIXED_POINT;
 
