@@ -227,7 +227,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         require(sender != address(0), "zero caller address");
         require(allowedTokens.contains(_token), "not allowed token");
 
-        bool restake = (sender == hexOneEscrow);
+        bool restake = true;
         (
             uint256 burnAmount,
             uint256 mintAmount,
