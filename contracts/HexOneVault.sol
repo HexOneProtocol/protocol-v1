@@ -557,16 +557,17 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
         uint256 _shareAmount,
         uint16 _stakeDays
     ) internal view returns (uint256) {
-        uint256 curDay = IHexToken(hexToken).currentDay();
-        (uint72 dayPayoutTotal, , ) = IHexToken(hexToken).dailyData(curDay - 1);
-        /// hexToken decimal = 8, share decimal = 12. to get hex token amount, divide by 10**4
-        uint256 effectiveHex = (_shareAmount *
-            uint256(dayPayoutTotal) *
-            _stakeDays) /
-            FIXED_POINT_PAYOUT /
-            10 ** 4;
+        // uint256 curDay = IHexToken(hexToken).currentDay();
+        // (uint72 dayPayoutTotal, , ) = IHexToken(hexToken).dailyData(curDay - 1);
+        // /// hexToken decimal = 8, share decimal = 12. to get hex token amount, divide by 10**4
+        // uint256 effectiveHex = (_shareAmount *
+        //     uint256(dayPayoutTotal) *
+        //     _stakeDays) /
+        //     FIXED_POINT_PAYOUT /
+        //     10 ** 4;
+        // effectiveHex += _hexAmount;
+        uint256 effectiveHex = ((_stakeDays - 1) / 1820) * _hexAmount;
         effectiveHex += _hexAmount;
-
         return effectiveHex;
     }
 
