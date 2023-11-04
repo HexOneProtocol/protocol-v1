@@ -1,238 +1,258 @@
 const { ethers, network } = require("hardhat");
 const {
-    deploy,
-    deployProxy,
-    getCurrentTimestamp,
-    spendTime,
-    bigNum,
-    smallNum,
-    day,
-    hour,
-    getContract,
-    upgradeProxy,
-    verify,
-    verifyProxy,
+  deploy,
+  deployProxy,
+  getCurrentTimestamp,
+  spendTime,
+  bigNum,
+  smallNum,
+  day,
+  hour,
+  getContract,
+  upgradeProxy,
+  verify,
+  verifyProxy,
 } = require("./utils");
 
 const { pulsex_abi } = require("../external_abi/pulsex.abi.json");
 const { erc20_abi } = require("../external_abi/erc20.abi.json");
-const { factory_abi } = require('../external_abi/factory.abi.json')
+const { factory_abi } = require("../external_abi/factory.abi.json");
 const { hex_abi } = require("../external_abi/hex.abi.json");
 const { getDeploymentParam } = require("./param");
-const { BigNumber } = require('ethers')
+const { BigNumber } = require("ethers");
 // const BigNumber = require('bignumber.js')
 
 async function deployBootstrap() {
-    let param = getDeploymentParam();
+  let param = getDeploymentParam();
 
-    let hexOnePriceFeed = await getContract(
-        "HexOnePriceFeed",
-        "HexOnePriceFeed",
-        network.name
-    );
+  let hexOnePriceFeed = await getContract(
+    "HexOnePriceFeed",
+    "HexOnePriceFeed",
+    network.name
+  );
 
-    hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
-    hexOneProtocol = await getContract(
-        "HexOneProtocol",
-        "HexOneProtocol",
-        network.name
-    );
+  hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
+  hexOneProtocol = await getContract(
+    "HexOneProtocol",
+    "HexOneProtocol",
+    network.name
+  );
 
-    let HEXIT = await getContract("HEXIT", "HEXIT", network.name);
+  let HEXIT = await getContract("HEXIT", "HEXIT", network.name);
 
-    let stakingPool = await getContract("HexOneStaking", "HexOneStaking", network.name);
+  let stakingPool = await getContract(
+    "HexOneStaking",
+    "HexOneStaking",
+    network.name
+  );
 
-    let sacrificeStartTime =
-        BigInt(await getCurrentTimestamp()) + BigInt(param.sacrificeStartTime);
+  let sacrificeStartTime =
+    BigInt(await getCurrentTimestamp()) + BigInt(param.sacrificeStartTime);
 
-    let airdropStartTime =
-        BigInt(sacrificeStartTime) +
-        BigInt(hour) * BigInt(param.sacrificeDuration) +
-        BigInt(param.airdropStartTime);
+  let airdropStartTime =
+    BigInt(sacrificeStartTime) +
+    BigInt(hour) * BigInt(param.sacrificeDuration) +
+    BigInt(param.airdropStartTime);
 
-    let bootstrapParam = {
-        hexOneProtocol: hexOneProtocol.address,
-        hexOnePriceFeed: hexOnePriceFeed.address,
-        dexRouter: param.dexRouter,
-        hexToken: param.hexToken,
-        hexOneToken: hexOneToken.address,
-        pairToken: param.daiAddress,
-        hexitToken: HEXIT.address,
-        stakingContract: stakingPool.address,
-        teamWallet: param.teamWallet,
-        sacrificeStartTime: sacrificeStartTime,
-        airdropStartTime: airdropStartTime,
-        sacrificeDuration: param.sacrificeDuration,
-        airdropDuration: param.airdropDuration,
-        rateForSacrifice: param.rateForSacrifice,
-        rateForAirdrop: param.rateForAirdrop,
-        sacrificeDistRate: param.sacrificeDistRate,
-        sacrificeLiquidityRate: param.sacrificeLiquidityRate,
-        airdropDistRateForHexHolder: param.airdropDistRateForHexHolder,
-        airdropDistRateForHEXITHolder: param.airdropDistRateForHEXITHolder,
-    };
+  let bootstrapParam = {
+    hexOneProtocol: hexOneProtocol.address,
+    hexOnePriceFeed: hexOnePriceFeed.address,
+    dexRouter: param.dexRouter,
+    hexToken: param.hexToken,
+    hexOneToken: hexOneToken.address,
+    pairToken: param.daiAddress,
+    hexitToken: HEXIT.address,
+    stakingContract: stakingPool.address,
+    teamWallet: param.teamWallet,
+    sacrificeStartTime: sacrificeStartTime,
+    airdropStartTime: airdropStartTime,
+    sacrificeDuration: param.sacrificeDuration,
+    airdropDuration: param.airdropDuration,
+    rateForSacrifice: param.rateForSacrifice,
+    rateForAirdrop: param.rateForAirdrop,
+    sacrificeDistRate: param.sacrificeDistRate,
+    sacrificeLiquidityRate: param.sacrificeLiquidityRate,
+    airdropDistRateForHexHolder: param.airdropDistRateForHexHolder,
+    airdropDistRateForHEXITHolder: param.airdropDistRateForHEXITHolder,
+  };
 
-    let hexOneBootstrap = await deployProxy(
-        "HexOneBootstrap",
-        "HexOneBootstrap",
-        [bootstrapParam]
-    );
+  let hexOneBootstrap = await deployProxy(
+    "HexOneBootstrap",
+    "HexOneBootstrap",
+    [bootstrapParam]
+  );
 
-    let hexOneEscrow = await deployProxy("HexOneEscrow", "HexOneEscrow", [
-        hexOneBootstrap.address,
-        param.hexToken,
-        hexOneToken.address,
-        param.usdcAddress,
-        hexOneProtocol.address,
-        hexOnePriceFeed.address,
-    ]);
+  let hexOneEscrow = await deployProxy("HexOneEscrow", "HexOneEscrow", [
+    hexOneBootstrap.address,
+    param.hexToken,
+    hexOneToken.address,
+    param.usdcAddress,
+    hexOneProtocol.address,
+    hexOnePriceFeed.address,
+  ]);
 
-    return [hexOneBootstrap, hexOneEscrow];
+  return [hexOneBootstrap, hexOneEscrow];
 }
 
 async function deployProtocol() {
-    let param = getDeploymentParam();
+  let param = getDeploymentParam();
 
-    // let hexMockToken = await deploy(
-    //     "HexMockToken",
-    //     "HexMockToken"
-    // )
+  // let hexMockToken = await deploy(
+  //     "HexMockToken",
+  //     "HexMockToken"
+  // )
 
-    let hexOneToken = await deploy(
-        "HexOneToken",
-        "HexOneToken",
-        "test1",
-        "test1"
-    );
-    // let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
+  let hexOneToken = await deploy(
+    "HexOneToken",
+    "HexOneToken",
+    "test1",
+    "test1"
+  );
+  // let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
 
-    let hexOnePriceFeed = await deployProxy(
-        "HexOnePriceFeed",
-        "HexOnePriceFeed",
-        [param.hexToken, param.daiAddress, param.dexRouter]
-    );
-    // let hexOnePriceFeed = await getContract(
-    //     "HexOnePriceFeedTest",
-    //     "HexOnePriceFeedTest",
-    //     network.name
-    // );
+  let hexOnePriceFeed = await deployProxy(
+    "HexOnePriceFeed",
+    "HexOnePriceFeed",
+    [param.hexToken, param.daiAddress, param.dexRouter]
+  );
+  // let hexOnePriceFeed = await getContract(
+  //     "HexOnePriceFeedTest",
+  //     "HexOnePriceFeedTest",
+  //     network.name
+  // );
 
-    let hexOneVault = await deployProxy("HexOneVault", "HexOneVault", [
-        param.hexToken,
-        hexOnePriceFeed.address,
-    ]);
+  let hexOneVault = await deployProxy("HexOneVault", "HexOneVault", [
+    param.hexToken,
+    hexOnePriceFeed.address,
+  ]);
 
-    let hexitToken = await deploy(
-        "HEXIT",
-        "HEXIT",
-        "Hex Incentive Token",
-        "HEXIT"
-    );
-    // let hexitToken = await getContract("HEXIT", "HEXIT", network.name);
+  let hexitToken = await deploy(
+    "HEXIT",
+    "HEXIT",
+    "Hex Incentive Token",
+    "HEXIT"
+  );
+  // let hexitToken = await getContract("HEXIT", "HEXIT", network.name);
 
-    let hexOneStaking = await deployProxy("HexOneStaking", "HexOneStaking", [
-        param.hexToken,
-        hexitToken.address,
-        hexOnePriceFeed.address,
-        param.hexitDistRateForStaking,
-    ]);
+  let hexOneStaking = await deployProxy("HexOneStaking", "HexOneStaking", [
+    param.hexToken,
+    hexitToken.address,
+    hexOnePriceFeed.address,
+    param.hexitDistRateForStaking,
+  ]);
 
-    let hexOneProtocol = await deploy(
-        "HexOneProtocol",
-        "HexOneProtocol",
-        param.hexToken,
-        hexOneToken.address,
-        [hexOneVault.address],
-        hexOneStaking.address,
-        param.minStakingDuration,
-        param.maxStakingDuration
-    );
+  let hexOneProtocol = await deploy(
+    "HexOneProtocol",
+    "HexOneProtocol",
+    param.hexToken,
+    hexOneToken.address,
+    [hexOneVault.address],
+    hexOneStaking.address,
+    param.minStakingDuration,
+    param.maxStakingDuration
+  );
 }
 
 async function getContracts() {
-    // let hexToken = await getContract("HexMockToken", "HexMockToken", network.name);
-    let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
-    let hexOnePriceFeed = await getContract(
-        "HexOnePriceFeed",
-        "HexOnePriceFeed",
-        network.name
-    );
+  // let hexToken = await getContract("HexMockToken", "HexMockToken", network.name);
+  let hexOneToken = await getContract(
+    "HexOneToken",
+    "HexOneToken",
+    network.name
+  );
+  let hexOnePriceFeed = await getContract(
+    "HexOnePriceFeed",
+    "HexOnePriceFeed",
+    network.name
+  );
 
-    let hexOneVault = await getContract("HexOneVault", "HexOneVault", network.name);
-    let stakingPool = await getContract("HexOneStaking", "HexOneStaking", network.name);
-    let hexOneProtocol = await getContract(
-        "HexOneProtocol",
-        "HexOneProtocol",
-        network.name
-    );
+  let hexOneVault = await getContract(
+    "HexOneVault",
+    "HexOneVault",
+    network.name
+  );
+  let stakingPool = await getContract(
+    "HexOneStaking",
+    "HexOneStaking",
+    network.name
+  );
+  let hexOneProtocol = await getContract(
+    "HexOneProtocol",
+    "HexOneProtocol",
+    network.name
+  );
 
-    let HEXIT = await getContract("HEXIT", "HEXIT", network.name);
+  let HEXIT = await getContract("HEXIT", "HEXIT", network.name);
 
-    let hexOneBootstrap = await getContract(
-        "HexOneBootstrap",
-        "HexOneBootstrap",
-        network.name
-    );
+  let hexOneBootstrap = await getContract(
+    "HexOneBootstrap",
+    "HexOneBootstrap",
+    network.name
+  );
 
-    let hexOneEscrow = await getContract("HexOneEscrow", "HexOneEscrow", network.name);
+  let hexOneEscrow = await getContract(
+    "HexOneEscrow",
+    "HexOneEscrow",
+    network.name
+  );
 
-    return [
-        // hexToken,
-        hexOneToken,
-        hexOnePriceFeed,
-        hexOneVault,
-        stakingPool,
-        hexOneProtocol,
-        HEXIT,
-        hexOneBootstrap,
-        hexOneEscrow,
-    ];
+  return [
+    // hexToken,
+    hexOneToken,
+    hexOnePriceFeed,
+    hexOneVault,
+    stakingPool,
+    hexOneProtocol,
+    HEXIT,
+    hexOneBootstrap,
+    hexOneEscrow,
+  ];
 }
 
 async function initialize() {
-    const [deployer] = await ethers.getSigners();
-    let [
-        // hexToken,
-        hexOneToken,
-        hexOnePriceFeed,
-        hexOneVault,
-        stakingPool,
-        hexOneProtocol,
-        HEXIT,
-        hexOneBootstrap,
-        hexOneEscrow,
-    ] = await getContracts();
+  const [deployer] = await ethers.getSigners();
+  let [
+    // hexToken,
+    hexOneToken,
+    hexOnePriceFeed,
+    hexOneVault,
+    stakingPool,
+    hexOneProtocol,
+    HEXIT,
+    hexOneBootstrap,
+    hexOneEscrow,
+  ] = await getContracts();
 
-    console.log("hexOneToken.setAdmin");
-    let tx = await hexOneToken.setAdmin(hexOneProtocol.address);
-    await tx.wait();
+  console.log("hexOneToken.setAdmin");
+  let tx = await hexOneToken.setAdmin(hexOneProtocol.address);
+  await tx.wait();
 
-    console.log("hexOneToken.setDeployer");
-    tx = await hexOneToken.setDeployer(deployer.address);
-    await tx.wait();
+  console.log("hexOneToken.setDeployer");
+  tx = await hexOneToken.setDeployer(deployer.address);
+  await tx.wait();
 
-    console.log("hexOneVault.setHexOneProtocol");
-    tx = await hexOneVault.setHexOneProtocol(hexOneProtocol.address);
-    await tx.wait();
+  console.log("hexOneVault.setHexOneProtocol");
+  tx = await hexOneVault.setHexOneProtocol(hexOneProtocol.address);
+  await tx.wait();
 
-    console.log("stakingPool.setBaseData");
-    tx = await stakingPool.setBaseData(
-        hexOneProtocol.address,
-        hexOneBootstrap.address
-    );
-    await tx.wait();
+  console.log("stakingPool.setBaseData");
+  tx = await stakingPool.setBaseData(
+    hexOneProtocol.address,
+    hexOneBootstrap.address
+  );
+  await tx.wait();
 
-    console.log("hexOneBootstrap.setEscrowContract");
-    tx = await hexOneBootstrap.setEscrowContract(hexOneEscrow.address);
-    await tx.wait();
+  console.log("hexOneBootstrap.setEscrowContract");
+  tx = await hexOneBootstrap.setEscrowContract(hexOneEscrow.address);
+  await tx.wait();
 
-    console.log("HEXIT.setBootstrap");
-    tx = await HEXIT.setBootstrap(hexOneBootstrap.address);
-    await tx.wait();
+  console.log("HEXIT.setBootstrap");
+  tx = await HEXIT.setBootstrap(hexOneBootstrap.address);
+  await tx.wait();
 
-    console.log("Set hexOneEscrow to HexOneProtocol");
-    tx = await hexOneProtocol.setEscrowContract(hexOneEscrow.address);
-    await tx.wait();
+  console.log("Set hexOneEscrow to HexOneProtocol");
+  tx = await hexOneProtocol.setEscrowContract(hexOneEscrow.address);
+  await tx.wait();
 }
 
 // async function addLiquidity() {
@@ -419,247 +439,239 @@ async function initialize() {
 //     console.log("processed successfully!");
 // }
 
-async function addHexOneLiquidity() {
-    const [deployer] = await ethers.getSigners();
-    let param = getDeploymentParam();
-    let hexOne = await getContract("HexOneToken", "HexOneToken", network.name);
-    let tx = await hexOne.mintToken(bigNum(10, 18), deployer.address)
-    await tx.wait();
-
-    let uniswapRouter = new ethers.Contract(
-        param.dexRouter,
-        pulsex_abi,
-        deployer
-    );
-
-    console.log("add Hex1/DAI liquidity")
-    let daiToken = new ethers.Contract(param.daiAddress, erc20_abi, deployer);
-    let daiAmountForLiquidity = BigNumber.from(bigNum(1, 16))
-    let hexOneForLiquidity = daiAmountForLiquidity
-    console.log(daiAmountForLiquidity, hexOneForLiquidity);
-
-    tx = await hexOne.approve(uniswapRouter.address, BigInt(hexOneForLiquidity));
-    await tx.wait();
-
-    tx = await daiToken.approve(
-        uniswapRouter.address,
-        BigInt(daiAmountForLiquidity)
-    );
-    await tx.wait();
-    tx = await uniswapRouter.addLiquidity(
-        hexOne.address,
-        daiToken.address,
-        BigInt(hexOneForLiquidity),
-        BigInt(daiAmountForLiquidity),
-        0,
-        0,
-        deployer.address,
-        BigInt(await getCurrentTimestamp()) + BigInt(100)
-    );
-    await tx.wait();
-
-}
-
 async function initializeSacrifice() {
-    console.log("initialize sacrifice");
-    let hexOneBootstrap = await getContract(
-        "HexOneBootstrap",
-        "HexOneBootstrap",
-        network.name
-    );
-    let param = getDeploymentParam();
+  console.log("initialize sacrifice");
+  let hexOneBootstrap = await getContract(
+    "HexOneBootstrap",
+    "HexOneBootstrap",
+    network.name
+  );
+  let param = getDeploymentParam();
 
-    let tx = await hexOneBootstrap.setTokenWeight(
-        [
-            param.hexToken,
-            param.usdcAddress,
-            param.daiAddress,
-            param.plsxAddress,
-            param.wplsAddress
-        ],
-        [5555, 3000, 3000, 1000, 2000]
-    );
-    await tx.wait();
-    console.log('------------set token weight already')
-    tx = await hexOneBootstrap.setAllowedTokens(
-        [
-            param.hexToken,
-            param.usdcAddress,
-            param.daiAddress,
-            param.plsxAddress,
-            param.wplsAddress
-        ],
-        true
-    );
-    await tx.wait();
-    console.log('-------set allowed tokens')
+  let tx = await hexOneBootstrap.setTokenWeight(
+    [
+      param.hexToken,
+      param.usdcAddress,
+      param.daiAddress,
+      param.plsxAddress,
+      param.wplsAddress,
+    ],
+    [5555, 3000, 3000, 1000, 2000]
+  );
+  await tx.wait();
+  console.log("------------set token weight already");
+  tx = await hexOneBootstrap.setAllowedTokens(
+    [
+      param.hexToken,
+      param.usdcAddress,
+      param.daiAddress,
+      param.plsxAddress,
+      param.wplsAddress,
+    ],
+    true
+  );
+  await tx.wait();
+  console.log("-------set allowed tokens");
 }
 
 async function updateHexOneBootstrap() {
-    let hexOneBootstrap = await getContract(
-        "HexOneBootstrap",
-        "HexOneBootstrap",
-        network.name
-    );
-    await upgradeProxy("HexOneBootstrap", "HexOneBootstrap", hexOneBootstrap.address);
-    await verifyProxy("HexOneBootstrap", "HexOneBootstrap");
+  let hexOneBootstrap = await getContract(
+    "HexOneBootstrap",
+    "HexOneBootstrap",
+    network.name
+  );
+  await upgradeProxy(
+    "HexOneBootstrap",
+    "HexOneBootstrap",
+    hexOneBootstrap.address
+  );
+  await verifyProxy("HexOneBootstrap", "HexOneBootstrap");
 }
 
 async function updateHexOneEscrow() {
-    await verifyProxy("HexOneEscrow", "HexOneEscrow");
+  await verifyProxy("HexOneEscrow", "HexOneEscrow");
 }
 
 async function updateHexOneVault() {
-    const hexOneVault = await getContract("HexOneVault", "HexOneVault", network.name);
-    await upgradeProxy("HexOneVault", "HexOneVault", hexOneVault.address);
+  const hexOneVault = await getContract(
+    "HexOneVault",
+    "HexOneVault",
+    network.name
+  );
+  await upgradeProxy("HexOneVault", "HexOneVault", hexOneVault.address);
 }
 
 async function updateHexOneStaking() {
-    let hexOneStaking = await getContract(
-        "HexOneStaking",
-        "HexOneStaking",
-        network.name
-    );
+  let hexOneStaking = await getContract(
+    "HexOneStaking",
+    "HexOneStaking",
+    network.name
+  );
 
-    let hexToken = await hexOneStaking.hexToken();
-    let hexitToken = await hexOneStaking.hexitToken();
-    let hexOnePriceFeed = await hexOneStaking.hexOnePriceFeed();
-    let hexitDistRate = await hexOneStaking.hexitDistRate();
+  let hexToken = await hexOneStaking.hexToken();
+  let hexitToken = await hexOneStaking.hexitToken();
+  let hexOnePriceFeed = await hexOneStaking.hexOnePriceFeed();
+  let hexitDistRate = await hexOneStaking.hexitDistRate();
 
-    await verify(hexOneStaking.address, [
-        hexToken,
-        hexitToken,
-        hexOnePriceFeed,
-        hexitDistRate,
-    ]);
+  await verify(hexOneStaking.address, [
+    hexToken,
+    hexitToken,
+    hexOnePriceFeed,
+    hexitDistRate,
+  ]);
 }
 
 async function verifyHexMockToken() {
-    let hexMockToken = await getContract("HexMockToken", "HexMockToken", network.name);
-    await verify(hexMockToken.address);
+  let hexMockToken = await getContract(
+    "HexMockToken",
+    "HexMockToken",
+    network.name
+  );
+  await verify(hexMockToken.address);
 }
 
 async function verifyHexOneStaking() {
-    await verifyProxy("HexOneStaking", "HexOneStaking");
+  await verifyProxy("HexOneStaking", "HexOneStaking");
 }
 
 async function upgradeHexOneStaking() {
-    let hexOneStaking = await getContract(
-        "HexOneStaking",
-        "HexOneStaking",
-        network.name
-    );
-    await upgradeProxy("HexOneStaking", "HexOneStaking", hexOneStaking.address);
+  let hexOneStaking = await getContract(
+    "HexOneStaking",
+    "HexOneStaking",
+    network.name
+  );
+  await upgradeProxy("HexOneStaking", "HexOneStaking", hexOneStaking.address);
 }
 
 async function verifyHexOneProtocol() {
-    let param = getDeploymentParam();
-    let hexOneToken = await getContract("HexOneToken", "HexOneToken", network.name);
-    let hexOneVault = await getContract("HexOneVault", "HexOneVault", network.name);
-    let hexOneStaking = await getContract(
-        "HexOneStaking",
-        "HexOneStaking",
-        network.name
-    );
-    let hexOneProtocol = await getContract(
-        "HexOneProtocol",
-        "HexOneProtocol",
-        network.name
-    );
+  let param = getDeploymentParam();
+  let hexOneToken = await getContract(
+    "HexOneToken",
+    "HexOneToken",
+    network.name
+  );
+  let hexOneVault = await getContract(
+    "HexOneVault",
+    "HexOneVault",
+    network.name
+  );
+  let hexOneStaking = await getContract(
+    "HexOneStaking",
+    "HexOneStaking",
+    network.name
+  );
+  let hexOneProtocol = await getContract(
+    "HexOneProtocol",
+    "HexOneProtocol",
+    network.name
+  );
 
-    await verify(hexOneProtocol.address, [
-        param.hexToken,
-        hexOneToken.address,
-        [hexOneVault.address],
-        hexOneStaking.address,
-        param.minStakingDuration,
-        param.maxStakingDuration,
-    ]);
+  await verify(hexOneProtocol.address, [
+    param.hexToken,
+    hexOneToken.address,
+    [hexOneVault.address],
+    hexOneStaking.address,
+    param.minStakingDuration,
+    param.maxStakingDuration,
+  ]);
 }
 
 async function addAllowedTokensToStaking() {
-    let mockUSDC = await getContract("HexOneMockToken", "MockUSDC", network.name);
-    let hexToken = await getContract("HexMockToken", "HexMockToken", network.name);
-    let staking = await getContract("HexOneStaking", "HexOneStaking", network.name);
+  let mockUSDC = await getContract("HexOneMockToken", "MockUSDC", network.name);
+  let hexToken = await getContract(
+    "HexMockToken",
+    "HexMockToken",
+    network.name
+  );
+  let staking = await getContract(
+    "HexOneStaking",
+    "HexOneStaking",
+    network.name
+  );
 
-    let tx = await staking.addAllowedTokens(
-        [mockUSDC.address, hexToken.address],
-        [
-            {
-                hexDistRate: 1500,
-                hexitDistRate: 3000,
-            },
-            {
-                hexDistRate: 1000,
-                hexitDistRate: 2000,
-            },
-        ]
-    );
-    await tx.wait();
+  let tx = await staking.addAllowedTokens(
+    [mockUSDC.address, hexToken.address],
+    [
+      {
+        hexDistRate: 1500,
+        hexitDistRate: 3000,
+      },
+      {
+        hexDistRate: 1000,
+        hexitDistRate: 2000,
+      },
+    ]
+  );
+  await tx.wait();
 }
 
 async function updateHexOnePriceFeedTest() {
-    let hexOnePriceFeedTest = await getContract("HexOnePriceFeedTest", "HexOnePriceFeedTest", network.name);
-    await upgradeProxy("HexOnePriceFeedTest", "HexOnePriceFeedTest", hexOnePriceFeedTest.address);
+  let hexOnePriceFeedTest = await getContract(
+    "HexOnePriceFeedTest",
+    "HexOnePriceFeedTest",
+    network.name
+  );
+  await upgradeProxy(
+    "HexOnePriceFeedTest",
+    "HexOnePriceFeedTest",
+    hexOnePriceFeedTest.address
+  );
 }
 
 async function getHexTokenFeeInfo() {
-    const hexOneProtocol = await getContract(
-        "HexOneProtocol",
-        "HexOneProtocol",
-        network.name
-    );
+  const hexOneProtocol = await getContract(
+    "HexOneProtocol",
+    "HexOneProtocol",
+    network.name
+  );
 
-    let param = getDeploymentParam();
-    let hexTokenAddr = param.hexToken;
-    console.log(await hexOneProtocol.fees(hexTokenAddr));
+  let param = getDeploymentParam();
+  let hexTokenAddr = param.hexToken;
+  console.log(await hexOneProtocol.fees(hexTokenAddr));
 }
 
 async function setHexTokenFeeInfo(feeRate) {
-    const hexOneProtocol = await getContract(
-        "HexOneProtocol",
-        "HexOneProtocol",
-        network.name
-    );
-    let param = getDeploymentParam();
-    let hexTokenAddr = param.hexToken;
-    console.log("set depositFeeRate");
-    let tx = await hexOneProtocol.setDepositFee(hexTokenAddr, feeRate);
-    await tx.wait();
-    console.log("enable DepositFee");
-    tx = await hexOneProtocol.setDepositFeeEnable(hexTokenAddr, true);
-    await tx.wait();
-    console.log("setHexTokenDepositFee successfully");
+  const hexOneProtocol = await getContract(
+    "HexOneProtocol",
+    "HexOneProtocol",
+    network.name
+  );
+  let param = getDeploymentParam();
+  let hexTokenAddr = param.hexToken;
+  console.log("set depositFeeRate");
+  let tx = await hexOneProtocol.setDepositFee(hexTokenAddr, feeRate);
+  await tx.wait();
+  console.log("enable DepositFee");
+  tx = await hexOneProtocol.setDepositFeeEnable(hexTokenAddr, true);
+  await tx.wait();
+  console.log("setHexTokenDepositFee successfully");
 }
 
 async function main() {
-    const [deployer] = await ethers.getSigners();
-    console.log("Deploying contracts with the account:", deployer.address);
+  const [deployer] = await ethers.getSigners();
+  console.log("Deploying contracts with the account:", deployer.address);
 
-    console.log("deploy protocol");
-    await deployProtocol();
+  console.log("deploy protocol");
+  await deployProtocol();
 
-    console.log("deploy Bootstrap");
-    await deployBootstrap();
+  console.log("deploy Bootstrap");
+  await deployBootstrap();
 
-    console.log("initialize contracts");
-    await initialize();
+  console.log("initialize contracts");
+  await initialize();
 
-    await initializeSacrifice();
+  await initializeSacrifice();
 
-    await getHexTokenFeeInfo();
-    await setHexTokenFeeInfo(50); // set feeRate as 5%
-    await getHexTokenFeeInfo();
+  await getHexTokenFeeInfo();
+  await setHexTokenFeeInfo(50); // set feeRate as 5%
+  await getHexTokenFeeInfo();
 
-    console.log("add liquidity");
-    await addHexOneLiquidity();
-
-    console.log("Deployed successfully");
+  console.log("Deployed successfully");
 }
 
 main()
-    .then(() => process.exit(0))
-    .catch((error) => {
-        console.error(error);
-        process.exit(1);
-    });
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

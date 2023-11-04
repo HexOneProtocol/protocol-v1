@@ -156,9 +156,66 @@ async function getLiquidableDeposits() {
   console.log(await hexOneVault.getLiquidableDeposits());
 }
 
+async function addHexOneLiquidity() {
+  const [deployer] = await ethers.getSigners();
+  let param = getDeploymentParam();
+  let hexOne = await getContract("HexOneToken", "HexOneToken", network.name);
+  let tx = await hexOne.mintToken(bigNum(10, 18), deployer.address);
+  await tx.wait();
+
+  let uniswapRouter = new ethers.Contract(
+    param.dexRouter,
+    pulsex_abi,
+    deployer
+  );
+
+  console.log("add Hex1/DAI liquidity");
+  let daiToken = new ethers.Contract(param.daiAddress, erc20_abi, deployer);
+  let daiAmountForLiquidity = BigNumber.from(bigNum(1, 16));
+  let hexOneForLiquidity = daiAmountForLiquidity;
+  console.log(daiAmountForLiquidity, hexOneForLiquidity);
+
+  tx = await hexOne.approve(uniswapRouter.address, BigInt(hexOneForLiquidity));
+  await tx.wait();
+
+  tx = await daiToken.approve(
+    uniswapRouter.address,
+    BigInt(daiAmountForLiquidity)
+  );
+  await tx.wait();
+  tx = await uniswapRouter.addLiquidity(
+    hexOne.address,
+    daiToken.address,
+    BigInt(hexOneForLiquidity),
+    BigInt(daiAmountForLiquidity),
+    0,
+    0,
+    deployer.address,
+    BigInt(await getCurrentTimestamp()) + BigInt(100)
+  );
+  await tx.wait();
+
+  const hex1dai = await factory.getPair(hexOne.address, param.daiAddress);
+  hexOneBootstrap = await getContract(
+    "HexOneBootstrap",
+    "HexOneBootstrap",
+    network.name
+  );
+  const amountHex1 = hexOne.balanceOf(hexOneBootstrap.address);
+  const amountDAI = daiToken.balanceOf(hexOneBootstrap.address);
+  console.log(hex1dai, amountHex1, amountDAI);
+  hexOne.approve(hex1dai, amountHex1);
+  daiToken.approve(hex1dai, amountDAI);
+  hexOne.transfer(hexOneBootstrap, hex1dai, amountHex1);
+  daiToken.transfer(hexOneBootstrap, hex1dai, amountDAI);
+}
+
 async function main() {
   const [deployer] = await ethers.getSigners();
   console.log("Action contract with the account: ", deployer.address);
+
+  console.log("Add Hex1/DAI Liquidity");
+  await addHexOneLiquidity();
 
   await setHexOneEscrowAddress();
 

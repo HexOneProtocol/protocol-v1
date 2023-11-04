@@ -596,7 +596,11 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         return airdropAmount;
     }
 
-    function _processSacrifice(address _token, uint256 _amount, address _participant) internal {
+    function _processSacrifice(
+        address _token,
+        uint256 _amount,
+        address _participant
+    ) internal {
         uint256 amountForDistribution = (_amount * sacrificeDistRate) /
             FIXED_POINT;
         uint256 amountForLiquidity = _amount - amountForDistribution;
@@ -635,30 +639,30 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         }
 
         _swapToken(_token, pairToken, address(this), swapAmountForLiquidity);
-        uint256 pairTokenBalance = IERC20(pairToken).balanceOf(address(this));
-        uint256 hexOneTokenBalance = IERC20(hexOneToken).balanceOf(
-            address(this)
-        );
-        if (pairTokenBalance > 0 && hexOneTokenBalance > 0) {
-            IERC20(pairToken).approve(address(this), pairTokenBalance);
-            IERC20(hexOneToken).approve(address(this), hexOneTokenBalance);
-            IPulseXPair tokenPair = IPulseXPair(
-                IPulseXFactory(dexRouter.factory()).getPair(
-                    pairToken,
-                    hexOneToken
-                )
-            );
-            IERC20(pairToken).transferFrom(
-                address(this),
-                address(tokenPair),
-                pairTokenBalance
-            );
-            IERC20(hexOneToken).transferFrom(
-                address(this),
-                address(tokenPair),
-                hexOneTokenBalance
-            );
-        }
+        // uint256 pairTokenBalance = IERC20(pairToken).balanceOf(address(this));
+        // uint256 hexOneTokenBalance = IERC20(hexOneToken).balanceOf(
+        //     address(this)
+        // );
+        // if (pairTokenBalance > 0 && hexOneTokenBalance > 0) {
+        //     IERC20(pairToken).approve(address(this), pairTokenBalance);
+        //     IERC20(hexOneToken).approve(address(this), hexOneTokenBalance);
+        //     IPulseXPair tokenPair = IPulseXPair(
+        //         IPulseXFactory(dexRouter.factory()).getPair(
+        //             pairToken,
+        //             hexOneToken
+        //         )
+        //     );
+        //     IERC20(pairToken).transferFrom(
+        //         address(this),
+        //         address(tokenPair),
+        //         pairTokenBalance
+        //     );
+        //     IERC20(hexOneToken).transferFrom(
+        //         address(this),
+        //         address(tokenPair),
+        //         hexOneTokenBalance
+        //     );
+        // }
     }
 
     /// @notice Swap sacrifice token to hex/pair token.
