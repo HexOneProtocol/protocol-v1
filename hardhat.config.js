@@ -19,7 +19,7 @@ module.exports = {
                 // url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
                 // blockNumber: 16589147,
                 url: "https://rpc.pulsechain.com",
-                blockNumber: 17334026,
+                blockNumber: 18763508,
                 // url: `https://goerli.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
                 // blockNumber: 8611771
             },
