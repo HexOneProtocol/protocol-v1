@@ -130,12 +130,12 @@ contract HexOneStaking is
             require(!allowedTokens.contains(allowedToken), "already added");
             require(
                 distTokenWeight.hexDistRate == 0 ||
-                    distTokenWeight.hexDistRate < FIXED_POINT,
+                    distTokenWeight.hexDistRate >= FIXED_POINT,
                 "invalid hexDistRate"
             );
             require(
                 distTokenWeight.hexitDistRate == 0 ||
-                    distTokenWeight.hexitDistRate < FIXED_POINT,
+                    distTokenWeight.hexitDistRate >= FIXED_POINT,
                 "invalid hexitDistRate"
             );
 
@@ -231,20 +231,7 @@ contract HexOneStaking is
         require(allowedTokens.contains(_token), "not allowed token");
         require(info.stakedTime > 0, "no staking pool");
 
-        // uint256 hexAmount = (info.hexShareAmount * hexRewardsRatePerShare) /
-        //     totalHexShareAmount;
-        uint256 hexAmount = (info.hexShareAmount * hexRewardsRatePerShare);
-        // uint256 hexitAmount = (info.hexitShareAmount *
-        //     hexitRewardsRatePerShare) / totalHexitShareAmount;
-        uint256 hexitAmount = (info.hexitShareAmount *
-            hexitRewardsRatePerShare);
-        hexAmount = hexAmount / 10 ** 10;
-        hexAmount = hexAmount > info.claimedHexAmount
-            ? hexAmount - info.claimedHexAmount
-            : 0;
-        hexitAmount = hexitAmount > info.claimedHexitAmount
-            ? hexitAmount - info.claimedHexitAmount
-            : 0;
+        (uint256 hexAmount, uint256 hexitAmount) = _calcRewardsAmount(sender, _token);
 
         require(hexAmount > 0 || hexitAmount > 0, "no rewards");
         info.claimedHexAmount += hexAmount;
@@ -401,7 +388,7 @@ contract HexOneStaking is
             //     (info.hexShareAmount * hexRewardsRatePerShare) /
             //     totalHexShareAmount;
             hexAmount = (info.hexShareAmount * hexRewardsRatePerShare);
-            hexAmount = hexAmount / 10 ** 10;
+            hexAmount = _convertToToken(hexToken, hexAmount / 10 ** 18);
             hexAmount = hexAmount > info.claimedHexAmount
                 ? hexAmount - info.claimedHexAmount
                 : 0;
@@ -412,6 +399,7 @@ contract HexOneStaking is
             //     (info.hexitShareAmount * hexitRewardsRatePerShare) /
             //     totalHexitShareAmount;
             hexitAmount = info.hexitShareAmount * hexitRewardsRatePerShare;
+            hexitAmount = _convertToToken(hexitToken, hexitAmount / 10 ** 18);
             hexitAmount = hexitAmount > info.claimedHexitAmount
                 ? hexitAmount - info.claimedHexitAmount
                 : 0;
@@ -497,6 +485,18 @@ contract HexOneStaking is
             return _amount / (10 ** (tokenDecimals - 18));
         } else {
             return _amount * (10 ** (18 - tokenDecimals));
+        }
+    }
+
+    function _convertToToken(
+        address _token,
+        uint256 _shareAmount
+    ) internal view returns (uint256) {
+        uint8 tokenDecimals = TokenUtils.expectDecimals(_token);
+        if (tokenDecimals >= 18) {
+            return _shareAmount * (10 ** (tokenDecimals - 18));
+        } else {
+            return _shareAmount / (10 ** (18 - tokenDecimals));
         }
     }
 
