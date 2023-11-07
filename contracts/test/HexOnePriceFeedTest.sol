@@ -64,7 +64,9 @@ contract HexOnePriceFeedTest is OwnableUpgradeable, IHexOnePriceFeed {
         //     /// native token
         //     _baseToken = dexRouter.WPLS();
         // }
-        if (_baseToken == pairToken) return _amount;
+        if (_baseToken == pairToken) {
+            return _convertToUSD(_baseToken, _amount);
+        }
         IPulseXPair tokenPair = IPulseXPair(
             IPulseXFactory(dexRouter.factory()).getPair(pairToken, _baseToken)
         );
@@ -84,14 +86,7 @@ contract HexOnePriceFeedTest is OwnableUpgradeable, IHexOnePriceFeed {
         }
         uint256 pairTokenAmount = (pairTokenReserve * _amount) /
             baseTokenReserve;
-        uint8 pairTokenDecimals = TokenUtils.expectDecimals(pairToken);
-
-        if (pairTokenDecimals > 18) {
-            return pairTokenAmount / 10 ** (pairTokenDecimals - 18);
-        } else {
-            return pairTokenAmount * 10 ** (18 - pairTokenDecimals);
-        }
-        // return _getBaseTokenPriceFromPairToken(_baseToken, _amount);
+        return _convertToUSD(pairToken, pairTokenAmount);
     }
 
     /// @inheritdoc IHexOnePriceFeed
@@ -99,6 +94,18 @@ contract HexOnePriceFeedTest is OwnableUpgradeable, IHexOnePriceFeed {
         uint256 _amount
     ) public view override returns (uint256) {
         return _getBaseTokenPriceFromPairToken(hexToken, _amount);
+    }
+
+    function _convertToUSD(
+        address _token,
+        uint256 _amount
+    ) internal view returns (uint256) {
+        uint8 tokenDecimals = TokenUtils.expectDecimals(_token);
+        if (tokenDecimals > 18) {
+            return _amount / 10 ** (tokenDecimals - 18);
+        } else {
+            return _amount * 10 ** (18 - tokenDecimals);
+        }
     }
 
     function _getBaseTokenPriceFromPairToken(

@@ -7,6 +7,12 @@ interface IHexOneProtocol {
         bool enabled;
     }
 
+    /// @notice Get Max duration days for deposit.
+    function getMaxDuration() external view returns (uint16);
+
+    /// @notice Get Min duration days for deposit.
+    function getMinDuration() external view returns (uint16);
+
     /// @notice Add/Remove vaults.
     /// @dev Only owner can call this function.
     /// @param _vaults The address of vaults.
@@ -25,12 +31,12 @@ interface IHexOneProtocol {
     /// @notice Set Min stake duration.
     /// @dev Only owner can call this function.
     /// @param _minDuration The min stake duration days.
-    function setMinDuration(uint256 _minDuration) external;
+    function setMinDuration(uint16 _minDuration) external;
 
     /// @notice Set Max stake duration.
     /// @dev Only owner can call this function.
     /// @param _maxDuration The max stake duration days.
-    function setMaxDuration(uint256 _maxDuration) external;
+    function setMaxDuration(uint16 _maxDuration) external;
 
     /// @notice Set deposit fee by token.
     /// @dev Only owner can call this function.

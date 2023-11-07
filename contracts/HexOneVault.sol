@@ -74,7 +74,7 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
         hexToken = _hexToken;
         hexOnePriceFeed = _hexOnePriceFeed;
 
-        GRACE_DURATION = 1;
+        GRACE_DURATION = 7;
         FIXED_POINT = 1000;
         FIXED_POINT_PAYOUT = 10 ** 15;
 

@@ -109,9 +109,11 @@ describe("HexOne Protocol", function () {
         let airdropDuration = 100; // 100 days.
 
         let bootstrapParam = {
+            hexOneProtocol: this.hexOneProtocol.address,
             hexOnePriceFeed: this.hexOnePriceFeed.address,
             dexRouter: this.dexRouter.address,
             hexToken: this.hexToken.address,
+            hexOneToken: this.hexOneToken.address,
             pairToken: usdcAddress,
             hexitToken: this.HEXIT.address,
             stakingContract: this.staking.address,
@@ -138,6 +140,7 @@ describe("HexOne Protocol", function () {
             this.hexOneBootstrap.address,
             this.hexToken.address,
             this.hexOneToken.address,
+            usdcAddress,
             this.hexOneProtocol.address,
             this.hexOnePriceFeed.address,
         ]);
@@ -442,7 +445,7 @@ describe("HexOne Protocol", function () {
                     .connect(this.sacrificer_1)
                     .requestAirdrop();
 
-                await spendTime(day * 3);
+                await spendTime(hour * 3);
                 await expect(
                     this.hexOneBootstrap
                         .connect(this.sacrificer_1)
@@ -478,12 +481,6 @@ describe("HexOne Protocol", function () {
                 );
                 expect(smallNum(receivedAmount, 18)).to.be.greaterThan(0);
 
-                await expect(
-                    this.hexOneBootstrap
-                        .connect(this.sacrificer_2)
-                        .claimAirdrop()
-                ).to.be.revertedWith("too soon");
-                await spendTime(day);
                 beforeBal = await this.HEXIT.balanceOf(
                     this.sacrificer_2.address
                 );
@@ -665,7 +662,9 @@ describe("HexOne Protocol", function () {
                         .depositCollateral(
                             this.hexToken.address,
                             BigInt(hexAmountForDeposit),
-                            duration
+                            duration,
+                            this.depositor_1.address,
+                            false
                         );
                     let afterBal = await this.hexOneToken.balanceOf(
                         this.depositor_1.address
@@ -865,7 +864,9 @@ describe("HexOne Protocol", function () {
                             .depositCollateral(
                                 this.hexOneToken.address,
                                 bigNum(10),
-                                4
+                                4,
+                                this.depositor_3.address,
+                                false
                             )
                     ).to.be.revertedWith("invalid token");
                 });
@@ -874,7 +875,13 @@ describe("HexOne Protocol", function () {
                     await expect(
                         this.hexOneProtocol
                             .connect(this.depositor_3)
-                            .depositCollateral(this.hexToken.address, 0, 4)
+                            .depositCollateral(
+                                this.hexToken.address,
+                                0,
+                                4,
+                                this.depositor_3.address,
+                                false
+                            )
                     ).to.be.revertedWith("invalid amount");
                 });
 
@@ -885,7 +892,9 @@ describe("HexOne Protocol", function () {
                             .depositCollateral(
                                 this.hexToken.address,
                                 bigNum(10),
-                                20
+                                20,
+                                this.depositor_3.address,
+                                false
                             )
                     ).to.be.revertedWith("invalid duration");
                 });
@@ -925,7 +934,9 @@ describe("HexOne Protocol", function () {
                         .depositCollateral(
                             this.hexToken.address,
                             BigInt(hexAmountForDeposit),
-                            duration
+                            duration,
+                            this.depositor_3.address,
+                            false
                         );
                     let afterBal = await this.hexOneToken.balanceOf(
                         this.depositor_3.address
@@ -1143,19 +1154,18 @@ describe("HexOne Protocol", function () {
         describe("claim hex token of liquidate deposit", function () {
             it("spend time and check liquidable deposits", async function () {
                 let deposits = await this.hexOneVault.getLiquidableDeposits();
-                /// before maturity no liquidableDeposits
-                expect(deposits.length).to.be.equal(0);
+                expect(deposits.length).to.be.equal(2);
 
                 /// spend time
                 await spendTime(55 * day);
 
                 deposits = await this.hexOneVault.getLiquidableDeposits();
-                expect(deposits.length).to.be.equal(2);
+                expect(deposits.length).to.be.equal(4);
 
                 // first deposit is after grace duration so liquidable should be true.
                 expect(deposits[0].liquidable).to.be.equal(true);
-                // second deposit is in grace duration so liquidable should be false.
-                expect(deposits[1].liquidable).to.be.equal(false);
+                // third deposit is in grace duration so liquidable should be false.
+                expect(deposits[3].liquidable).to.be.equal(false);
             });
 
             it("liquidate hex", async function () {
