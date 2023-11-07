@@ -8,7 +8,7 @@ import "./interfaces/IHexOneToken.sol";
 contract HexOneToken is ERC20, Ownable, IHexOneToken {
     address public admin;
     address public deployer;
-    address public constant deadWallet =
+    address public constant DEAD_WALLET =
         0x000000000000000000000000000000000000dEaD;
 
     modifier onlyHexOneProtocol() {
@@ -33,18 +33,12 @@ contract HexOneToken is ERC20, Ownable, IHexOneToken {
         deployer = _deployer;
     }
 
-    function decimals() public view virtual override returns (uint8) {
-        return 18;
-    }
-
     /// @inheritdoc IHexOneToken
     function mintToken(
         uint256 _amount,
         address _recipient
     ) external override onlyHexOneProtocol {
-        require(_recipient != address(0), "zero recipient address");
         require(_amount > 0, "zero mint token amount");
-
         _mint(_recipient, _amount);
     }
 
@@ -53,7 +47,6 @@ contract HexOneToken is ERC20, Ownable, IHexOneToken {
         uint256 _amount,
         address _account
     ) external override onlyHexOneProtocol {
-        require(_account != address(0), "zero account address");
         require(_amount > 0, "zero burn token amount");
         _burn(_account, _amount);
     }
@@ -63,14 +56,8 @@ contract HexOneToken is ERC20, Ownable, IHexOneToken {
         address to,
         uint256 amount
     ) internal virtual override {
-        require(
-            from != address(0) && from != deadWallet,
-            "Transfer from invalid address"
-        );
-        require(
-            to != address(0) && to != deadWallet,
-            "Transfer to invalid address"
-        );
+        require(from != DEAD_WALLET, "Invalid transfer from dead address");
+        require(to != DEAD_WALLET, "Invalid transfer to dead address");
         super._transfer(from, to, amount);
     }
 }
