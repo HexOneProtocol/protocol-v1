@@ -76,6 +76,7 @@ contract HexOneStaking is
         hexitToken = _hexitToken;
 
         __Ownable_init();
+        __ReentrancyGuard_init();
     }
 
     function setBaseData(
