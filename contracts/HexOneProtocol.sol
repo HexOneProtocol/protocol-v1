@@ -22,10 +22,10 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     EnumerableSet.AddressSet private allowedTokens;
 
     /// @notice Minimum stake duration. (days)
-    uint256 public MIN_DURATION;
+    uint16 public MIN_DURATION;
 
     /// @notice Maximum stake duration. (days)
-    uint256 public MAX_DURATION;
+    uint16 public MAX_DURATION;
 
     /// @notice The address of hex token.
     address public immutable hexToken;
@@ -60,8 +60,8 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         address _hexOneToken,
         address[] memory _vaults,
         address _stakingMaster,
-        uint256 _minDuration,
-        uint256 _maxDuration
+        uint16 _minDuration,
+        uint16 _maxDuration
     ) {
         require(_hexOneToken != address(0), "zero $HEX1 token address");
         require(_hexToken != address(0), "zero hex token address");
@@ -83,7 +83,17 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     }
 
     /// @inheritdoc IHexOneProtocol
-    function setMinDuration(uint256 _minDuration) external override onlyOwner {
+    function getMaxDuration() external view override returns (uint16) {
+        return MAX_DURATION;
+    }
+
+    /// @inheritdoc IHexOneProtocol
+    function getMinDuration() external view override returns (uint16) {
+        return MIN_DURATION;
+    }
+
+    /// @inheritdoc IHexOneProtocol
+    function setMinDuration(uint16 _minDuration) external override onlyOwner {
         require(
             _minDuration < MAX_DURATION,
             "minDuration is bigger than maxDuration"
@@ -92,7 +102,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
     }
 
     /// @inheritdoc IHexOneProtocol
-    function setMaxDuration(uint256 _maxDuration) external override onlyOwner {
+    function setMaxDuration(uint16 _maxDuration) external override onlyOwner {
         require(
             _maxDuration > MIN_DURATION,
             "maxDuration is less than minDuration"
@@ -227,7 +237,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         require(sender != address(0), "zero caller address");
         require(allowedTokens.contains(_token), "not allowed token");
 
-        bool restake = true;
+        bool restake = (sender == hexOneEscrow);
         (
             uint256 burnAmount,
             uint256 mintAmount,
