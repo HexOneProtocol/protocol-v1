@@ -140,12 +140,12 @@ contract HexOneStaking is
             DistTokenWeight memory distTokenWeight = _distTokenWeights[i];
             require(!allowedTokens.contains(allowedToken), "already added");
             require(
-                distTokenWeight.hexDistRate == 0 ||
+                distTokenWeight.hexDistRate != 0 &&
                     distTokenWeight.hexDistRate < FIXED_POINT,
                 "invalid hexDistRate"
             );
             require(
-                distTokenWeight.hexitDistRate == 0 ||
+                distTokenWeight.hexitDistRate != 0 &&
                     distTokenWeight.hexitDistRate < FIXED_POINT,
                 "invalid hexitDistRate"
             );
