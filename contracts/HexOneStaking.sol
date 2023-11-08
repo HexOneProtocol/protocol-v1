@@ -51,6 +51,11 @@ contract HexOneStaking is
         _;
     }
 
+    modifier onlyHexOneBootstrap() {
+        require(msg.sender == hexOneBootstrap, "only HexOneBootstrap");
+        _;
+    }
+
     modifier whenOnlyStakingEnable() {
         require(stakingEnable, "staking is not enabled");
         _;
@@ -104,22 +109,22 @@ contract HexOneStaking is
         );
     }
 
-    function purchaseHex(uint256 _amount) external override {
-        address sender = msg.sender;
-        require(sender == hexOneProtocol, "no permission");
+    function purchaseHex(uint256 _amount) external onlyHexOneProtocol {
         require(_amount > 0, "invalid purchase amount");
-        IERC20(hexToken).safeTransferFrom(sender, address(this), _amount);
+
         rewardsPool.hexPool += _amount;
         _updateRewardsPerShareRate();
+
+        IERC20(hexToken).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
-    function purchaseHexit(uint256 _amount) external override {
-        address sender = msg.sender;
-        require(sender == hexOneBootstrap, "no permission");
+    function purchaseHexit(uint256 _amount) external onlyHexOneBootstrap {
         require(_amount > 0, "invalid purchase amount");
-        IERC20(hexitToken).safeTransferFrom(sender, address(this), _amount);
+
         rewardsPool.hexitPool += _amount;
         _updateRewardsPerShareRate();
+
+        IERC20(hexitToken).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
     function addAllowedTokens(
