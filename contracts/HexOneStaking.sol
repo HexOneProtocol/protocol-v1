@@ -43,6 +43,7 @@ contract HexOneStaking is
 
     uint16 public constant FIXED_POINT = 1000;
     uint16 public hexitDistRate;
+    uint16 public hexDistRate;
     bool public stakingEnable;
 
     modifier onlyHexOneProtocol() {
@@ -63,14 +64,18 @@ contract HexOneStaking is
         address _hexToken,
         address _hexitToken,
         address _hexOnePriceFeed,
+        uint16 _hexDistRate,
         uint16 _hexitDistRate
     ) public initializer {
         require(_hexToken != address(0), "zero hex token address");
         require(_hexitToken != address(0), "zero hexit token address");
         require(_hexOnePriceFeed != address(0), "zero priceFeed address");
+        require(_hexDistRate <= FIXED_POINT, "invalid hexit dist rate");
         require(_hexitDistRate <= FIXED_POINT, "invalid hexit dist rate");
 
+
         hexOnePriceFeed = _hexOnePriceFeed;
+        hexDistRate = _hexDistRate;
         hexitDistRate = _hexitDistRate;
         hexToken = _hexToken;
         hexitToken = _hexitToken;
@@ -424,27 +429,25 @@ contract HexOneStaking is
             return;
         }
 
-        uint256 curHexPool = rewardsPool.hexPool;
-        uint256 curHexitPool = rewardsPool.hexitPool;
-        curHexitPool -= rewardsPool.distributedHexit;
+        // calculate the current amount of HEX and HEXIT in the pool
+        uint256 curHexPool = rewardsPool.hexPool - rewardsPool.distributedHex;
+        uint256 curHexitPool = rewardsPool.hexitPool - rewardsPool.distributedHexit;
 
-        // uint256 hexAmountForDist = curHexPool - rewardsPool.distributedHex;
-        uint256 hexAmountForDist = (curHexPool * hexitDistRate) / FIXED_POINT;
-        uint256 hexitAmountForDist = (curHexitPool * hexitDistRate) /
-            FIXED_POINT;
+        // calculate the amount of HEX and HEXIT to distributed based on the distribution rate
+        uint256 hexAmountForDist = (curHexPool * hexDistRate) / FIXED_POINT;
+        uint256 hexitAmountForDist = (curHexitPool * hexitDistRate) / FIXED_POINT;
 
+        // update the rate of HEX rewards per share, this is represented as 18 decimals.
         if (totalHexShareAmount > 0) {
-            hexRewardsRatePerShare +=
-                (hexAmountForDist * 10 ** 28) /
-                totalHexShareAmount;
+            hexRewardsRatePerShare += (hexAmountForDist * 10 ** 28) / totalHexShareAmount;
         }
 
+        // update the rate of HEXIT rewards per share, this is represented as 18 decimals.
         if (totalHexitShareAmount > 0) {
-            hexitRewardsRatePerShare +=
-                (hexitAmountForDist * 10 ** 18) /
-                totalHexitShareAmount;
+            hexitRewardsRatePerShare += (hexitAmountForDist * 10 ** 18) / totalHexitShareAmount;
         }
 
+        // update the total distributed HEX and HEXIT
         rewardsPool.distributedHex += hexAmountForDist;
         rewardsPool.distributedHexit += hexitAmountForDist;
     }
