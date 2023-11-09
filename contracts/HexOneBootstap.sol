@@ -87,7 +87,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     uint256 public sacrificeEndTime;
     uint256 public airdropStartTime;
     uint256 public airdropEndTime;
-    uint256 public airdropHEXITAmount;
+    uint256 public HEXITAmountForAirdrop;
     uint256 public override HEXITAmountForSacrifice;
     uint256 public sacrificeId;
     uint256 public airdropId;
@@ -143,14 +143,14 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         sacrificeStartTime = _param.sacrificeStartTime;
         sacrificeEndTime =
             _param.sacrificeStartTime +
-            (_param.sacrificeDuration * 1 hours) /
-            3;
+            _param.sacrificeDuration *
+            1 days;
 
         airdropStartTime = _param.airdropStartTime;
         airdropEndTime =
             _param.airdropStartTime +
-            (_param.airdropDuration * 1 hours) /
-            3;
+            _param.airdropDuration *
+            1 days;
 
         dexRouter = IPulseXRouter02(_param.dexRouter);
 
@@ -174,7 +174,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         sacrificeId = 1;
         airdropId = 1;
 
-        _distributeHEXITAmount();
+        _splitHEXITAmount();
 
         __Ownable_init();
     }
@@ -247,12 +247,12 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         emit TokenWeightSet(_tokens, _weights);
     }
 
-    function getAmountForSacrifice(
+    function getAmountForSacrificeByDay(
         uint256 _dayIndex
     ) public view override returns (uint256) {
         uint256 todayIndex = getCurrentSacrificeDay();
         require(_dayIndex > 0 && _dayIndex <= todayIndex, "invalid day index");
-        return _calcSupplyAmountForSacrifice(_dayIndex - 1);
+        return _calcSupplyAmountForSacrificeByDay(_dayIndex - 1);
     }
 
     function getCurrentSacrificeDay() public view override returns (uint256) {
@@ -263,7 +263,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             ? sacrificeEndTime
             : block.timestamp;
         uint256 elapsedTime = endTime - sacrificeStartTime;
-        return elapsedTime / (1 hours / 3) + 1;
+        return elapsedTime / 1 days + 1;
     }
 
     function sacrificeToken(
@@ -271,7 +271,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         uint256 _amount
     ) external whenSacrificeDuration onlyAllowedToken(_token) {
         address sender = msg.sender;
-        // CheckLibrary.checkEOA();
+        CheckLibrary.checkEOA();
         require(sender != address(0), "zero caller address");
         require(_token != address(0), "zero token address");
         require(_amount > 0, "zero amount");
@@ -298,8 +298,12 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     function claimRewardsForSacrifice(uint256 _sacrificeId) external override {
         address sender = msg.sender;
         SacrificeInfo storage info = sacrificeInfos[_sacrificeId];
-        uint256 curDay = getCurrentSacrificeDay();
-        curDay = curDay == 0 ? 0 : curDay - 1;
+        uint256 curDay;
+        require(
+            (curDay = getCurrentSacrificeDay()) > 0,
+            "sacrifice not started"
+        );
+        curDay = curDay - 1;
         require(
             userSacrificedIds[sender].contains(_sacrificeId),
             "invalid sacrificeId"
@@ -309,8 +313,12 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
 
         info.claimed = true;
 
-        userRewardsForSacrifice[sender] += info.totalHexitAmount;
-        IHEXIT(hexitToken).mintToken(info.totalHexitAmount, sender);
+        uint256 totalWeight = totalSacrificeWeight[info.day];
+        uint256 supplyAmount = info.supplyAmount;
+        uint256 userWeight = info.sacrificedWeight;
+        uint256 rewardsHexitAmount = (supplyAmount * userWeight) / totalWeight;
+        userRewardsForSacrifice[sender] += rewardsHexitAmount;
+        IHEXIT(hexitToken).mintToken(rewardsHexitAmount, sender);
 
         emit RewardsDistributed();
     }
@@ -323,7 +331,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             ? airdropEndTime
             : block.timestamp;
         uint256 elapsedTime = endTime - airdropStartTime;
-        return elapsedTime / 1 hours + 1;
+        return elapsedTime / 1 days;
     }
 
     function getAirdropSupplyAmount(
@@ -389,7 +397,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     function requestAirdrop() external override whenAirdropDuration {
         address sender = msg.sender;
         RequestAirdrop storage userInfo = requestAirdropInfo[sender];
-        // CheckLibrary.checkEOA();
+        CheckLibrary.checkEOA();
         require(sender != address(0), "zero caller address");
         require(userInfo.airdropId == 0, "already requested");
 
@@ -419,6 +427,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         require(sender != address(0), "zero caller address");
         require(userInfo.airdropId > 0, "not requested");
         require(!userInfo.claimed, "already claimed");
+        require(dayIndex < curDay, "in airdrop duration");
 
         uint256 rewardsAmount = _calcUserRewardsForAirdrop(sender, dayIndex);
         if (rewardsAmount > 0) {
@@ -460,7 +469,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     function generateAdditionalTokens() external onlyOwner {
         require(block.timestamp > airdropEndTime, "before airdrop ends");
         require(!hexitPurchased, "already purchased");
-        uint256 totalAmount = airdropHEXITAmount + HEXITAmountForSacrifice;
+        uint256 totalAmount = HEXITAmountForAirdrop + HEXITAmountForSacrifice;
         uint256 amountForStaking = (totalAmount * additionalRateForStaking) /
             FIXED_POINT;
         uint256 amountForTeam = (totalAmount * additionalRateForTeam) /
@@ -497,9 +506,8 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         whenSacrificeDuration
         onlyAllowedToken(address(0))
     {
-        address sender = msg.sender;
-        // CheckLibrary.checkEOA();
-        _updateSacrificeInfo(sender, address(0), msg.value);
+        CheckLibrary.checkEOA();
+        _updateSacrificeInfo(msg.sender, address(0), msg.value);
     }
 
     function _updateSacrificeInfo(
@@ -527,8 +535,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         if (!sacrificeParticipants.contains(_participant)) {
             sacrificeParticipants.add(_participant);
         }
-        uint256 sacrificeDayAmount = getAmountForSacrifice(dayIndex + 1);
-        uint256 totalHexit = (sacrificeWeight * sacrificeDayAmount) / 1e18;
+        uint256 sacrificeDayAmount = getAmountForSacrificeByDay(dayIndex + 1);
 
         sacrificeInfos[sacrificeId] = SacrificeInfo(
             sacrificeId,
@@ -537,18 +544,12 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             _amount,
             sacrificeWeight,
             usdValue,
-            totalHexit,
             _token,
             IToken(_token).symbol(),
             weight,
             false
         );
         userSacrificedIds[_participant].add(sacrificeId++);
-
-        airdropHEXITAmount += (totalHexit * rateForAirdrop) / FIXED_POINT;
-        HEXITAmountForSacrifice +=
-            (totalHexit * rateForSacrifice) /
-            FIXED_POINT;
 
         _processSacrifice(_token, _amount, _participant);
     }
@@ -571,7 +572,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         return IHexOnePriceFeed(hexOnePriceFeed).getHexTokenPrice(hexAmount);
     }
 
-    function _calcSupplyAmountForSacrifice(
+    function _calcSupplyAmountForSacrificeByDay(
         uint256 _dayIndex
     ) internal view returns (uint256) {
         uint256 supplyAmount = sacrificeInitialSupply;
@@ -587,7 +588,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     function _calcAmountForAirdrop(
         uint256 _dayIndex
     ) internal view returns (uint256) {
-        uint256 airdropAmount = airdropHEXITAmount;
+        uint256 airdropAmount = HEXITAmountForAirdrop;
         for (uint256 i = 0; i <= _dayIndex; i++) {
             airdropAmount =
                 (airdropAmount * distRateForDailyAirdrop) /
@@ -610,19 +611,17 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
 
         /// liquidity
         uint256 swapAmountForLiquidity = amountForLiquidity / 2;
-        _swapToken(_token, hexToken, address(this), swapAmountForLiquidity);
+        uint256 swappedHexAmount = _swapToken(
+            _token,
+            hexToken,
+            address(this),
+            swapAmountForLiquidity
+        );
         if (_token != hexToken) {
-            uint256 realPrice = IHexOnePriceFeed(hexOnePriceFeed)
-                .getBaseTokenPrice(_token, swapAmountForLiquidity);
-            uint256 hexPrice = IHexOnePriceFeed(hexOnePriceFeed)
-                .getBaseTokenPrice(hexToken, 10 ** 8);
-            uint256 realAmount = (realPrice * 10 ** 8) / hexPrice;
-            uint256 total = IERC20(hexToken).balanceOf(address(this));
-            if (total < realAmount) realAmount = total;
-            IERC20(hexToken).approve(hexOneProtocol, realAmount);
+            IERC20(hexToken).approve(hexOneProtocol, swappedHexAmount);
             IHexOneProtocol(hexOneProtocol).depositCollateral(
                 hexToken,
-                realAmount,
+                swappedHexAmount,
                 2,
                 _participant,
                 false
@@ -639,30 +638,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         }
 
         _swapToken(_token, pairToken, address(this), swapAmountForLiquidity);
-        // uint256 pairTokenBalance = IERC20(pairToken).balanceOf(address(this));
-        // uint256 hexOneTokenBalance = IERC20(hexOneToken).balanceOf(
-        //     address(this)
-        // );
-        // if (pairTokenBalance > 0 && hexOneTokenBalance > 0) {
-        //     IERC20(pairToken).approve(address(this), pairTokenBalance);
-        //     IERC20(hexOneToken).approve(address(this), hexOneTokenBalance);
-        //     IPulseXPair tokenPair = IPulseXPair(
-        //         IPulseXFactory(dexRouter.factory()).getPair(
-        //             pairToken,
-        //             hexOneToken
-        //         )
-        //     );
-        //     IERC20(pairToken).transferFrom(
-        //         address(this),
-        //         address(tokenPair),
-        //         pairTokenBalance
-        //     );
-        //     IERC20(hexOneToken).transferFrom(
-        //         address(this),
-        //         address(tokenPair),
-        //         hexOneTokenBalance
-        //     );
-        // }
     }
 
     /// @notice Swap sacrifice token to hex/pair token.
@@ -675,8 +650,8 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         address _targetToken,
         address _recipient,
         uint256 _amount
-    ) internal {
-        if (_amount == 0) return;
+    ) internal returns (uint256) {
+        if (_amount == 0) return 0;
 
         address[] memory path = new address[](2);
         address WETH = dexRouter.WPLS();
@@ -687,6 +662,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             uint256 minAmountOut = (amounts[1] * sliceRate) / FIXED_POINT;
             minAmountOut = amounts[1] - minAmountOut;
 
+            uint256 beforeBal = IERC20(_targetToken).balanceOf(_recipient);
             if (_token == address(0)) {
                 if (_targetToken == WETH) {
                     IWETH9(WETH).deposit{value: _amount}();
@@ -707,8 +683,11 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
                     block.timestamp
                 );
             }
+            uint256 afterBal = IERC20(_targetToken).balanceOf(_recipient);
+            return afterBal - beforeBal;
         } else {
             IERC20(_targetToken).safeTransfer(_recipient, _amount);
+            return _amount;
         }
     }
 
@@ -723,16 +702,16 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         return (supplyAmount * userInfo.totalUSD) / totalAmount;
     }
 
-    function _distributeHEXITAmount() internal {
+    function _splitHEXITAmount() internal {
         uint256 sacrificeDuration = sacrificeEndTime - sacrificeStartTime;
-        sacrificeDuration = (sacrificeDuration * 3) / 1 hours;
+        sacrificeDuration = sacrificeDuration / 1 days;
         for (uint256 i = 0; i < sacrificeDuration; i++) {
-            uint256 supplyAmount = _calcSupplyAmountForSacrifice(i);
-            uint256 sacrificeRewardsAmount = (supplyAmount * rateForSacrifice) /
+            uint256 supplyAmount = _calcSupplyAmountForSacrificeByDay(i);
+            uint256 amountForSacrifice = (supplyAmount * rateForSacrifice) /
                 FIXED_POINT;
-            uint256 airdropAmount = supplyAmount - sacrificeRewardsAmount;
-            airdropHEXITAmount += airdropAmount;
-            HEXITAmountForSacrifice += sacrificeRewardsAmount;
+            uint256 amountForAirdrop = supplyAmount - amountForSacrifice;
+            HEXITAmountForAirdrop += amountForAirdrop;
+            HEXITAmountForSacrifice += amountForSacrifice;
         }
     }
 
