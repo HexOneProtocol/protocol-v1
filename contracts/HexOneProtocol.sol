@@ -211,8 +211,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint256 mintAmount = hexOneVault.depositCollateral(
             _depositor,
             _amount,
-            _duration,
-            flag
+            _duration
         );
 
         require(mintAmount > 0, "depositing amount is too small to mint $HEX1");
