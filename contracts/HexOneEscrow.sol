@@ -26,8 +26,6 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
     /// @dev The address of HexOneProtocol.
     address public hexOneProtocol;
 
-    address public usdToken;
-
     /// @dev The address of HexOnePriceFeed.
     address public hexOnePriceFeed;
 
@@ -54,7 +52,6 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
         address _hexOneBootstrap,
         address _hexToken,
         address _hexOneToken,
-        address _usdToken,
         address _hexOneProtocol,
         address _hexOnePriceFeed
     ) public initializer {
@@ -69,7 +66,6 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
 
         hexOneBootstrap = _hexOneBootstrap;
         hexToken = _hexToken;
-        usdToken = _usdToken;
         hexOneToken = _hexOneToken;
         hexOneProtocol = _hexOneProtocol;
         hexOnePriceFeed = _hexOnePriceFeed;
@@ -129,7 +125,6 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
 
     /// @inheritdoc IHexOneEscrow
     function borrowHexOne(uint256 curPrice) external override {
-        address sender = msg.sender;
         IHexOneVault hexOneVault = IHexOneVault(
             IHexOneProtocol(hexOneProtocol).getVaultAddress(hexToken)
         );
@@ -138,7 +133,9 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
         require(depositInfos.length > 0, "not deposit pool");
         uint256 depositId = depositInfos[0].depositId;
         if (curPrice > depositInfos[0].initialHexPrice) {
-            uint256 _amount = 10 ** 8 * (curPrice - depositInfos[0].initialHexPrice) / IHexOnePriceFeed(hexOnePriceFeed).getHexTokenPrice(10 ** 8);
+            uint256 _amount = (10 ** 8 *
+                (curPrice - depositInfos[0].initialHexPrice)) /
+                IHexOnePriceFeed(hexOnePriceFeed).getHexTokenPrice(10 ** 8);
             IHexOneProtocol(hexOneProtocol).borrowHexOne(
                 hexToken,
                 depositId,
