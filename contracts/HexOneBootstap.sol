@@ -141,15 +141,15 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         hexOnePriceFeed = _param.hexOnePriceFeed;
 
         sacrificeStartTime = _param.sacrificeStartTime;
-        sacrificeEndTime =
-            _param.sacrificeStartTime +
-            (_param.sacrificeDuration * 1 hours) /
-            3;
 
+        sacrificeEndTime =
+            (_param.sacrificeStartTime) +
+            (uint256(_param.sacrificeDuration) * 1 hours) /
+            3;
         airdropStartTime = _param.airdropStartTime;
         airdropEndTime =
             _param.airdropStartTime +
-            (_param.airdropDuration * 1 hours) /
+            (uint256(_param.airdropDuration) * 1 hours) /
             3;
 
         dexRouter = IPulseXRouter02(_param.dexRouter);
@@ -221,6 +221,10 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         for (uint256 i = 0; i < length; i++) {
             address token = _tokens[i];
             if (_enable) {
+                require(
+                    allowedTokens[token].weight != 0,
+                    "token weight is not set yet"
+                );
                 allowedTokens[token].decimals = TokenUtils.expectDecimals(
                     token
                 );
@@ -236,6 +240,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     ) external override onlyOwner {
         uint256 length = _tokens.length;
         require(length > 0, "invalid length");
+        require(length == _weights.length, "array mismatched");
         require(block.timestamp < sacrificeStartTime, "too late to set");
 
         for (uint256 i = 0; i < length; i++) {
@@ -415,7 +420,6 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         RequestAirdrop storage userInfo = requestAirdropInfo[sender];
 
         uint256 dayIndex = userInfo.requestedDay;
-        uint256 curDay = getCurrentAirdropDay();
         require(sender != address(0), "zero caller address");
         require(userInfo.airdropId > 0, "not requested");
         require(!userInfo.claimed, "already claimed");
@@ -611,6 +615,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         /// liquidity
         uint256 swapAmountForLiquidity = amountForLiquidity / 2;
         _swapToken(_token, hexToken, address(this), swapAmountForLiquidity);
+        uint16 minDuration = IHexOneProtocol(hexOneProtocol).getMinDuration();
         if (_token != hexToken) {
             uint256 realPrice = IHexOnePriceFeed(hexOnePriceFeed)
                 .getBaseTokenPrice(_token, swapAmountForLiquidity);
@@ -623,7 +628,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             IHexOneProtocol(hexOneProtocol).depositCollateral(
                 hexToken,
                 realAmount,
-                2,
+                minDuration,
                 _participant,
                 false
             );
@@ -632,7 +637,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             IHexOneProtocol(hexOneProtocol).depositCollateral(
                 hexToken,
                 swapAmountForLiquidity,
-                2,
+                minDuration,
                 _participant,
                 false
             );

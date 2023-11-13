@@ -203,11 +203,7 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
         require(allowedTokens.contains(_token), "not allowed token");
         require(info.stakedTime > 0, "no staking pool");
 
-        uint256 hexAmount = (info.hexShareAmount * hexRewardsRatePerShare);
-        uint256 hexitAmount = (info.hexitShareAmount * hexitRewardsRatePerShare);
-        hexAmount = hexAmount / 10 ** 10;
-        hexAmount = hexAmount > info.claimedHexAmount ? hexAmount - info.claimedHexAmount : 0;
-        hexitAmount = hexitAmount > info.claimedHexitAmount ? hexitAmount - info.claimedHexitAmount : 0;
+        (uint256 hexAmount, uint256 hexitAmount) = _calcRewardsAmount(sender, _token);
 
         require(hexAmount > 0 || hexitAmount > 0, "no rewards");
         info.claimedHexAmount += hexAmount;
@@ -333,13 +329,18 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
 
         if (totalHexShareAmount > 0) {
             hexAmount = (info.hexShareAmount * hexRewardsRatePerShare);
-            hexAmount = hexAmount / 10 ** 10;
-            hexAmount = hexAmount > info.claimedHexAmount ? hexAmount - info.claimedHexAmount : 0;
+            hexAmount = _convertToToken(hexToken, hexAmount / 10 ** 18);
+            hexAmount = hexAmount > info.claimedHexAmount
+                ? hexAmount - info.claimedHexAmount
+                : 0;
         }
 
         if (totalHexitShareAmount > 0) {
             hexitAmount = info.hexitShareAmount * hexitRewardsRatePerShare;
-            hexitAmount = hexitAmount > info.claimedHexitAmount ? hexitAmount - info.claimedHexitAmount : 0;
+            hexitAmount = _convertToToken(hexitToken, hexitAmount / 10 ** 18);
+            hexitAmount = hexitAmount > info.claimedHexitAmount
+                ? hexitAmount - info.claimedHexitAmount
+                : 0;
         }
     }
 
@@ -408,6 +409,18 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
             return _amount / (10 ** (tokenDecimals - 18));
         } else {
             return _amount * (10 ** (18 - tokenDecimals));
+        }
+    }
+
+    function _convertToToken(
+        address _token,
+        uint256 _shareAmount
+    ) internal view returns (uint256) {
+        uint8 tokenDecimals = TokenUtils.expectDecimals(_token);
+        if (tokenDecimals >= 18) {
+            return _shareAmount * (10 ** (tokenDecimals - 18));
+        } else {
+            return _shareAmount / (10 ** (18 - tokenDecimals));
         }
     }
 

@@ -353,7 +353,7 @@ describe("Staking contract test", function () {
                     smallNum(hexitAmount, 18)
                 );
 
-                expect(smallNum(hexAmount, 8)).to.be.equal(0);
+                expect(smallNum(hexAmount, 8)).to.be.greaterThan(0);
                 expect(smallNum(hexitAmount, 18)).to.be.greaterThan(0);
 
                 let hexRewardsRatePerShare =
@@ -367,7 +367,7 @@ describe("Staking contract test", function () {
                     smallNum(hexitRewardsRatePerShare, 18)
                 );
 
-                expect(smallNum(hexRewardsRatePerShare, 18)).to.be.equal(0);
+                expect(smallNum(hexRewardsRatePerShare, 18)).to.be.greaterThan(0);
                 expect(
                     smallNum(hexitRewardsRatePerShare, 18)
                 ).to.be.greaterThan(0);
