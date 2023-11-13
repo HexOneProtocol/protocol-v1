@@ -33,7 +33,6 @@ interface IHexOneStaking {
         uint256 claimableHexAmount;
         uint256 claimableHexitAmount;
         uint256 stakedTime;
-        // uint256 totalLockedUSD;
         uint256 totalLockedAmount;
         uint16 shareOfPool;
         uint16 hexAPR;
@@ -42,7 +41,29 @@ interface IHexOneStaking {
         uint16 hexitMultiplier;
     }
 
+    function enableStaking() external;
+
     function purchaseHex(uint256 _amount) external;
 
     function purchaseHexit(uint256 _amount) external;
+
+    function addAllowedTokens(address[] calldata _allowedTokens, DistTokenWeight[] calldata _distTokenWeights)
+        external;
+
+    function removeAllowedTokens(address[] calldata _allowedTokens) external;
+
+    function currentStakingDay() external view returns (uint256);
+
+    function stakeToken(address _token, uint256 _amount) external;
+
+    function claimableRewardsAmount(address _user, address _token)
+        external
+        view
+        returns (uint256 hexAmount, uint256 hexitAmount);
+
+    function claimRewards(address _token) external;
+
+    function unstake(address _token, uint256 _unstakeAmount) external;
+
+    function getUserStakingStatus(address _user) external view returns (UserStakingStatus[] memory);
 }
