@@ -172,9 +172,9 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint256 _amount
     ) external override {
         address sender = msg.sender;
-        if (sender != hexOneEscrow) {
-            CheckLibrary.checkEOA();
-        }
+        // if (sender != hexOneEscrow) {
+        //     CheckLibrary.checkEOA();
+        // }
         require(sender != address(0), "zero caller address");
         require(allowedTokens.contains(_token), "not allowed token");
         require(
@@ -196,9 +196,9 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         bool flag
     ) external override {
         address sender = msg.sender;
-        if (msg.sender != hexOneEscrow) {
-            CheckLibrary.checkEOA();
-        }
+        // if (msg.sender != hexOneEscrow) {
+        //     CheckLibrary.checkEOA();
+        // }
         require(sender != address(0), "zero address caller");
         require(allowedTokens.contains(_token), "invalid token");
         require(_amount > 0, "invalid amount");
@@ -231,9 +231,9 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint256 _depositId
     ) external override returns (uint256) {
         address sender = msg.sender;
-        if (sender != hexOneEscrow) {
-            CheckLibrary.checkEOA();
-        }
+        // if (sender != hexOneEscrow) {
+        //     CheckLibrary.checkEOA();
+        // }
 
         require(sender != address(0), "zero caller address");
         require(allowedTokens.contains(_token), "not allowed token");
@@ -266,9 +266,9 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint256 _depositId
     ) external override returns (uint256) {
         address sender = msg.sender;
-        if (sender != hexOneEscrow) {
-            CheckLibrary.checkEOA();
-        }
+        // if (sender != hexOneEscrow) {
+        //     CheckLibrary.checkEOA();
+        // }
 
         require(sender != address(0), "zero caller address");
         require(allowedTokens.contains(_token), "not allowed token");
