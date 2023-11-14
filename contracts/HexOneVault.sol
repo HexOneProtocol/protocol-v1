@@ -74,7 +74,7 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
         hexToken = _hexToken;
         hexOnePriceFeed = _hexOnePriceFeed;
 
-        GRACE_DURATION = 1;
+        GRACE_DURATION = 7;
         FIXED_POINT = 1000;
         FIXED_POINT_PAYOUT = 10 ** 15;
 
@@ -103,13 +103,11 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
     function depositCollateral(
         address _depositor,
         uint256 _amount,
-        uint16 _duration,
-        bool flag
+        uint16 _duration
     ) public override onlyHexOneProtocol returns (uint256) {
-        address sender = msg.sender;
-        IERC20(hexToken).safeTransferFrom(sender, address(this), _amount);
+        IERC20(hexToken).safeTransferFrom(msg.sender, address(this), _amount);
 
-        return _depositCollateral(_depositor, _amount, _duration, flag);
+        return _depositCollateral(_depositor, _amount, _duration);
     }
 
     /// @inheritdoc IHexOneVault
@@ -147,8 +145,7 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
             mintAmount = _depositCollateral(
                 _claimer,
                 receivedAmount,
-                depositInfo.duration,
-                depositInfo.flag
+                depositInfo.duration
             );
             mintAmount = (mintAmount > depositInfo.mintAmount)
                 ? (mintAmount - depositInfo.mintAmount)
@@ -293,8 +290,7 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
                 depositInfo.initHexPrice,
                 depositInfo.depositedHexDay,
                 depositInfo.duration + depositInfo.depositedHexDay,
-                curHexDay,
-                depositInfo.flag
+                curHexDay
             );
         }
 
@@ -443,8 +439,7 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
     function _depositCollateral(
         address _depositor,
         uint256 _amount,
-        uint16 _duration,
-        bool flag
+        uint16 _duration
     ) internal returns (uint256 mintAmount) {
         /// stake it to hex token
         IHexToken(hexToken).stakeStart(_amount, _duration);
@@ -467,7 +462,6 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
             initHexPrice,
             _duration,
             GRACE_DURATION,
-            flag,
             true
         );
 
@@ -557,16 +551,14 @@ contract HexOneVault is OwnableUpgradeable, IHexOneVault {
         uint256 _shareAmount,
         uint16 _stakeDays
     ) internal view returns (uint256) {
-        // uint256 curDay = IHexToken(hexToken).currentDay();
-        // (uint72 dayPayoutTotal, , ) = IHexToken(hexToken).dailyData(curDay - 1);
-        // /// hexToken decimal = 8, share decimal = 12. to get hex token amount, divide by 10**4
-        // uint256 effectiveHex = (_shareAmount *
-        //     uint256(dayPayoutTotal) *
-        //     _stakeDays) /
-        //     FIXED_POINT_PAYOUT /
-        //     10 ** 4;
-        // effectiveHex += _hexAmount;
-        uint256 effectiveHex = ((_stakeDays - 1) / 1820) * _hexAmount;
+        uint256 curDay = IHexToken(hexToken).currentDay();
+        (uint72 dayPayoutTotal, , ) = IHexToken(hexToken).dailyData(curDay - 1);
+        /// hexToken decimal = 8, share decimal = 12. to get hex token amount, divide by 10**4
+        uint256 effectiveHex = (_shareAmount *
+            uint256(dayPayoutTotal) *
+            _stakeDays) /
+            FIXED_POINT_PAYOUT /
+            10 ** 4;
         effectiveHex += _hexAmount;
         return effectiveHex;
     }

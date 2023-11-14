@@ -12,7 +12,6 @@ interface IHexOneVault {
         uint256 initHexPrice;
         uint16 duration;
         uint16 graceDay;
-        bool flag;
         bool exist;
     }
 
@@ -35,7 +34,6 @@ interface IHexOneVault {
         uint256 lockedHexDay;
         uint256 endHexDay;
         uint256 curHexDay;
-        bool flag;
     }
 
     struct BorrowableInfo {
@@ -108,8 +106,7 @@ interface IHexOneVault {
     function depositCollateral(
         address _depositor,
         uint256 _amount,
-        uint16 _duration,
-        bool flag
+        uint16 _duration
     ) external returns (uint256 mintAmount);
 
     /// @notice Retrieve collateral after maturity.

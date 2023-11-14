@@ -2,6 +2,11 @@
 pragma solidity ^0.8.17;
 
 interface IHexOneStaking {
+    struct DistTokenWeight {
+        uint16 hexDistRate;
+        uint16 hexitDistRate;
+    }
+
     struct StakingInfo {
         uint256 stakedTime;
         uint256 claimedHexAmount;
@@ -28,7 +33,6 @@ interface IHexOneStaking {
         uint256 claimableHexAmount;
         uint256 claimableHexitAmount;
         uint256 stakedTime;
-        // uint256 totalLockedUSD;
         uint256 totalLockedAmount;
         uint16 shareOfPool;
         uint16 hexAPR;
@@ -43,7 +47,8 @@ interface IHexOneStaking {
 
     function purchaseHexit(uint256 _amount) external;
 
-    function addAllowedTokens(address[] calldata _allowedTokens) external;
+    function addAllowedTokens(address[] calldata _allowedTokens, DistTokenWeight[] calldata _distTokenWeights)
+        external;
 
     function removeAllowedTokens(address[] calldata _allowedTokens) external;
 

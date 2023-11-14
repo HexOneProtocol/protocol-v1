@@ -221,6 +221,10 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
         for (uint256 i = 0; i < length; i++) {
             address token = _tokens[i];
             if (_enable) {
+                require(
+                    allowedTokens[token].weight != 0,
+                    "token weight is not set yet"
+                );
                 allowedTokens[token].decimals = TokenUtils.expectDecimals(
                     token
                 );
@@ -236,6 +240,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
     ) external override onlyOwner {
         uint256 length = _tokens.length;
         require(length > 0, "invalid length");
+        require(length == _weights.length, "array mismatched");
         require(block.timestamp < sacrificeStartTime, "too late to set");
 
         for (uint256 i = 0; i < length; i++) {
@@ -617,12 +622,13 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             address(this),
             swapAmountForLiquidity
         );
+        uint16 minDuration = IHexOneProtocol(hexOneProtocol).getMinDuration();
         if (_token != hexToken) {
             IERC20(hexToken).approve(hexOneProtocol, swappedHexAmount);
             IHexOneProtocol(hexOneProtocol).depositCollateral(
                 hexToken,
                 swappedHexAmount,
-                2,
+                minDuration,
                 _participant,
                 false
             );
@@ -631,7 +637,7 @@ contract HexOneBootstrap is OwnableUpgradeable, IHexOneBootstrap {
             IHexOneProtocol(hexOneProtocol).depositCollateral(
                 hexToken,
                 swapAmountForLiquidity,
-                2,
+                minDuration,
                 _participant,
                 false
             );

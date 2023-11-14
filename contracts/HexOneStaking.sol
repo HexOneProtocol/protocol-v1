@@ -8,7 +8,6 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-import "./interfaces/IHexOnePriceFeed.sol";
 import "./interfaces/IHexOneStaking.sol";
 import "./utils/TokenUtils.sol";
 
@@ -21,6 +20,7 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
 
     RewardsPool public rewardsPool;
 
+    mapping(address => DistTokenWeight) public distTokenWeights;
     mapping(address => uint256) public lockedTokenAmounts;
     mapping(address => mapping(address => StakingInfo)) public stakingInfos;
 
@@ -34,7 +34,6 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
     address public hexOneBootstrap;
     address public hexToken;
     address public hexitToken;
-    address public hexOnePriceFeed;
 
     uint16 public constant FIXED_POINT = 1000;
     uint16 public hexitDistRate;
@@ -60,20 +59,15 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
         _disableInitializers();
     }
 
-    function initialize(
-        address _hexToken,
-        address _hexitToken,
-        address _hexOnePriceFeed,
-        uint16 _hexDistRate,
-        uint16 _hexitDistRate
-    ) public initializer {
+    function initialize(address _hexToken, address _hexitToken, uint16 _hexDistRate, uint16 _hexitDistRate)
+        public
+        initializer
+    {
         require(_hexToken != address(0), "zero hex token address");
         require(_hexitToken != address(0), "zero hexit token address");
-        require(_hexOnePriceFeed != address(0), "zero priceFeed address");
         require(_hexDistRate <= FIXED_POINT, "invalid hexit dist rate");
         require(_hexitDistRate <= FIXED_POINT, "invalid hexit dist rate");
 
-        hexOnePriceFeed = _hexOnePriceFeed;
         hexDistRate = _hexDistRate;
         hexitDistRate = _hexitDistRate;
         hexToken = _hexToken;
@@ -92,9 +86,9 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
 
     function enableStaking() external onlyOwner {
         require(!stakingEnable, "already enabled");
+        require(rewardsPool.hexPool > 0 && rewardsPool.hexitPool > 0, "no rewards pool");
         stakingEnable = true;
         stakingLaunchTime = block.timestamp;
-        require(rewardsPool.hexPool > 0 && rewardsPool.hexitPool > 0, "no rewards pool");
     }
 
     function purchaseHex(uint256 _amount) external onlyHexOneProtocol {
@@ -115,17 +109,28 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
         IERC20(hexitToken).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
-    function addAllowedTokens(address[] calldata _allowedTokens)
+    function addAllowedTokens(address[] calldata _allowedTokens, DistTokenWeight[] calldata _distTokenWeights)
         external
         onlyOwner
     {
         uint256 length = _allowedTokens.length;
         require(length > 0, "invalid length array");
+        require(length == _distTokenWeights.length, "mismatched array");
 
         for (uint256 i = 0; i < length; i++) {
             address allowedToken = _allowedTokens[i];
+            DistTokenWeight memory distTokenWeight = _distTokenWeights[i];
             require(!allowedTokens.contains(allowedToken), "already added");
+            require(
+                distTokenWeight.hexDistRate != 0 && distTokenWeight.hexDistRate < FIXED_POINT, "invalid hexDistRate"
+            );
+            require(
+                distTokenWeight.hexitDistRate != 0 && distTokenWeight.hexitDistRate < FIXED_POINT,
+                "invalid hexitDistRate"
+            );
+
             allowedTokens.add(allowedToken);
+            distTokenWeights[allowedToken] = distTokenWeight;
         }
     }
 
@@ -156,11 +161,13 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
         uint256 stakeAmount = _transferERC20(sender, address(this), _token, _amount);
         lockedTokenAmounts[_token] += stakeAmount;
 
-        uint256 hexShare = (hexDistRate * stakeAmount) / FIXED_POINT;
+        DistTokenWeight memory tokenWeight = distTokenWeights[_token];
+
+        uint256 hexShare = (tokenWeight.hexDistRate * stakeAmount) / FIXED_POINT;
         hexShare = _convertToShare(_token, hexShare);
         totalHexShareAmount += hexShare;
 
-        uint256 hexitShare = (hexitDistRate * stakeAmount) / FIXED_POINT;
+        uint256 hexitShare = (tokenWeight.hexitDistRate * stakeAmount) / FIXED_POINT;
         hexitShare = _convertToShare(_token, hexitShare);
         totalHexitShareAmount += hexitShare;
 
@@ -196,15 +203,7 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
         require(allowedTokens.contains(_token), "not allowed token");
         require(info.stakedTime > 0, "no staking pool");
 
-        // uint256 hexAmount = (info.hexShareAmount * hexRewardsRatePerShare) /
-        //     totalHexShareAmount;
-        uint256 hexAmount = (info.hexShareAmount * hexRewardsRatePerShare);
-        // uint256 hexitAmount = (info.hexitShareAmount *
-        //     hexitRewardsRatePerShare) / totalHexitShareAmount;
-        uint256 hexitAmount = (info.hexitShareAmount * hexitRewardsRatePerShare);
-        hexAmount = hexAmount / 10 ** 10;
-        hexAmount = hexAmount > info.claimedHexAmount ? hexAmount - info.claimedHexAmount : 0;
-        hexitAmount = hexitAmount > info.claimedHexitAmount ? hexitAmount - info.claimedHexitAmount : 0;
+        (uint256 hexAmount, uint256 hexitAmount) = _calcRewardsAmount(sender, _token);
 
         require(hexAmount > 0 || hexitAmount > 0, "no rewards");
         info.claimedHexAmount += hexAmount;
@@ -222,12 +221,13 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
     function unstake(address _token, uint256 _unstakeAmount) external nonReentrant whenOnlyStakingEnable {
         address sender = msg.sender;
         StakingInfo storage info = stakingInfos[sender][_token];
+        DistTokenWeight memory tokenWeight = distTokenWeights[_token];
         require(allowedTokens.contains(_token), "not allowed token");
         require(info.stakedTime > 0, "no staking pool");
         require(_unstakeAmount > 0 && info.stakedAmount >= _unstakeAmount, "invalid unstake amount");
 
-        uint256 hexShareAmount = (_unstakeAmount * hexDistRate) / FIXED_POINT;
-        uint256 hexitShareAmount = (_unstakeAmount * hexitDistRate) / FIXED_POINT;
+        uint256 hexShareAmount = (_unstakeAmount * tokenWeight.hexDistRate) / FIXED_POINT;
+        uint256 hexitShareAmount = (_unstakeAmount * tokenWeight.hexitDistRate) / FIXED_POINT;
         hexShareAmount = _convertToShare(_token, hexShareAmount);
         hexitShareAmount = _convertToShare(_token, hexitShareAmount);
 
@@ -280,10 +280,7 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
         for (uint256 i = 0; i < allowedTokenCnt; i++) {
             address token = allowedTokens.at(i);
             StakingInfo memory info = stakingInfos[_user][token];
-            // (
-            //     uint256 claimableHexAmount,
-            //     uint256 claimableHexitAmount
-            // ) = _calcRewardsAmount(_user, token);
+            DistTokenWeight memory tokenWeight = distTokenWeights[token];
 
             (uint16 hexAPR, uint16 hexitAPR) = _calcAPR(token);
 
@@ -292,16 +289,14 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
                 shareOfPool = uint16((info.stakedAmount * FIXED_POINT) / lockedTokenAmounts[token]);
             }
 
-            uint256 claimableHexAmount = (totalHex * hexDistRate * shareOfPool) / 100000000;
-            uint256 claimableHexitAmount = (totalHexit * hexDistRate * shareOfPool) / 100000000;
+            uint256 claimableHexAmount = (totalHex * tokenWeight.hexDistRate * shareOfPool) / 100000000;
+            uint256 claimableHexitAmount = (totalHexit * tokenWeight.hexitDistRate * shareOfPool) / 100000000;
 
             uint256 stakedTime = 0;
             if (info.stakedTime > 0) {
                 stakedTime = (block.timestamp - info.stakedTime) / 1 days + 1;
             }
 
-            // uint256 lockedUSD = IHexOnePriceFeed(hexOnePriceFeed)
-            // .getBaseTokenPrice(token, lockedTokenAmounts[token]);
             status[i] = UserStakingStatus({
                 token: token,
                 stakedAmount: info.stakedAmount,
@@ -310,13 +305,12 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
                 claimableHexAmount: claimableHexAmount,
                 claimableHexitAmount: claimableHexitAmount,
                 stakedTime: stakedTime,
-                // totalLockedUSD: lockedUSD,
                 totalLockedAmount: lockedTokenAmounts[token],
                 shareOfPool: shareOfPool,
                 hexAPR: hexAPR,
                 hexitAPR: hexitAPR,
-                hexMultiplier: hexDistRate,
-                hexitMultiplier: hexitDistRate
+                hexMultiplier: tokenWeight.hexDistRate,
+                hexitMultiplier: tokenWeight.hexitDistRate
             });
         }
 
@@ -334,20 +328,19 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
         }
 
         if (totalHexShareAmount > 0) {
-            // hexAmount =
-            //     (info.hexShareAmount * hexRewardsRatePerShare) /
-            //     totalHexShareAmount;
             hexAmount = (info.hexShareAmount * hexRewardsRatePerShare);
-            hexAmount = hexAmount / 10 ** 10;
-            hexAmount = hexAmount > info.claimedHexAmount ? hexAmount - info.claimedHexAmount : 0;
+            hexAmount = _convertToToken(hexToken, hexAmount / 10 ** 18);
+            hexAmount = hexAmount > info.claimedHexAmount
+                ? hexAmount - info.claimedHexAmount
+                : 0;
         }
 
         if (totalHexitShareAmount > 0) {
-            // hexitAmount =
-            //     (info.hexitShareAmount * hexitRewardsRatePerShare) /
-            //     totalHexitShareAmount;
             hexitAmount = info.hexitShareAmount * hexitRewardsRatePerShare;
-            hexitAmount = hexitAmount > info.claimedHexitAmount ? hexitAmount - info.claimedHexitAmount : 0;
+            hexitAmount = _convertToToken(hexitToken, hexitAmount / 10 ** 18);
+            hexitAmount = hexitAmount > info.claimedHexitAmount
+                ? hexitAmount - info.claimedHexitAmount
+                : 0;
         }
     }
 
@@ -392,10 +385,11 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
     }
 
     function _calcAPR(address _token) internal view returns (uint16 hexAPR, uint16 hexitAPR) {
-        /// total rewards for token / total deposited token %
         uint256 depositedAmount = lockedTokenAmounts[_token];
-        uint256 hexShare = (depositedAmount * hexDistRate) / FIXED_POINT;
-        uint256 hexitShare = (depositedAmount * hexitDistRate) / FIXED_POINT;
+        DistTokenWeight memory tokenWeight = distTokenWeights[_token];
+
+        uint256 hexShare = (depositedAmount * tokenWeight.hexDistRate) / FIXED_POINT;
+        uint256 hexitShare = (depositedAmount * tokenWeight.hexitDistRate) / FIXED_POINT;
 
         uint256 distributedHex = rewardsPool.distributedHex;
         uint256 distributedHexit = rewardsPool.distributedHexit;
@@ -415,6 +409,18 @@ contract HexOneStaking is OwnableUpgradeable, ReentrancyGuardUpgradeable, IHexOn
             return _amount / (10 ** (tokenDecimals - 18));
         } else {
             return _amount * (10 ** (18 - tokenDecimals));
+        }
+    }
+
+    function _convertToToken(
+        address _token,
+        uint256 _shareAmount
+    ) internal view returns (uint256) {
+        uint8 tokenDecimals = TokenUtils.expectDecimals(_token);
+        if (tokenDecimals >= 18) {
+            return _shareAmount * (10 ** (tokenDecimals - 18));
+        } else {
+            return _shareAmount / (10 ** (18 - tokenDecimals));
         }
     }
 
