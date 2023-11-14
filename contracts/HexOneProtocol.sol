@@ -172,7 +172,9 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         uint256 _amount
     ) external override {
         address sender = msg.sender;
-        // CheckLibrary.checkEOA();
+        // if (sender != hexOneEscrow) {
+        //     CheckLibrary.checkEOA();
+        // }
         require(sender != address(0), "zero caller address");
         require(allowedTokens.contains(_token), "not allowed token");
         require(
@@ -207,7 +209,6 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
 
         IHexOneVault hexOneVault = IHexOneVault(vaultInfos[_token]);
         _amount = _transferDepositTokenWithFee(sender, _token, _amount);
-        IERC20(_token).approve(address(hexOneVault), _amount);
         uint256 mintAmount = hexOneVault.depositCollateral(
             _depositor,
             _amount,
