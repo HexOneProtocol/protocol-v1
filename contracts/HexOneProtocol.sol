@@ -192,8 +192,7 @@ contract HexOneProtocol is Ownable, IHexOneProtocol {
         address _token,
         uint256 _amount,
         uint16 _duration,
-        address _depositor,
-        bool flag
+        address _depositor
     ) external override {
         address sender = msg.sender;
         // if (msg.sender != hexOneEscrow) {

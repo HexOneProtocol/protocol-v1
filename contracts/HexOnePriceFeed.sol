@@ -41,7 +41,7 @@ contract HexOnePriceFeed is OwnableUpgradeable, IHexOnePriceFeed {
         __Ownable_init();
     }
 
-    function sqrt(uint256 x) public view returns (uint256 y) {
+    function sqrt(uint256 x) public pure returns (uint256 y) {
         uint256 z = (x + 1) / 2;
         y = x;
         while (z < y) {

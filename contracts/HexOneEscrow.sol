@@ -90,8 +90,7 @@ contract HexOneEscrow is OwnableUpgradeable, IHexOneEscrow {
             hexToken,
             collateralAmount,
             _duration,
-            address(this),
-            false
+            address(this)
         );
 
         collateralDeposited = true;
