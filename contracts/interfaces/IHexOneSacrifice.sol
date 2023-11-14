@@ -9,7 +9,6 @@ interface IHexOneSacrifice {
         uint256 sacrificedAmount;
         uint256 sacrificedWeight;
         uint256 usdValue;
-        uint256 totalHexitAmount;
         address sacrificeToken;
         string sacrificeTokenSymbol;
         uint16 multiplier;
@@ -44,7 +43,7 @@ interface IHexOneSacrifice {
         returns (address[] memory);
 
     /// @notice Get HEXIT amount for sacrifice by day index.
-    function getAmountForSacrifice(
+    function getAmountForSacrificeByDay(
         uint256 _dayIndex
     ) external view returns (uint256);
 
