@@ -8,7 +8,8 @@ interface IHexOneStaking {
     }
 
     struct StakingInfo {
-        uint256 stakedTime;
+        uint256 initStakeTime;
+        uint256 lastTimeClaimed;
         uint256 claimedHexAmount;
         uint256 claimedHexitAmount;
         uint256 stakedAmount;
