@@ -14,7 +14,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./utils/TokenUtils.sol";
 
-abstract contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
+contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
     /// @dev using EnumerableSet OZ library for addresses
     using EnumerableSet for EnumerableSet.AddressSet;
     /// @dev using safeERC20 OZ library
@@ -447,5 +447,65 @@ abstract contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         } else {
             return _amount * (10 ** (18 - tokenDecimals));
         }
+    }
+
+    /// @dev function user by the front end to calculate the status of the user's stake
+    /// @param _user address of the user to check status of his different stakes
+    function getUserStakingStatus(
+        address _user
+    ) external view returns (UserStakingStatus[] memory) {
+        uint256 allowedTokenCnt = allowedTokens.length();
+        UserStakingStatus[] memory status = new UserStakingStatus[](
+            allowedTokenCnt
+        );
+
+        uint256 totalHex = IERC20(hexToken).balanceOf(address(this));
+        uint256 totalHexit = IERC20(hexitToken).balanceOf(address(this));
+
+        for (uint256 i = 0; i < allowedTokenCnt; i++) {
+            address token = allowedTokens.at(i);
+            StakingInfo memory info = stakingInfos[_user][token];
+            DistTokenWeight memory tokenWeight = distTokenWeights[token];
+
+            (uint16 hexAPR, uint16 hexitAPR) = _calcAPR(token);
+
+            uint16 shareOfPool = 0;
+            if (totalAmountStaked[token] > 0) {
+                shareOfPool = uint16(
+                    (info.stakedAmount * FIXED_POINT) /
+                        totalAmountStaked[token]
+                );
+            }
+
+            uint256 claimableHexAmount = (totalHex *
+                tokenWeight.hexDistRate *
+                shareOfPool) / 100000000;
+            uint256 claimableHexitAmount = (totalHexit *
+                tokenWeight.hexitDistRate *
+                shareOfPool) / 100000000;
+
+            uint256 stakedTime = 0;
+            if (info.initStakeTime > 0) {
+                stakedTime = (block.timestamp - info.initStakeTime) / 1 days + 1;
+            }
+
+            status[i] = UserStakingStatus({
+                token: token,
+                stakedAmount: info.stakedAmount,
+                earnedHexAmount: info.claimedHexAmount,
+                earnedHexitAmount: info.claimedHexitAmount,
+                claimableHexAmount: claimableHexAmount,
+                claimableHexitAmount: claimableHexitAmount,
+                stakedTime: stakedTime,
+                totalLockedAmount: totalAmountStaked[token],
+                shareOfPool: shareOfPool,
+                hexAPR: hexAPR,
+                hexitAPR: hexitAPR,
+                hexMultiplier: tokenWeight.hexDistRate,
+                hexitMultiplier: tokenWeight.hexitDistRate
+            });
+        }
+
+        return status;
     }
 }
