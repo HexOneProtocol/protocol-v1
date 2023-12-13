@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity =0.6.6;
+pragma solidity ^0.8.20;
 
-import {UniswapV2OracleLibrary} from "v2-periphery/libraries/UniswapV2OracleLibrary.sol";
-import {UniswapV2Library} from "v2-periphery/libraries/UniswapV2Library.sol";
-import {FixedPoint} from "solidity-lib/libraries/FixedPoint.sol";
+import {UniswapV2OracleLibrary} from "./libraries/UniswapV2OracleLibrary.sol";
+import {FixedPoint} from "./libraries/FixedPoint.sol";
 import {IPulseXPair} from "./interfaces/pulsex/IPulseXPair.sol";
+
+import {console2} from "forge-std/Test.sol";
 
 contract HexOnePriceFeed {
     using FixedPoint for *;
@@ -21,7 +22,7 @@ contract HexOnePriceFeed {
     FixedPoint.uq112x112 public price0Average;
     FixedPoint.uq112x112 public price1Average;
 
-    constructor(address _pair) public {
+    constructor(address _pair) {
         IPulseXPair pulseXPair = IPulseXPair(_pair);
 
         pair = pulseXPair;
@@ -40,12 +41,18 @@ contract HexOnePriceFeed {
     function update() external {
         (uint256 price0Cumulative, uint256 price1Cumulative, uint32 blockTimestamp) =
             UniswapV2OracleLibrary.currentCumulativePrices(address(pair));
-        uint32 timeElapsed = blockTimestamp - blockTimestampLast;
+        
+        uint32 timeElapsed;
+        unchecked {
+            timeElapsed = blockTimestamp - blockTimestampLast;
+        }
 
         require(timeElapsed >= PERIOD, "Period not elapsed");
 
-        price0Average = FixedPoint.uq112x112(uint224((price0Cumulative - price0CumulativeLast) / timeElapsed));
-        price1Average = FixedPoint.uq112x112(uint224((price1Cumulative - price1CumulativeLast) / timeElapsed));
+        unchecked {
+            price0Average = FixedPoint.uq112x112(uint224((price0Cumulative - price0CumulativeLast) / timeElapsed));
+            price1Average = FixedPoint.uq112x112(uint224((price1Cumulative - price1CumulativeLast) / timeElapsed));           
+        }
 
         price0CumulativeLast = price0Cumulative;
         price1CumulativeLast = price1Cumulative;
@@ -53,10 +60,13 @@ contract HexOnePriceFeed {
     }
 
     function consult(address token, uint256 amountIn) external view returns (uint256 amountOut) {
+        uint256 timeElapsed = block.timestamp - blockTimestampLast;
+        require(timeElapsed < PERIOD, "Price too stale");
+        
         if (token == token0) {
             amountOut = price0Average.mul(amountIn).decode144();
         } else {
-            require(token == token1, "Invalid token");
+            require(token == token1, "Invalid token");            
             amountOut = price1Average.mul(amountIn).decode144();
         }
     }

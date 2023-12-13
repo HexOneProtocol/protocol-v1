@@ -2,40 +2,56 @@
 pragma solidity ^0.8.20;
 
 import {Test, console2} from "forge-std/Test.sol";
-import {IHexOnePriceFeed} from "../../src/interfaces/IHexOnePriceFeed.sol";
+import {HexOnePriceFeed} from "../../src/HexOnePriceFeed.sol";
+import {IPulseXPair} from "../../src/interfaces/pulsex/IPulseXPair.sol";
+import {FixedPoint} from "../../src/libraries/FixedPoint.sol";
 
 /**
  *  @dev forge test --match-contract HexOnePriceFeedTest --rpc-url "https://rpc.pulsechain.com" -vvv
  */
 contract HexOnePriceFeedTest is Test {
-    address public hexOnePriceFeed;
-    address public pair = 0x6F1747370B1CAcb911ad6D4477b718633DB328c8;
+    HexOnePriceFeed public hexOnePriceFeed;
+    IPulseXPair public pair = IPulseXPair(0x6F1747370B1CAcb911ad6D4477b718633DB328c8);
     address public hexToken = 0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39;
     address public daiToken = 0xefD766cCb38EaF1dfd701853BFCe31359239F305;
 
     function setUp() public {
-        hexOnePriceFeed = deployCode("HexOnePriceFeed.sol", abi.encode(pair));
-    }
+        hexOnePriceFeed = new HexOnePriceFeed(address(pair));
+        assertEq(pair.token0(), hexToken);
+        assertEq(pair.token1(), daiToken);
 
-    function test_consult() public {
         skip(6 hours);
 
-        // update the pool for the first time
-        (bool success,) = hexOnePriceFeed.call(abi.encodeWithSignature("update()"));
-        require(success, "Update failed");
+        hexOnePriceFeed.update();
+    }
 
-        // compute DAI amountOut for 1 HEX
-        bytes memory args1 = abi.encode(hexToken, 1e8);
-        (, bytes memory daiAmountOutData) = hexOnePriceFeed.call(abi.encodeWithSignature("consult()", args1));
+    function test_consultHexPrice() public {
+        skip(6 hours);
 
-        uint256 daiAmountOut = abi.decode(daiAmountOutData, (uint256));
-        console2.log("DAI amountOut: ", daiAmountOut);
+        hexOnePriceFeed.update();
 
-        // compute HEX amountOut for 1 DAI
-        bytes memory args2 = abi.encode(daiToken, 1e6);
-        (, bytes memory hexAmountOutData) = hexOnePriceFeed.call(abi.encodeWithSignature("consult()", args2));
+        console2.log("HEX price in DAI: ", hexOnePriceFeed.consult(hexToken, 1e8));
+    }
 
-        uint256 hexAmountOut = abi.decode(hexAmountOutData, (uint256));
-        console2.log("HEX amountOut: ", hexAmountOut);
+    function test_consultDaiPrice() public {
+        skip(6 hours);
+
+        hexOnePriceFeed.update();
+
+        console2.log("DAI price in HEX: ", hexOnePriceFeed.consult(daiToken, 1e18));
+    }
+
+    function test_consultHexPriceWhenStale() public {
+        skip(6 hours);
+
+        uint256 hexPrice;
+        try hexOnePriceFeed.consult(hexToken, 1e8) returns (uint256 amountOut) {
+            hexPrice = amountOut;
+        } catch Error(string memory) {
+            hexOnePriceFeed.update();
+            hexPrice = hexOnePriceFeed.consult(hexToken, 1e8);
+        }
+
+        console2.log("HEX price in DAI: ", hexPrice);
     }
 }
