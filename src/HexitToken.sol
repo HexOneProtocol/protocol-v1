@@ -5,13 +5,14 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IHexitToken} from "./interfaces/IHexitToken.sol";
 
+/// @title Hexit Token
 contract HexitToken is ERC20, Ownable, IHexitToken {
-    /// @dev HexOneBootstrap address
+    /// @notice HexOneBootstrap address
     address public hexOneBootstrap;
-    /// @dev dead wallet address
+    /// @notice dead wallet address
     address public constant DEAD_WALLET = 0x000000000000000000000000000000000000dEaD;
 
-    /// @dev checks if the sender is the bootstrap
+    /// @notice checks if the sender is the bootstrap
     modifier onlyHexOneBootstrap() {
         require(msg.sender == hexOneBootstrap, "Only HexOneBootstrap");
         _;
@@ -28,15 +29,15 @@ contract HexitToken is ERC20, Ownable, IHexitToken {
         hexOneBootstrap = _hexOneBootstrap;
     }
 
-    /// @dev mint HEXIT tokens to a specified account.
-    /// @notice only HexOneBootstrap can call this function.
+    /// @notice mint HEXIT tokens to a specified account.
+    /// @dev only HexOneBootstrap can call this function.
     /// @param _recipient address of the receiver.
     /// @param _amount amount of HEX1 being minted.
     function mint(address _recipient, uint256 _amount) external onlyHexOneBootstrap {
         _mint(_recipient, _amount);
     }
 
-    /// @dev checks if HEXIT tokens are being transfered to the dead wallet.
+    /// @notice checks if HEXIT tokens are being transfered to the dead wallet.
     /// @param _to address to where HEXIT is being transfered.
     /// @param _amount amount of HEXIT being transfered.
     function transfer(address _to, uint256 _amount) public virtual override returns (bool) {
@@ -44,7 +45,7 @@ contract HexitToken is ERC20, Ownable, IHexitToken {
         return super.transfer(_to, _amount);
     }
 
-    /// @dev checks if HEXIT tokens are being transfered to the dead wallet.
+    /// @notice checks if HEXIT tokens are being transfered to the dead wallet.
     /// @param _from address from where HEXIT is being transfered.
     /// @param _to address to where HEXIT is being transfered.
     /// @param _amount amount of HEXIT being transfered.

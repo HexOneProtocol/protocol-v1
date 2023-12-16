@@ -23,3 +23,8 @@ The contract has two different pools: the `HEX` and the `HEXIT` pool, and three 
 ## HexOneEscrow
 
 ## HexOneProtocol
+
+## OPEN TODO
+* Add events for every state changing operations.
+* Change require statements to custom errors.
+* Write documentation for each protocol contract.

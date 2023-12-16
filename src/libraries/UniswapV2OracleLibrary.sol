@@ -13,9 +13,11 @@ library UniswapV2OracleLibrary {
         }
     }
 
-    function currentCumulativePrices(
-        address pair
-    ) internal view returns (uint price0Cumulative, uint price1Cumulative, uint32 blockTimestamp) {
+    function currentCumulativePrices(address pair)
+        internal
+        view
+        returns (uint256 price0Cumulative, uint256 price1Cumulative, uint32 blockTimestamp)
+    {
         blockTimestamp = currentBlockTimestamp();
         price0Cumulative = IPulseXPair(pair).price0CumulativeLast();
         price1Cumulative = IPulseXPair(pair).price1CumulativeLast();
@@ -24,8 +26,8 @@ library UniswapV2OracleLibrary {
         if (blockTimestampLast != blockTimestamp) {
             unchecked {
                 uint32 timeElapsed = blockTimestamp - blockTimestampLast;
-                price0Cumulative += uint(FixedPoint.fraction(reserve1, reserve0)._x) * timeElapsed;
-                price1Cumulative += uint(FixedPoint.fraction(reserve0, reserve1)._x) * timeElapsed;
+                price0Cumulative += uint256(FixedPoint.fraction(reserve1, reserve0)._x) * timeElapsed;
+                price1Cumulative += uint256(FixedPoint.fraction(reserve0, reserve1)._x) * timeElapsed;
             }
         }
     }
