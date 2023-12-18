@@ -25,6 +25,6 @@ The contract has two different pools: the `HEX` and the `HEXIT` pool, and three 
 ## HexOneProtocol
 
 ## OPEN TODO
-* Add events for every state changing operations.
-* Change require statements to custom errors.
-* Write documentation for each protocol contract.
+* Add events for every state changing operation in HexOneStaking.
+* Refactor HexOneStaking tests architecture.
+* Change HexOneStaking to use custom errors instead of require statements.

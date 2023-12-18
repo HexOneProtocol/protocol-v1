@@ -50,7 +50,7 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
         uint112 reserve0;
         uint112 reserve1;
         (reserve0, reserve1, blockTimestampLast) = pulseXPair.getReserves();
-        require(reserve0 != 0 && reserve1 != 0, "No reserves");
+        if (reserve0 == 0 || reserve1 == 0) revert EmptyReserves();
     }
 
     /// @notice updates the average price of both pair tokens.
@@ -63,7 +63,7 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
             timeElapsed = blockTimestamp - blockTimestampLast;
         }
 
-        require(timeElapsed >= PERIOD, "Period not elapsed");
+        if (timeElapsed < PERIOD) revert PeriodNotElapsed();
 
         unchecked {
             price0Average = FixedPoint.uq112x112(uint224((price0Cumulative - price0CumulativeLast) / timeElapsed));
@@ -74,22 +74,24 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
         price1CumulativeLast = price1Cumulative;
         blockTimestampLast = blockTimestamp;
 
-        emit PriceUpdated(price0Average.mul(HEX_FACTOR).decode144(), price1Average.mul(DAI_FACTOR).decode144(), blockTimestampLast);
+        emit PriceUpdated(
+            price0Average.mul(HEX_FACTOR).decode144(), price1Average.mul(DAI_FACTOR).decode144(), blockTimestampLast
+        );
     }
 
     /// @notice consult the price of a token in relation to the other token pair.
     /// @dev if price has not been updated for `PERIOD` the price is considered stale.
-    /// @param tokenIn address of the token we want a quote from.
-    /// @param amountIn amount of tokenIn to calculate the amountOut based on price.
-    function consult(address tokenIn, uint256 amountIn) external view returns (uint256 amountOut) {
+    /// @param _tokenIn address of the token we want a quote from.
+    /// @param _amountIn amount of tokenIn to calculate the amountOut based on price.
+    function consult(address _tokenIn, uint256 _amountIn) external view returns (uint256 amountOut) {
         uint256 timeElapsed = block.timestamp - blockTimestampLast;
-        require(timeElapsed < PERIOD, "Price too stale");
+        if (timeElapsed >= PERIOD) revert PriceTooStale();
 
-        if (tokenIn == token0) {
-            amountOut = price0Average.mul(amountIn).decode144();
+        if (_tokenIn == token0) {
+            amountOut = price0Average.mul(_amountIn).decode144();
         } else {
-            require(tokenIn == token1, "Invalid token");
-            amountOut = price1Average.mul(amountIn).decode144();
+            if (_tokenIn != token1) revert InvalidToken();
+            amountOut = price1Average.mul(_amountIn).decode144();
         }
     }
 }

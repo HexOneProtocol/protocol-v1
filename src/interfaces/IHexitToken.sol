@@ -2,7 +2,11 @@
 pragma solidity ^0.8.20;
 
 interface IHexitToken {
-    function setBootstrap(address _bootstrap) external;
+    event BootstrapInitialized(address hexOneBootstrap);
 
+    error NotHexOneBootstrap();
+    error InvalidAddress();
+
+    function setHexOneBootstrap(address _bootstrap) external;
     function mint(address _recipient, uint256 _amount) external;
 }

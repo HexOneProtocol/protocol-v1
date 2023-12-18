@@ -9,12 +9,10 @@ import {IHexOneToken} from "./interfaces/IHexOneToken.sol";
 contract HexOneToken is ERC20, Ownable, IHexOneToken {
     /// @notice HexOneProtocol address
     address public hexOneProtocol;
-    /// @notice dead wallet address
-    address public constant DEAD_WALLET = 0x000000000000000000000000000000000000dEaD;
 
     /// @notice checks if the sender is HexOneProtocol
     modifier onlyHexOneProtocol() {
-        require(msg.sender == hexOneProtocol, "Only HexOneProtocol");
+        if (msg.sender != hexOneProtocol) revert NotHexOneProtocol();
         _;
     }
 
@@ -25,8 +23,9 @@ contract HexOneToken is ERC20, Ownable, IHexOneToken {
     /// @notice set the address of the protocol.
     /// @param _hexOneProtocol address of the hexOneProtocol.
     function setHexOneProtocol(address _hexOneProtocol) external onlyOwner {
-        require(_hexOneProtocol != address(0), "Invalid address");
+        if (_hexOneProtocol == address(0)) revert InvalidAddress();
         hexOneProtocol = _hexOneProtocol;
+        emit ProtocolInitialized(_hexOneProtocol);
     }
 
     /// @notice mint HEX1 tokens to a specified account.
@@ -43,22 +42,5 @@ contract HexOneToken is ERC20, Ownable, IHexOneToken {
     /// @param _amount amount of of HEX1 being burned.
     function burn(address _recipient, uint256 _amount) external onlyHexOneProtocol {
         _burn(_recipient, _amount);
-    }
-
-    /// @notice checks if HEX1 tokens are being transfered to the dead wallet.
-    /// @param _to address to where HEX1 is being transfered.
-    /// @param _amount amount of HEX1 being transfered.
-    function transfer(address _to, uint256 _amount) public virtual override returns (bool) {
-        require(_to != DEAD_WALLET, "Invalid transfer to dead address");
-        return super.transfer(_to, _amount);
-    }
-
-    /// @notice checks if HEX1 tokens are being transfered to the dead wallet.
-    /// @param _from address from where HEX1 is being transfered.
-    /// @param _to address to where HEX1 is being transfered.
-    /// @param _amount amount of HEX1 being transfered.
-    function transferFrom(address _from, address _to, uint256 _amount) public virtual override returns (bool) {
-        require(_to != DEAD_WALLET, "Invalid transfer to dead address");
-        return super.transferFrom(_from, _to, _amount);
     }
 }

@@ -49,7 +49,6 @@ contract HexOneStakingTest is Test {
         assertEq(hexOneStaking.hexOneProtocol(), protocol);
         assertEq(hexOneStaking.hexOneBootstrap(), bootstrap);
 
-        // TODO: add HEX1 and HEX1/DAI LP (currently being mocked)
         address[] memory tokens = new address[](3);
         uint16[] memory weights = new uint16[](3);
         tokens[0] = address(hexitToken);
