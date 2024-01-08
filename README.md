@@ -17,14 +17,14 @@ The contract has two different pools: the `HEX` and the `HEXIT` pool, and three 
 ## HexOnePriceFeed
 
 ## HexOneVault
+The vault only allows redemption of T-SHARES are maturity, but this T-SHARES can be liquidated if after maturity a `GRACE_PERIOD` passes.
 
 ## HexOneBootstrap
 
 ## HexOneEscrow
 
-## HexOneProtocol
-
 ## OPEN TODO
+* Deposit fee in the Vault is used to purchase HEX in the HexOneStaking contract.
 * Add events for every state changing operation in HexOneStaking.
-* Refactor HexOneStaking tests architecture.
 * Change HexOneStaking to use custom errors instead of require statements.
+* Refactor HexOneStaking tests architecture.

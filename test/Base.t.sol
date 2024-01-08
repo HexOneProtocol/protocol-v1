@@ -16,6 +16,7 @@ import {IHexOnePriceFeed} from "../src/interfaces/IHexOnePriceFeed.sol";
 import {IHexOneVault} from "../src/interfaces/IHexOneVault.sol";
 
 import {IPulseXPair} from "../src/interfaces/pulsex/IPulseXPair.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Base is Test {
     HexOneToken public hex1;
@@ -23,7 +24,6 @@ contract Base is Test {
     HexOneStaking public staking;
     HexOnePriceFeed public feed;
     HexOneVault public vault;
-    address public protocol = makeAddr("HexOneProtocol"); // TODO: address is being mocked, change later
     address public bootstrap = makeAddr("HexOneBootstrap"); // TODO: address is being mocked, change later
 
     IPulseXPair public pair = IPulseXPair(0x6F1747370B1CAcb911ad6D4477b718633DB328c8);
@@ -35,11 +35,10 @@ contract Base is Test {
         hexit = new HexitToken("Hexit Token", "HEXIT");
         staking = new HexOneStaking(hexToken, address(hexit), 10, 10); // TODO: config, enable staking
         feed = new HexOnePriceFeed(address(pair));
-        vault = new HexOneVault(address(feed), hexToken);
+        vault = new HexOneVault(hexToken, address(hex1), address(feed));
 
-        hex1.setHexOneProtocol(protocol);
+        hex1.setHexOneVault(address(vault));
         hexit.setHexOneBootstrap(bootstrap);
-        staking.setBaseData(protocol, bootstrap); // TODO: config, enable staking
-        vault.setHexOneProtocol(protocol);
+        staking.setBaseData(address(vault), bootstrap); // TODO: refactor to use vault instead of protocol
     }
 }

@@ -46,7 +46,7 @@ contract HexOneStakingTest is Test {
         assertEq(hexitDistRate, 10);
 
         hexOneStaking.setBaseData(protocol, bootstrap);
-        assertEq(hexOneStaking.hexOneProtocol(), protocol);
+        assertEq(hexOneStaking.hexOneVault(), protocol);
         assertEq(hexOneStaking.hexOneBootstrap(), bootstrap);
 
         address[] memory tokens = new address[](3);

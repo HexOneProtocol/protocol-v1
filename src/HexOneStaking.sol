@@ -44,8 +44,8 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
     /// @notice address of the HEXIT token
     address public immutable hexitToken;
 
-    /// @notice address of the HexOneProtocol
-    address public hexOneProtocol;
+    /// @notice address of the hexOneVault
+    address public hexOneVault;
     /// @notice address of the HexOneBootstrap
     address public hexOneBootstrap;
 
@@ -80,13 +80,13 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         hexitPool.distributionRate = _hexitDistRate;
     }
 
-    /// @notice set the address of the Protocol and Bootstrap
-    /// @param _hexOneProtocol address of the HexOneProtocol.
+    /// @notice set the address of the Vault and Bootstrap
+    /// @param _hexOneVault address of the HexOneVault.
     /// @param _hexOneBootstrap address of the HexOneBootstrap.
-    function setBaseData(address _hexOneProtocol, address _hexOneBootstrap) external onlyOwner {
-        require(_hexOneProtocol != address(0), "Invalid address");
+    function setBaseData(address _hexOneVault, address _hexOneBootstrap) external onlyOwner {
+        require(_hexOneVault != address(0), "Invalid address");
         require(_hexOneBootstrap != address(0), "Invalid address");
-        hexOneProtocol = _hexOneProtocol;
+        hexOneVault = _hexOneVault;
         hexOneBootstrap = _hexOneBootstrap;
     }
 
@@ -119,14 +119,14 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
     }
 
     /// @notice adds HEX or HEXIT to the pool incrementing total assets.
-    /// @dev to add HEX the caller must be HexOneProtocol
+    /// @dev to add HEX the caller must be HexOneVault
     /// and to add HEXIT the caller must be HexOneBootstrap.
     /// @param _poolToken address of the pool token.
     /// @param _amount of HEX tokens to be added to the pool to be distributed.
     function purchase(address _poolToken, uint256 _amount) external {
         require(_amount != 0, "Invalid purchase amount");
         require(
-            (_poolToken == hexToken && msg.sender == hexOneProtocol)
+            (_poolToken == hexToken && msg.sender == hexOneVault)
                 || (_poolToken == hexitToken && msg.sender == hexOneBootstrap),
             "Invalid sender for the specified pool token"
         );
@@ -340,7 +340,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         while (lastClaimedDay < getCurrentStakingDay()) {
             // calculate HEX rewards for that day
             PoolHistory storage hexHistory = poolHistory[lastClaimedDay][hexToken];
-            uint256 hexSharesRatio = stakeInfo.hexSharesAmount * 1000 / hexHistory.totalShares;
+            uint256 hexSharesRatio = stakeInfo.hexSharesAmount * FIXED_POINT / hexHistory.totalShares;
             hexRewards += (hexHistory.amountToDistribute * hexSharesRatio) / FIXED_POINT;
 
             // calculate HEXIT rewards

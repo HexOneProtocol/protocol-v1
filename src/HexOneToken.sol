@@ -7,12 +7,12 @@ import {IHexOneToken} from "./interfaces/IHexOneToken.sol";
 
 /// @title HexOneToken
 contract HexOneToken is ERC20, Ownable, IHexOneToken {
-    /// @notice HexOneProtocol address
-    address public hexOneProtocol;
+    /// @notice HexOneVault address
+    address public hexOneVault;
 
-    /// @notice checks if the sender is HexOneProtocol
-    modifier onlyHexOneProtocol() {
-        if (msg.sender != hexOneProtocol) revert NotHexOneProtocol();
+    /// @notice checks if the sender is HexOneVault
+    modifier onlyHexOneVault() {
+        if (msg.sender != hexOneVault) revert NotHexOneVault();
         _;
     }
 
@@ -20,27 +20,27 @@ contract HexOneToken is ERC20, Ownable, IHexOneToken {
     /// @param _symbol ticker of the token: $HEX1.
     constructor(string memory _name, string memory _symbol) ERC20(_name, _symbol) Ownable(msg.sender) {}
 
-    /// @notice set the address of the protocol.
-    /// @param _hexOneProtocol address of the hexOneProtocol.
-    function setHexOneProtocol(address _hexOneProtocol) external onlyOwner {
-        if (_hexOneProtocol == address(0)) revert InvalidAddress();
-        hexOneProtocol = _hexOneProtocol;
-        emit ProtocolInitialized(_hexOneProtocol);
+    /// @notice set the address of the vault.
+    /// @param _hexOneVault address of the hexOneVault.
+    function setHexOneVault(address _hexOneVault) external onlyOwner {
+        if (_hexOneVault == address(0)) revert InvalidAddress();
+        hexOneVault = _hexOneVault;
+        emit VaultInitialized(_hexOneVault);
     }
 
     /// @notice mint HEX1 tokens to a specified account.
-    /// @dev only HexOneProtocol can call this function.
+    /// @dev only HexOneVault can call this function.
     /// @param _recipient address of the receiver.
     /// @param _amount amount of HEX1 being minted.
-    function mint(address _recipient, uint256 _amount) external onlyHexOneProtocol {
+    function mint(address _recipient, uint256 _amount) external onlyHexOneVault {
         _mint(_recipient, _amount);
     }
 
     /// @notice burn HEX1 tokens from a specified account.
-    /// @dev only HexOneProtocol can call this function.
+    /// @dev only HexOneVault can call this function.
     /// @param _recipient address of the recipient having it's tokens burned.
     /// @param _amount amount of of HEX1 being burned.
-    function burn(address _recipient, uint256 _amount) external onlyHexOneProtocol {
+    function burn(address _recipient, uint256 _amount) external onlyHexOneVault {
         _burn(_recipient, _amount);
     }
 }
