@@ -9,6 +9,7 @@ import {IHexOneVault} from "./interfaces/IHexOneVault.sol";
 import {IHexOnePriceFeed} from "./interfaces/IHexOnePriceFeed.sol";
 import {IHexOneToken} from "./interfaces/IHexOneToken.sol";
 import {IHexToken} from "./interfaces/IHexToken.sol";
+import {IHexOneStaking} from "./interfaces/IHexOneStaking.sol";
 
 contract HexOneVault is IHexOneVault, Ownable {
     using SafeERC20 for IERC20;
@@ -16,18 +17,34 @@ contract HexOneVault is IHexOneVault, Ownable {
     uint16 public constant GRACE_PERIOD = 7;
     uint16 public constant MIN_DURATION = 3652;
     uint16 public constant MAX_DURATION = 5555;
+    uint16 public constant FIXED_POINT = 1000;
 
     address public immutable hexToken;
     address public immutable hexOneToken;
 
-    address public hexOnePriceFeed;
     mapping(address => mapping(uint256 => DepositInfo)) public depositInfos;
     mapping(address => UserInfo) public userInfos;
+    address public hexOnePriceFeed;
+    address public hexOneStaking;
 
-    constructor(address _hexToken, address _hexOneToken, address _hexOnePriceFeed) Ownable(msg.sender) {
+    uint16 public fee;
+    bool public feeEnabled;
+
+    constructor(address _hexToken, address _hexOneToken, address _hexOnePriceFeed, address _hexOneStaking) Ownable(msg.sender) {
         hexToken = _hexToken;
         hexOneToken = _hexOneToken;
         hexOnePriceFeed = _hexOnePriceFeed;
+        hexOneStaking = _hexOneStaking;
+    }
+
+    function setDepositFee(uint16 _fee) external onlyOwner {
+        if (_fee > FIXED_POINT) revert InvalidFee();
+        fee = _fee;
+    }
+
+    function setFeeStatus(bool _feeEnabled) external onlyOwner {
+        if (_feeEnabled == feeEnabled) revert FeeStatusUnchanged();
+        feeEnabled = _feeEnabled;
     }
 
     function deposit(uint256 _amount, uint16 _duration) external returns (uint256) {
@@ -36,6 +53,11 @@ contract HexOneVault is IHexOneVault, Ownable {
 
         // transfer HEX from the sender to this contract
         IERC20(hexToken).safeTransferFrom(msg.sender, address(this), _amount);
+
+        // if fee is enabled calculate the real deposit amount 
+        if (feeEnabled) {
+            _amount = _depositWithFee(_amount);
+        }
 
         // stake HEX, get stakeId and get t-shares
         IHexToken(hexToken).stakeStart(_amount, _duration);
@@ -207,6 +229,17 @@ contract HexOneVault is IHexOneVault, Ownable {
         } else {
             return 0;
         }
+    }
+
+    function _depositWithFee(uint256 amount) internal returns (uint256)  {
+        // calculate the fee
+        uint256 feeAmount = (amount * fee) / FIXED_POINT;
+
+        // add hex tokens to the HEX staking pool
+        IHexOneStaking(hexOneStaking).purchase(hexToken, feeAmount);
+
+        // return the real amount the user will deposit
+        return amount - feeAmount;
     }
 
     function _getShares(uint256 _stakeId) internal view returns (uint256) {

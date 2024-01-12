@@ -35,10 +35,10 @@ contract Base is Test {
         hexit = new HexitToken("Hexit Token", "HEXIT");
         staking = new HexOneStaking(hexToken, address(hexit), 10, 10); // TODO: config, enable staking
         feed = new HexOnePriceFeed(address(pair));
-        vault = new HexOneVault(hexToken, address(hex1), address(feed));
+        vault = new HexOneVault(hexToken, address(hex1), address(feed), address(staking));
 
         hex1.setHexOneVault(address(vault));
         hexit.setHexOneBootstrap(bootstrap);
-        staking.setBaseData(address(vault), bootstrap); // TODO: refactor to use vault instead of protocol
+        staking.setBaseData(address(vault), bootstrap);
     }
 }

@@ -31,6 +31,8 @@ interface IHexOneVault {
     );
 
     error InvalidAddress();
+    error InvalidFee();
+    error FeeStatusUnchanged();
     error NotHexOneProtocol();
     error InvalidDepositDuration();
     error ZeroDepositAmount();
