@@ -2,7 +2,7 @@
 A yield-bearing stablecoin backed by HEX T-shares. 1 $HEX1 = $1 worth of HEX.
 
 ## TODO
-* HexOneBootstrap - implementation, documentation, natspec, tests.
+* HexOneBootstrap - documentation, natspec, tests.
 * HexOneVault - documentation, natspec, tests.
 * HexOneStaking - documentation, tests.
 * HexOnePriceFeed - documentation, tests.
