@@ -58,6 +58,12 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         _;
     }
 
+    /// @notice checks if hexOneBootstrap is the sender
+    modifier onlyHexOneBootstrap() {
+        require(msg.sender == hexOneBootstrap, "Bootstrap must be the sender");
+        _;
+    }
+
     /// @notice create both HEX and HEXIT pools and set their daily
     /// distribution rate to 1%
     /// @param _hexToken address of the HEX token
@@ -90,9 +96,9 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         hexOneBootstrap = _hexOneBootstrap;
     }
 
-    /// @notice called once to enable staking.
+    /// @notice called once by the bootstrap to enable staking.
     /// @notice staking can only be enabled if there are HEX and HEXIT rewards already deposited.
-    function enableStaking() external onlyOwner {
+    function enableStaking() external onlyHexOneBootstrap {
         require(!stakingEnabled, "Staking already enabled");
         require(pools[hexToken].totalAssets > 0 && pools[hexitToken].totalAssets > 0, "No rewards to distribute");
         stakingEnabled = true;

@@ -2,8 +2,4 @@
 src = "src"
 out = "out"
 libs = ["lib"]
-
-# Used to support older versions of solidity in tests
-auto_detect_solc = true
-fs_permissions = [{ access = "read", path = "./out"}]
-
+solc = "0.8.20"
