@@ -238,7 +238,7 @@ contract HexOneBootstrapTest is Base {
         uint256 multiplier = 5555;
         uint256 baseHexitPerDollar = 2_806_714; // note: corresponding hexit per dollar for the 15th day
         uint256 maxSlippage = 1e16;
-        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage);  
+        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage);
     }
 
     function test_sacrifice_dai_after_15days(uint256 amount) public {
@@ -277,7 +277,7 @@ contract HexOneBootstrapTest is Base {
         uint256 multiplier = 3000;
         uint256 baseHexitPerDollar = 2_806_714; // note: corresponding hexit per dollar for the 15th day
         uint256 maxSlippage = 1e16;
-        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage);    
+        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage);
     }
 
     function test_sacrifice_wpls_after_15days(uint256 amount) public {
@@ -316,7 +316,7 @@ contract HexOneBootstrapTest is Base {
         uint256 multiplier = 2000;
         uint256 baseHexitPerDollar = 2_806_714; // note: corresponding hexit per dollar for the 15th day
         uint256 maxSlippage = 1e16;
-        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage);   
+        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage);
     }
 
     function test_sacrifice_plsx_after_15days(uint256 amount) public {
@@ -356,7 +356,7 @@ contract HexOneBootstrapTest is Base {
         uint256 multiplier = 1000;
         uint256 baseHexitPerDollar = 2_806_714; // note: corresponding hexit per dollar for the 15th day
         uint256 maxSlippage = 1e16;
-        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage); 
+        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage);
     }
 
     function test_sacrifice_hex_after_30days(uint256 amount) public {
@@ -392,7 +392,7 @@ contract HexOneBootstrapTest is Base {
         uint256 multiplier = 5555;
         uint256 baseHexitPerDollar = 1_350_479; // note: corresponding hexit per dollar for the 30th day (last day)
         uint256 maxSlippage = 1e16;
-        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage); 
+        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage);
     }
 
     function test_sacrifice_dai_after_30days(uint256 amount) public {
@@ -431,7 +431,7 @@ contract HexOneBootstrapTest is Base {
         uint256 multiplier = 3000;
         uint256 baseHexitPerDollar = 1_350_479; // note: corresponding hexit per dollar for the 30th day (last sacrifice day)
         uint256 maxSlippage = 1e16;
-        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage);  
+        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage);
     }
 
     function test_sacrifice_wpls_after_30days(uint256 amount) public {
@@ -470,7 +470,7 @@ contract HexOneBootstrapTest is Base {
         uint256 multiplier = 2000;
         uint256 baseHexitPerDollar = 1_350_479; // note: corresponding hexit per dollar for the 30th day
         uint256 maxSlippage = 1e16;
-        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage); 
+        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage);
     }
 
     function test_sacrifice_plsx_after_30days(uint256 amount) public {
@@ -510,7 +510,7 @@ contract HexOneBootstrapTest is Base {
         uint256 multiplier = 1000;
         uint256 baseHexitPerDollar = 1_350_479; // note: corresponding hexit per dollar for the 30th day
         uint256 maxSlippage = 1e16;
-        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage); 
+        assertApproxEqRel(totalHexitShares, (sacrificedUSD * multiplier * baseHexitPerDollar) / 1000, maxSlippage);
     }
 
     function test_sacrifice_revert_sacrificeAlreadyEnded() public {

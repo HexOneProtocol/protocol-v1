@@ -16,55 +16,97 @@ import {IPulseXRouter02 as IPulseXRouter} from "./interfaces/pulsex/IPulseXRoute
 import {IPulseXFactory} from "./interfaces/pulsex/IPulseXFactory.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+/// @title Hex One Bootstrap
+/// @dev handles the bootstraping of initial PulseX liquidity and HEXIT.
 contract HexOneBootstrap is IHexOneBootstrap, Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
 
+    /// @dev base hexit amount per dollar for the first day of the sacrifice.
     uint256 public constant SACRIFICE_HEXIT_INIT_AMOUNT = 5_555_555 * 1e18;
+    /// @dev duration of the sacrifice.
     uint256 public constant SACRIFICE_DURATION = 30 days;
+    /// @dev duration of the sacrifice claim period.
     uint256 public constant SACRIFICE_CLAIM_DURATION = 7 days;
+
+    /// @dev base hexit amount per dollar for the first day of the airdrop.
     uint256 public constant AIRDROP_HEXIT_INIT_AMOUNT = 2_777_778 * 1e18;
+    /// @dev duration of the airdrop.
     uint256 public constant AIRDROP_DURATION = 30 days;
 
+    /// @dev the sacrifice base hexit amount per dollar decreases 4.76% daily.
     uint16 public constant SACRIFICE_DECREASE_FACTOR = 9524;
+    /// @dev the airdrop base hexit amount per dollar decreases 50% daily.
     uint16 public constant AIRDROP_DECREASE_FACTOR = 5000;
 
+    /// @dev fixed point used to calculate percentages.
     uint16 public constant FIXED_POINT = 10_000;
+    /// @dev fixed point used to scale down numbers multiplied by multiplier (5555 for HEX).
     uint16 public constant MULTIPLIER_FIXED_POINT = 1000;
+
+    /// @dev HEXIT rate minted for the team after sacrifice ends.
     uint16 public constant HEXIT_TEAM_RATE = 5000;
+    /// @dev HEXIT rate sent to staking to be distributed as rewards.
     uint16 public constant HEXIT_STAKING_RATE = 3333;
+    /// @dev HEX rate to swap for DAI when sacrifice is being processed.
     uint16 public constant LIQUIDITY_SWAP_RATE = 1250;
 
+    /// @dev address of the pulseXRouter.
     address public immutable pulseXRouter;
+    /// @dev address of the pulseXFactory.
     address public immutable pulseXFactory;
+
+    /// @dev HEX token address.
     address public immutable hexToken;
+    /// @dev HEXIT token address.
     address public immutable hexitToken;
+    /// @dev DAI from ethereum token address.
     address public immutable daiToken;
+    /// @dev HEX1 token address.
     address public immutable hexOneToken;
+
+    /// @dev recipient of the HEXIT tokens minted after sacrifice claim period ends.
     address public immutable teamWallet;
 
-    EnumerableSet.AddressSet private sacrificeTokens;
-
-    mapping(address => uint16) public tokenMultipliers;
-    mapping(address => UserInfo) public userInfos;
-
+    /// @dev HEX1 price feed contract address.
     address public hexOnePriceFeed;
+    /// @dev HEX1 staking contract address.
     address public hexOneStaking;
+    /// @dev HEX1 vault contract address.
     address public hexOneVault;
 
+    /// @dev total amount of HEX sacrificed.
     uint256 public totalHexAmount;
-    uint256 public totalHexitMinted;
+    /// @dev total amount of dollars sacrificed.
     uint256 public totalSacrificedUSD;
+    /// @dev total amount of HEXIT tokens minted during the bootstrap.
+    uint256 public totalHexitMinted;
 
+    /// @dev sacrifice phase inital timestamp.
     uint256 public sacrificeStart;
+    /// @dev sacrifice phase final timestamp.
     uint256 public sacrificeEnd;
+
+    /// @dev sacrifice claim phase final timestamp.
     uint256 public sacrificeClaimPeriodEnd;
 
+    /// @dev airdrop phase inital timestamp.
     uint256 public airdropStart;
+    /// @dev airdrop phase final timestamp.
     uint256 public airdropEnd;
 
+    /// @dev tracks user information like amount sacrificed in dollars, and hexit shares.
+    mapping(address => UserInfo) public userInfos;
+    /// @dev maps each sacrifice token to the corresponding multiplier deposit bonus.
+    mapping(address => uint16) public tokenMultipliers;
+
+    /// @dev flag to store the status of sacrifice.
     bool public sacrificeProcessed;
+    /// @dev flag to store the status of the airdrop.
     bool public airdropStarted;
+
+    /// @dev allowed tokens for sacrifice: HEX, DAI, WPLS & PLSX.
+    EnumerableSet.AddressSet private sacrificeTokens;
 
     constructor(
         address _pulseXRouter,
@@ -91,6 +133,8 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         teamWallet = _teamWallet;
     }
 
+    /// @dev set the address of other protocol contracts.
+    /// @notice can only be called by the owner.
     function setBaseData(address _hexOnePriceFeed, address _hexOneStaking, address _hexOneVault) external onlyOwner {
         if (_hexOnePriceFeed == address(0)) revert InvalidAddress(_hexOnePriceFeed);
         if (_hexOneStaking == address(0)) revert InvalidAddress(_hexOneStaking);
@@ -101,6 +145,8 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         hexOneVault = _hexOneVault;
     }
 
+    /// @dev set the sacrifice token and its corresponding bonus multiplier.
+    /// @notice can only be called by the protocol owner.
     function setSacrificeTokens(address[] calldata _tokens, uint16[] calldata _multipliers) external onlyOwner {
         uint256 length = _tokens.length;
         if (length == 0) revert ZeroLengthArray();
@@ -118,56 +164,43 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         }
     }
 
+    /// @dev set the timestamp in which in the sacrifice period will start.
+    /// @notice can only be called by the protocol owner and can not be a timestamp in the past.
+    /// @param _sacrificeStart timestamp in which the sacrifice is starting.
     function setSacrificeStart(uint256 _sacrificeStart) external onlyOwner {
         if (_sacrificeStart < block.timestamp) revert InvalidTimestamp(block.timestamp);
         sacrificeStart = _sacrificeStart;
         sacrificeEnd = _sacrificeStart + SACRIFICE_DURATION;
     }
 
+    /// @dev returns the current day of the sacrifice.
+    /// @notice if the sacrifice had just been activated this func would return day 1.
     function getCurrentSacrificeDay() public view returns (uint256) {
-        uint256 timestamp = block.timestamp;
+        if (block.timestamp < sacrificeStart) revert SacrificeHasNotStartedYet(block.timestamp);
+        if (block.timestamp >= sacrificeEnd) revert SacrificeAlreadyEnded(block.timestamp);
 
-        // check if sacrifice has already started
-        if (timestamp < sacrificeStart) revert SacrificeHasNotStartedYet(timestamp);
-
-        // check if sacrifice has not ended yet
-        if (timestamp >= sacrificeEnd) revert SacrificeAlreadyEnded(timestamp);
-
-        // if the sacrifice had just started this should return 1
-        return ((timestamp - sacrificeStart) / 1 days) + 1;
+        return ((block.timestamp - sacrificeStart) / 1 days) + 1;
     }
 
+    /// @dev returns the current day of the airdrop.
+    /// @notice if the airdrop had just started this func would return day 1.
     function getCurrentAirdropDay() public view returns (uint256) {
-        uint256 timestamp = block.timestamp;
+        if (block.timestamp < airdropStart) revert AirdropHasNotStartedYet(block.timestamp);
+        if (block.timestamp >= airdropEnd) revert AirdropAlreadyEnded(block.timestamp);
 
-        // check if the airdrop has already started
-        if (timestamp < airdropStart) revert AirdropHasNotStartedYet(timestamp);
-
-        // check if the airdrop has not ended yet
-        if (timestamp >= airdropEnd) revert AirdropAlreadyEnded(timestamp);
-
-        // if the airdrop has just started this should return 1
-        return ((timestamp) - airdropStart / 1 days) + 1;
+        return ((block.timestamp) - airdropStart / 1 days) + 1;
     }
 
-    /// @notice allows user to participate in the sacrifice.
-    /// @dev if the token being sacrificed is HEX the _amontOutMin parameter is ignored
+    /// @dev allows user to participate in the sacrifice.
+    /// @notice if the token being sacrificed is HEX the _amontOutMin parameter can be passed as zero.
     /// @param _token address of the token being sacrificed, must be: HEX, DAI, WPLS, PLSX.
     /// @param _amountIn amount of token being sacrificed.
     /// @param _amountOutMin min amount of HEX token resulting from the swap, this amount must
-    /// be calculated off-chain to avoid frontrunning attacks. note: this parameters can
-    /// be left as zero if sacrificing HEX.
+    /// be calculated off-chain to avoid frontrunning attacks.
     function sacrifice(address _token, uint256 _amountIn, uint256 _amountOutMin) external {
-        // if the token is not allowed revert
         if (!sacrificeTokens.contains(_token)) revert InvalidSacrificeToken(_token);
-
-        // check if the amount being sacrificed is valid
         if (_amountIn == 0) revert InvalidAmountIn(_amountIn);
-
-        // check if sacrifice already started
         if (block.timestamp < sacrificeStart) revert SacrificeHasNotStartedYet(block.timestamp);
-
-        // check if sacrifice has not ended yet
         if (block.timestamp >= sacrificeEnd) revert SacrificeAlreadyEnded(block.timestamp);
 
         // calculate the hexit shares of the token being sacrificed
@@ -181,7 +214,7 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         // update the total amount of USD sacrificed in during the sacrifice phase
         totalSacrificedUSD += amountSacrificedUSD;
 
-        // transfer tokens to the contract
+        // transfer tokens from the sender to the contract
         IERC20(_token).safeTransferFrom(msg.sender, address(this), _amountIn);
 
         if (_token != hexToken) {
@@ -212,21 +245,22 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         emit Sacrificed(msg.sender, _token, _amountIn, amountSacrificedUSD, hexitShares);
     }
 
+    /// @dev swaps 12.5% of HEX to DAI, deposits 12.5% of HEX to mint HEX1 and create a PulseX
+    /// pair of HEX1/DAI with nearly 1:1 ratio.
+    /// @notice can only be called by the owner.
+    /// @param _amountOutMinDai min amount of DAI tokens resulting from swapping HEX to DAI.
     function processSacrifice(uint256 _amountOutMinDai) external onlyOwner {
-        // check if sacrifice has already ended
         if (block.timestamp < sacrificeEnd) revert SacrificeHasNotEndedYet(block.timestamp);
-
-        // check if sacrifice has already been processed.
         if (sacrificeProcessed) revert SacrificeAlreadyProcessed();
 
         // set the sacrifice processed flag to true since the sacrifice was already processed
         sacrificeProcessed = true;
 
-        // compute the HEX to swap, corresponding to 12.5% of the total HEX sacrificed
-        uint256 hexToSwap = (totalHexAmount * LIQUIDITY_SWAP_RATE) / FIXED_POINT;
-
         // update the sacrifice claim period end timestamp
         sacrificeClaimPeriodEnd = block.timestamp + SACRIFICE_CLAIM_DURATION;
+
+        // compute the HEX to swap, corresponding to 12.5% of the total HEX sacrificed
+        uint256 hexToSwap = (totalHexAmount * LIQUIDITY_SWAP_RATE) / FIXED_POINT;
 
         // update the total amount of HEX in the contract by reducing it hexToSwap * 2
         // because 12.5% is used to being swapped to DAI and the other 12.5% are used to mint HEX1
@@ -238,10 +272,8 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         path[0] = hexToken;
         path[1] = daiToken;
 
-        // approve pulseXRouter to spend `hexToSwap`
         IERC20(hexToken).approve(pulseXRouter, hexToSwap);
 
-        // use 12.5% of the inital HEX to mint HEX1 through the vault
         uint256[] memory amountOut = IPulseXRouter(pulseXRouter).swapExactTokensForTokens(
             hexToSwap, _amountOutMinDai, path, address(this), block.timestamp
         );
@@ -249,10 +281,8 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         // enable hex one vault to start working because sacrifice has been processed.
         IHexOneVault(hexOneVault).setSacrificeStatus();
 
-        // approve the vault to spend `hexToSwap`
-        IERC20(hexToken).approve(hexOneVault, hexToSwap);
-
         // create a new deposit for `MAX_DURATION` in the vault with 12.5% of the total minted HEX
+        IERC20(hexToken).approve(hexOneVault, hexToSwap);
         (uint256 hexOneMinted,) = IHexOneVault(hexOneVault).deposit(hexToSwap, 5555);
 
         // check if there's an already created HEX1/DAI pair
@@ -266,7 +296,6 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         IERC20(daiToken).approve(pulseXRouter, amountOut[1]);
 
         // use the newly minted HEX1 + DAI from ETH and create an LP with 1:1 ratio
-        // note: since the pair has no liquidity I'm passing real amount and desired amounts as the same values
         (uint256 amountHexOneSent, uint256 amountDaiSent, uint256 liquidity) = IPulseXRouter(pulseXRouter).addLiquidity(
             hexOneToken,
             daiToken,
@@ -281,6 +310,7 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         emit SacrificeProcessed(hexOneDaiPair, amountHexOneSent, amountDaiSent, liquidity);
     }
 
+    /// @dev claim HEXIT and HEXIT based on the total amount sacrificed.
     function claimSacrifice() external returns (uint256 stakeId, uint256 hexOneMinted, uint256 hexitMinted) {
         // check if sacrifice has already been processed
         if (!sacrificeProcessed) revert SacrificeHasNotBeenProcessedYet();
@@ -324,11 +354,11 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         emit SacrificeClaimed(msg.sender, hexOneMinted, hexitMinted);
     }
 
+    /// @dev mints 33% on top of the total hexit minted during sacrifice to the staking
+    /// contract and an addittional 
+    /// @notice can only be called by the owner of the contract.
     function startAidrop() external onlyOwner {
-        // check if the sacrifice claim period already ended (7 days)
         if (block.timestamp < sacrificeClaimPeriodEnd) revert SacrificeClaimPeriodHasNotFinished(block.timestamp);
-
-        // check if airdrop was already started
         if (airdropStarted) revert AirdropAlreadyStarted();
 
         // 50% more of the total HEXIT minted during the sacrifice phase is minted to
@@ -365,11 +395,10 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         emit AirdropStarted(hexitTeamAlloc, hexitStakingAlloc);
     }
 
+    /// @dev amount of HEXIT being airdrop is computed based on the amount of HEX sacrificed
+    /// and the amount of HEX in USD the user has staked.
     function claimAirdrop() external {
-        // check if the airdrop has already started
         if (block.timestamp < airdropStart) revert AirdropHasNotStartedYet(block.timestamp);
-
-        // check if the airdrop has not ended yet
         if (block.timestamp >= airdropEnd) revert AirdropAlreadyEnded(block.timestamp);
 
         // check if the sender already claimed the airdrop
@@ -390,6 +419,9 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         emit AirdropClaimed(msg.sender, hexitShares);
     }
 
+    /// @dev computes the amount of HEXIT tokens based on the amount sacrificed.
+    /// @param _tokenIn address of the token being sacrificed.
+    /// @param _amountIn amount of tokenIn being sacrificed.
     function _calculateHexitSacrificeShares(address _tokenIn, uint256 _amountIn)
         internal
         returns (uint256 hexitShares, uint256 sacrificedUSD)
@@ -421,6 +453,9 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         hexitShares = (9 * sacrificedUSD) + hexStakedUSD + _airdropBaseHexitPerDollar();
     }
 
+    /// @dev tries to consult the price of `tokenIn` in `tokenOut`.
+    /// @notice if consult reverts with PriceTooStale then it needs to
+    /// update the oracle and only then consult the price again.
     function _consultTokenPrice(address _tokenIn, uint256 _amountIn, address _tokenOut) internal returns (uint256) {
         try IHexOnePriceFeed(hexOnePriceFeed).consult(_tokenIn, _amountIn, _tokenOut) returns (uint256 amountOut) {
             if (amountOut == 0) revert InvalidQuote(amountOut);
@@ -443,38 +478,40 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         }
     }
 
+    /// @dev computes the amount of HEXIT per dollar to distribute based on the
+    /// current sacrifice day.
     function _sacrificeBaseHexitPerDollar() internal view returns (uint256 baseHexit) {
         uint256 currentSacrificeDay = getCurrentSacrificeDay();
         if (currentSacrificeDay == 1) {
             return SACRIFICE_HEXIT_INIT_AMOUNT;
         }
 
-        // starts in day 2 because day one is already handled
         baseHexit = SACRIFICE_HEXIT_INIT_AMOUNT;
         for (uint256 i = 2; i <= currentSacrificeDay; ++i) {
             baseHexit = (baseHexit * SACRIFICE_DECREASE_FACTOR) / FIXED_POINT;
         }
     }
 
+    /// @dev computes the amount of HEXIT per dollar to distribute based on the
+    /// current airdrop day.
     function _airdropBaseHexitPerDollar() internal view returns (uint256 baseHexit) {
         uint256 currentAirdropDay = getCurrentAirdropDay();
         if (currentAirdropDay == 1) {
             return AIRDROP_HEXIT_INIT_AMOUNT;
         }
 
-        // starts in day 2 because day one is already handled
         baseHexit = AIRDROP_HEXIT_INIT_AMOUNT;
         for (uint256 i = 2; i <= currentAirdropDay; ++i) {
             baseHexit = (baseHexit * SACRIFICE_DECREASE_FACTOR) / FIXED_POINT;
         }
     }
 
+    /// @dev computes the amount of HEX the user has in staking.
+    /// @notice HEX is calculating by the share rate of t-shares.
+    /// @param _user address of HEX staker.
     function _getHexStaked(address _user) internal view returns (uint256 hexAmount) {
         uint256 stakeCount = IHexToken(hexToken).stakeCount(_user);
         if (stakeCount == 0) return 0;
-
-        // note: potential denial of service issue if sender has many stakes!
-        // no clue how to solve this issue yet
 
         uint256 shares;
         for (uint256 i; i < stakeCount; ++i) {
@@ -483,9 +520,6 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         }
 
         IHexToken.GlobalsStore memory globals = IHexToken(hexToken).globals();
-        uint256 shareRate = uint256(globals.shareRate); 
-
-        hexAmount = uint256((shares * shareRate) / 1e5);
+        hexAmount = uint256((shares * uint256(globals.shareRate)) / 1e5);
     }
-
 }

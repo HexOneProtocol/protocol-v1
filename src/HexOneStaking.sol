@@ -5,66 +5,67 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IHexOneStaking} from "./interfaces/IHexOneStaking.sol";
 import {TokenUtils} from "./utils/TokenUtils.sol";
 
-/// @title HexOneStaking
-/// @notice Distributes 1% of the HEX and HEXIT available daily.
-/// @dev pool tokens  -> HEXIT and HEX
-///      stake tokens -> HEXIT, HEX1 and HEX1/DAI
+/// @title Hex One Staking
+/// @dev Distributes 1% of the HEX and HEXIT available daily.
+/// @notice pool tokens  -> HEXIT and HEX
+///         stake tokens -> HEXIT, HEX1 and HEX1/DAI
 contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
-    /// @notice using EnumerableSet OZ library for addresses
+    /// @dev using EnumerableSet OZ library for addresses
     using EnumerableSet for EnumerableSet.AddressSet;
-    /// @notice using safeERC20 OZ library
+    /// @dev using safeERC20 OZ library
     using SafeERC20 for IERC20;
 
-    /// @notice tokens that are allowed to be staked.
+    /// @dev tokens that are allowed to be staked.
     EnumerableSet.AddressSet private stakeTokens;
 
-    /// @notice pool token => Pool
+    /// @dev pool token => Pool
     mapping(address => Pool) public pools;
-    /// @notice stake token => distribution weight (10%, 20% or 70%)
+    /// @dev stake token => distribution weight (10%, 20% or 70%)
     mapping(address => uint256) public stakeTokenWeights;
 
-    /// @notice current staking day => pool token => PoolRewards
+    /// @dev current staking day => pool token => PoolRewards
     mapping(uint256 => mapping(address => PoolHistory)) public poolHistory;
-    /// @notice the timestamp in which the staking launched
+    /// @dev the timestamp in which the staking launched
     uint256 public stakingLaunchTime;
-    /// @notice tracks if staking is enabled or not
+    /// @dev tracks if staking is enabled or not
     bool public stakingEnabled;
 
-    /// @notice user address => stake token => StakeInfo
+    /// @dev user address => stake token => StakeInfo
     mapping(address => mapping(address => StakeInfo)) public stakingInfos;
-    /// @notice stake token => total amount of token staked
+    /// @dev stake token => total amount of token staked
     mapping(address => uint256) public totalStakedAmount;
 
-    /// @notice address of the HEX token
+    /// @dev address of the HEX token
     address public immutable hexToken;
-    /// @notice address of the HEXIT token
+    /// @dev address of the HEXIT token
     address public immutable hexitToken;
 
-    /// @notice address of the hexOneVault
+    /// @dev address of the hexOneVault
     address public hexOneVault;
-    /// @notice address of the HexOneBootstrap
+    /// @dev address of the HexOneBootstrap
     address public hexOneBootstrap;
 
-    /// @notice fixed point is used to calculate ratios in bps
+    /// @dev fixed point is used to calculate ratios in bps
     uint16 public constant FIXED_POINT = 1000;
 
-    /// @notice checks if staking is enabled
+    /// @dev checks if staking is enabled
     modifier onlyWhenStakingEnabled() {
         require(stakingEnabled, "Staking not enabled");
         _;
     }
 
-    /// @notice checks if hexOneBootstrap is the sender
+    /// @dev checks if hexOneBootstrap is the sender
     modifier onlyHexOneBootstrap() {
         require(msg.sender == hexOneBootstrap, "Bootstrap must be the sender");
         _;
     }
 
-    /// @notice create both HEX and HEXIT pools and set their daily
+    /// @dev create both HEX and HEXIT pools and set their daily
     /// distribution rate to 1%
     /// @param _hexToken address of the HEX token
     /// @param _hexitToken address of the HEXIT token
@@ -86,7 +87,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         hexitPool.distributionRate = _hexitDistRate;
     }
 
-    /// @notice set the address of the Vault and Bootstrap
+    /// @dev set the address of the Vault and Bootstrap
     /// @param _hexOneVault address of the HexOneVault.
     /// @param _hexOneBootstrap address of the HexOneBootstrap.
     function setBaseData(address _hexOneVault, address _hexOneBootstrap) external onlyOwner {
@@ -96,8 +97,8 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         hexOneBootstrap = _hexOneBootstrap;
     }
 
-    /// @notice called once by the bootstrap to enable staking.
-    /// @notice staking can only be enabled if there are HEX and HEXIT rewards already deposited.
+    /// @dev called once by the bootstrap to enable staking.
+    /// staking can only be enabled if there are HEX and HEXIT rewards already deposited.
     function enableStaking() external onlyHexOneBootstrap {
         require(!stakingEnabled, "Staking already enabled");
         require(pools[hexToken].totalAssets > 0 && pools[hexitToken].totalAssets > 0, "No rewards to distribute");
@@ -105,7 +106,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         stakingLaunchTime = block.timestamp;
     }
 
-    /// @notice add tokens that can be used to earn staking rewards.
+    /// @dev add tokens that can be used to earn staking rewards.
     /// @param _tokens addresses of each token to be added as a stake token.
     /// @param _weights distribution rate for the respective token in bps.
     function setStakeTokens(address[] calldata _tokens, uint16[] calldata _weights) external onlyOwner {
@@ -124,8 +125,8 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         }
     }
 
-    /// @notice adds HEX or HEXIT to the pool incrementing total assets.
-    /// @dev to add HEX the caller must be HexOneVault
+    /// @dev adds HEX or HEXIT to the pool incrementing total assets.
+    /// @notice to add HEX the caller must be HexOneVault
     /// and to add HEXIT the caller must be HexOneBootstrap.
     /// @param _poolToken address of the pool token.
     /// @param _amount of HEX tokens to be added to the pool to be distributed.
@@ -151,7 +152,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         IERC20(_poolToken).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
-    /// @notice allow users to stake HEXIT, HEX1 or HEX1/DAI to earn HEX and HEXIT rewards.
+    /// @dev allow users to stake HEXIT, HEX1 or HEX1/DAI to earn HEX and HEXIT rewards.
     /// @param _stakeToken address of the token being staked.
     /// @param _amount of token being staked.
     function stake(address _stakeToken, uint256 _amount) external nonReentrant onlyWhenStakingEnabled {
@@ -190,7 +191,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         stakeInfo.hexitSharesAmount += shares;
     }
 
-    /// @notice unstake HEXIT, HEX1 or HEX1/DAI.
+    /// @dev unstake HEXIT, HEX1 or HEX1/DAI.
     /// @param _stakeToken address of the stake token.
     /// @param _amount amount to unstake.
     function unstake(address _stakeToken, uint256 _amount) external nonReentrant onlyWhenStakingEnabled {
@@ -242,7 +243,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         IERC20(_stakeToken).safeTransfer(msg.sender, _amount);
     }
 
-    /// @notice claim accrued rewards earned by the stake token.
+    /// @dev claim accrued rewards earned by the stake token.
     /// @param _stakeToken address of the token staked.
     function claim(address _stakeToken) external nonReentrant onlyWhenStakingEnabled {
         require(stakeTokens.contains(_stakeToken), "Token not allowed");
@@ -272,7 +273,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         }
     }
 
-    /// @notice returns the amount of days that passed since the staking started.
+    /// @dev returns the amount of days that passed since the staking started.
     function getCurrentStakingDay() public view returns (uint256) {
         if (stakingLaunchTime == 0) {
             return 0;
@@ -281,7 +282,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         }
     }
 
-    /// @notice accrue rewards and add them as unclaimed for HEX and HEXIT.
+    /// @dev accrue rewards and add them as unclaimed for HEX and HEXIT.
     /// @param _user address of the user staking
     /// @param _stakeToken address of the stake token
     function _accrueRewards(address _user, address _stakeToken) internal {
@@ -306,7 +307,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         stakeInfo.unclaimedHexit += hexitRewards;
     }
 
-    /// @notice updates daily rewards since they were last updated
+    /// @dev updates daily rewards since they were last updated
     /// @param _poolToken address of the pool token
     function _updatePoolHistory(address _poolToken) internal {
         Pool storage pool = pools[_poolToken];
@@ -333,7 +334,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         pool.currentStakingDay = currentStakingDay;
     }
 
-    /// @notice calculates HEX and HEXIT rewards since the user last claimed.
+    /// @dev calculates HEX and HEXIT rewards since the user last claimed.
     /// @param _user address of the user.
     /// @param _stakeToken address of the stake token.
     function _calculateRewards(address _user, address _stakeToken)
@@ -360,8 +361,8 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         stakeInfo.lastClaimedDay = lastClaimedDay;
     }
 
-    /// @notice transfers an ERC20.
-    /// @dev this function is used to handle tokens with fee mechanisms.
+    /// @dev transfers an ERC20.
+    /// @notice this function is used to handle tokens with fee mechanisms.
     /// @param _token address of the token.
     /// @param _from address from where the tokens are being transfered.
     /// @param _to address to where the tokens are being transfered.
@@ -373,8 +374,8 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         return balanceAfter - balanceBefore;
     }
 
-    /// @notice calculates the shares to be given to the user depending on the token staked
-    /// @dev shares are always 18 decimals, so depending on the token it might need to be scaled up or down.
+    /// @dev calculates the shares to be given to the user depending on the token staked
+    /// @notice shares are always 18 decimals, so depending on the token it might need to be scaled up or down.
     /// @param _stakeToken address of the stake token.
     /// @param _amount amount of stake token.
     function _calculateShares(address _stakeToken, uint256 _amount) internal view returns (uint256) {
@@ -382,7 +383,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         return _convertToShares(_stakeToken, shares);
     }
 
-    /// @notice converts the amount of token to shares precision (18 decimals).
+    /// @dev converts the amount of token to shares precision (18 decimals).
     /// @param _token address of the token being converted.
     /// @param _amount of the token to be scaled up or down.
     function _convertToShares(address _token, uint256 _amount) internal view returns (uint256) {

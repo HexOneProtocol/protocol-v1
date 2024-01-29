@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.20;
 
-import {IHexOnePriceFeed} from "./interfaces/IHexOnePriceFeed.sol";
 import {UniswapV2OracleLibrary} from "./libraries/UniswapV2OracleLibrary.sol";
 import {UniswapV2Library} from "./libraries/UniswapV2Library.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {FixedPoint} from "./libraries/FixedPoint.sol";
+
+import {IHexOnePriceFeed} from "./interfaces/IHexOnePriceFeed.sol";
 import {IPulseXPair} from "./interfaces/pulsex/IPulseXPair.sol";
 
 /// @title HexOnePriceFeed
@@ -28,17 +29,17 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
         FixedPoint.uq112x112 price1Average;
     }
 
-    /// @notice pairs supported by the oracle.
+    /// @dev pairs supported by the oracle.
     EnumerableSet.AddressSet private pairTokens;
 
-    /// @notice period in which the oracle becomes stale.
+    /// @dev period in which the oracle becomes stale.
     uint256 public constant PERIOD = 1 hours;
 
-    /// @notice address of the pulsex factory.
+    /// @dev address of the pulsex factory.
     address public immutable factory;
-    /// @notice stores the last observed cumulative prices of each token pair.
+    /// @dev stores the last observed cumulative prices of each token pair.
     mapping(address => Observation) public pairLastObservation;
-    /// @notice stores the average price of each token between the last two observations.
+    /// @dev stores the average price of each token between the last two observations.
     mapping(address => PriceAverage) public pairPriceAverage;
 
     /// @param _factory address of the pulsex factory.
@@ -48,15 +49,12 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
         if (_factory == address(0)) revert InvalidFactory(_factory);
 
         for (uint256 i; i < _pairs.length; i++) {
+            // check if pair was already added
             address pair = _pairs[i];
-
-            // check if already added
             if (pairTokens.contains(pair)) revert PairAlreadyAdded(pair);
 
-            // cast pair address to a pulsex pair
-            IPulseXPair pulseXPair = IPulseXPair(pair);
-
             // get the reserves of the pair and the last time the reserves were updated
+            IPulseXPair pulseXPair = IPulseXPair(pair);
             (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) = pulseXPair.getReserves();
 
             // check if pair has reserves
@@ -80,8 +78,8 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
         factory = _factory;
     }
 
-    /// @notice updates the average price of both tokens of the pair.
-    /// @dev the average price can not be updated if the time elapsed since the last
+    /// @dev updates the average price of both tokens of the pair.
+    /// @notice the average price can not be updated if the time elapsed since the last
     /// update is less than `PERIOD`.
     /// @param _tokenA address of the token we want a quote from.
     /// @param _tokenB address of the token we are receiving the price in.
@@ -123,8 +121,8 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
         emit PriceUpdated(pair);
     }
 
-    /// @notice consult the price of a token.
-    /// @dev if price has not been updated for `PERIOD` the price is considered stale.
+    /// @dev consult the price of a token.
+    /// @notice if price has not been updated for `PERIOD` the price is considered stale.
     /// @param _tokenIn address of the token we want a quote from.
     /// @param _amountIn amount of tokenIn to calculate the amountOut based on price.
     /// @param _tokenOut address of the token we are receiving the price in.
@@ -143,10 +141,8 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
         // if the price was not updated for PERIOD then the transaction should revert
         if (timeElapsed >= PERIOD) revert PriceTooStale();
 
-        // sort the tokens
-        (address token0,) = UniswapV2Library.sortTokens(_tokenIn, _tokenOut);
-
         // compute the amount out
+        (address token0,) = UniswapV2Library.sortTokens(_tokenIn, _tokenOut);
         if (token0 == _tokenIn) {
             amountOut = pairPriceAverage[pair].price0Average.mul(_amountIn).decode144();
         } else {
