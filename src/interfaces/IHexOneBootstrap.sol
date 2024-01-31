@@ -47,4 +47,16 @@ interface IHexOneBootstrap {
     error AirdropAlreadyStarted();
     error AirdropAlreadyClaimed(address sender);
     error IneligibleForAirdrop(address sender);
+
+    function getCurrentSacrificeDay() external view returns (uint256);
+    function getCurrentAirdropDay() external view returns (uint256);
+
+    function setBaseData(address _hexOnePriceFeed, address _hexOneStaking, address _hexOneVault) external;
+    function setSacrificeTokens(address[] calldata _tokens, uint16[] calldata _multipliers) external;
+    function setSacrificeStart(uint256 _sacrificeStart) external;
+    function sacrifice(address _token, uint256 _amountIn, uint256 _amountOutMin) external;
+    function processSacrifice(uint256 _amountOutMinDai) external;
+    function claimSacrifice() external returns (uint256 stakeId, uint256 hexOneMinted, uint256 hexitMinted);
+    function startAirdrop() external;
+    function claimAirdrop() external;
 }

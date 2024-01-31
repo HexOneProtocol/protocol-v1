@@ -355,9 +355,9 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
     }
 
     /// @dev mints 33% on top of the total hexit minted during sacrifice to the staking
-    /// contract and an addittional 
+    /// contract and an addittional
     /// @notice can only be called by the owner of the contract.
-    function startAidrop() external onlyOwner {
+    function startAirdrop() external onlyOwner {
         if (block.timestamp < sacrificeClaimPeriodEnd) revert SacrificeClaimPeriodHasNotFinished(block.timestamp);
         if (airdropStarted) revert AirdropAlreadyStarted();
 

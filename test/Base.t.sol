@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.20;
 
+import {Test, console2 as console} from "forge-std/Test.sol";
+
 import {HexOneToken} from "../src/HexOneToken.sol";
 import {HexitToken} from "../src/HexitToken.sol";
 import {HexOneStaking} from "../src/HexOneStaking.sol";
 import {HexOnePriceFeed} from "../src/HexOnePriceFeed.sol";
 import {HexOneVault} from "../src/HexOneVault.sol";
 import {HexOneBootstrap} from "../src/HexOneBootstrap.sol";
+
+import {UniswapV2Library} from "../src/libraries/UniswapV2Library.sol";
 
 import {IHexOneToken} from "../src/interfaces/IHexOneToken.sol";
 import {IHexitToken} from "../src/interfaces/IHexitToken.sol";
@@ -15,13 +19,9 @@ import {IHexOnePriceFeed} from "../src/interfaces/IHexOnePriceFeed.sol";
 import {IHexOneVault} from "../src/interfaces/IHexOneVault.sol";
 import {IHexOneBootstrap} from "../src/interfaces/IHexOneBootstrap.sol";
 
-import {UniswapV2Library} from "../src/libraries/UniswapV2Library.sol";
-
 import {IPulseXPair} from "../src/interfaces/pulsex/IPulseXPair.sol";
 import {IPulseXFactory} from "../src/interfaces/pulsex/IPulseXFactory.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-import {Test, console2 as console} from "forge-std/Test.sol";
 
 contract Base is Test {
     HexOneToken public hex1;
@@ -43,6 +43,7 @@ contract Base is Test {
     address public plsxToken = 0x95B303987A60C71504D99Aa1b13B4DA07b0790ab;
 
     address public user = makeAddr("user");
+    address public attacker = makeAddr("attacker");
     address public deployer = makeAddr("deployer");
     address public receiver = makeAddr("receiver");
 

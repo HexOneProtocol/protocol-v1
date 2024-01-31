@@ -174,7 +174,6 @@ contract HexOneVault is IHexOneVault, Ownable {
         emit Claimed(msg.sender, _stakeId, hexClaimed, hexOneBorrowed);
     }
 
-
     /// @dev borrow HEX1 against an HEX stake.
     /// @param _amount HEX1 user wants to borrow.
     /// @param _stakeId id of HEX stake the user is borrowing against.
@@ -245,7 +244,7 @@ contract HexOneVault is IHexOneVault, Ownable {
         emit Liquidated(msg.sender, _depositor, _stakeId, hexAmount, hexOneRepaid);
     }
 
-    /// @notice takes a 5% fee to be distributed as a staking reward. 
+    /// @notice takes a 5% fee to be distributed as a staking reward.
     /// @param _depositor address of the user depositing.
     /// @param _amount amount of HEX being deposited.
     /// @param _duration of the HEX stake.
@@ -296,7 +295,7 @@ contract HexOneVault is IHexOneVault, Ownable {
     }
 
     /// @dev tries to consult the price of HEX in DAI (dollars).
-    /// @notice if consult reverts with PriceTooStale then it needs to 
+    /// @notice if consult reverts with PriceTooStale then it needs to
     /// update the oracle and only then consult the price again.
     function _getHexPrice(uint256 _amountIn) internal returns (uint256) {
         try IHexOnePriceFeed(hexOnePriceFeed).consult(hexToken, _amountIn, daiToken) returns (uint256 amountOut) {

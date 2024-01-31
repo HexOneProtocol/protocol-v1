@@ -163,7 +163,7 @@ function claimSacrifice() external returns (uint256 stakeId, uint256 hexOneMinte
 
 Allows sacrifice participants to mint their ``HEXIT`` allocation, and mint ``HEX1`` through the Hex One Vault, based on the participant's sacrificed USD.
 
-* Emits [SacrificeClaimed](#sacrificeclaimed)
+* Emits [SacrificeClaimed](#sacrificeclaimed).
 
 ### startAirdrop
 ```solidity
@@ -172,7 +172,7 @@ function startAidrop() external;
 
 Can only be called once by the owner to start the aidrop. On top of the total ``HEXIT`` minted during sacrifice 50% more HEXIT is minted to the `teamWallet`, and another 33% is minted to the Hex One Staking contract be distributed as staking rewards.
 
-* Emits [AirdropStared](#airdropstarted)
+* Emits [AirdropStared](#airdropstarted).
 
 ### claimAirdrop
 ```solidity
@@ -180,4 +180,4 @@ function claimAirdrop() external;
 ```
 Allows `HEX` stakers and sacrifice participants to claim `HEXIT`.
 
-* Emits [AirdropClaimed](#airdropclaimed)
+* Emits [AirdropClaimed](#airdropclaimed).
