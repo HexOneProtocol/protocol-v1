@@ -1,4 +1,8 @@
-## HexOneVault
+# HexOneVault.sol
+## Overview
+The Hex One Vault allows depositors to create a new `HEX` stake and borrow `HEX1` in a 1:1 ratio against it's dollar value. Depositors can always claim their underlying HEX + yield by repaying the exact borrowed amount of `HEX1` regardless of its dollar value. In the event of an HEX1/USD depeg depositors will **always** be able to claim their `HEX` stake.
+
+Depositors may be susceptible to liquidation if they do not claim their deposit within a 7-day grace period following the end of the deposit. The deposit duration ranges from a minimum of 3642 days to a maximum of 5555 days.
 
 ## Structs
 ### DepositInfo
@@ -12,6 +16,7 @@ struct DepositInfo {
     bool active;
 }
 ```
+Tracks deposit data for specific `stakeId` owned by a specific `depositor`.
 
 ### UserInfo
 ```solidity
@@ -21,6 +26,7 @@ struct UserInfo {
     uint256 totalBorrowed;
 }
 ```
+Tracks deposit data for every deposit owned by a specific `depositor`.
 
 ## Events
 ### VaultActivated
@@ -28,7 +34,7 @@ struct UserInfo {
 event VaultActivated(uint256 timestamp);
 ```
 
-Emitted each time tokens are sacrificed via [sacrifice](#sacrifice).
+Emitted once when the Vault is activated by the Hex One Bootstrap via [setVaultStatus](#setsacrificestatus).
 
 ### Deposited
 ```solidity
@@ -42,15 +48,21 @@ event Deposited(
 );
 ```
 
+Emitted each time a new deposit is created via [deposit](#deposit) or [delegateDeposit](#delegatedeposit).
+
 ### Claimed
 ```solidity
 event Claimed(address indexed depositor, uint256 indexed stakeId, uint256 hexClaimed, uint256 hexOneRepaid);
 ```
 
+Emitted each time a deposit is claimed via [claim](#claim).
+
 ### Borrowed 
 ```solidity
 event Borrowed(address indexed depositor, uint256 indexed stakeId, uint256 hexOneBorrowed);
 ```
+
+Emitted each time a depositor borrows against his deposit via [borrow](#borrow).
 
 ### Liquidated
 ```solidity
@@ -63,14 +75,17 @@ event Liquidated(
 );
 ```
 
+Emited each time a depositor is liquidated via [liquidate](#liquidate).
+
 ## State-Changing Functions
 
 ### setSacrificeStatus
 ```solidity
 function setSacrificeStatus() external;
 ```
-
 Called by the Hex One Bootstrap to activate vault funcionality.
+
+* Emits [VaultActivated](#vaultactivated).
 
 ### setBaseData
 ```solidity
@@ -80,3 +95,36 @@ function setBaseData(address _hexOnePriceFeed, address _hexOneStaking, address _
 Used by the owner to configure other protocol contract addresses.
 
 ### deposit
+```solidity
+function deposit(uint256 _amount, uint16 _duration) external returns (uint256 amount, uint256 stakeId);
+```
+
+* Emits [Deposited](#deposited).
+
+### delegateDeposit
+```solidity
+function delegateDeposit (address depositor, uint256 _amount, uint16 _duration) external returns (uint256 amount, uint256 stakeId);
+```
+
+* Emits [Deposited](#deposited).
+
+### claim
+```solidity
+function claim(uint256 _stakeId) external returns (uint256);
+```
+
+* Emits [Claimed](#claimed).
+
+### borrow
+```solidity
+function borrow(uint256 _amount, uint256 _stakeId) external;
+```
+
+* Emits [Borrowed](#borrowed).
+  
+### liquidate
+```solidity
+function liquidate(address _depositor, uint256 _stakeId) external returns (uint256 hexAmount);
+```
+
+* Emits [Liquidated](#liquidated).
