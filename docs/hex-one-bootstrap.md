@@ -110,7 +110,6 @@ event AirdropClaimed(address indexed user, uint256 hexitMinted);
 ```
 Emitted each time a user claims its airdrop rewards via [claimAirdrop](#claimairdrop).
 
-
 ## Read-Only Functions
 
 ### getCurrentSacrificeDay
@@ -124,7 +123,6 @@ Returns the current day of the sacrifice since ``sacrificeStart``. Reverts if sa
 function getCurrentAirdropDay() public view returns (uint256);
 ```
 Returns the current day of the airdrop since ``airdropStart``. Reverts if airdrop has not started yet or if its already finished.
-
 
 ## State-Changing Functions
 
@@ -172,7 +170,7 @@ Can only be called once by the owner to bootstrap HEX1/DAI liquidity and enable 
 function claimSacrifice() external returns (uint256 stakeId, uint256 hexOneMinted, uint256 hexitMinted);
 ```
 
-Allows sacrifice participants to mint their ``HEXIT`` allocation, and mint ``HEX1`` through the Hex One Vault, based on the participant's sacrificed USD.
+Allows sacrifice participants to mint their ``HEXIT`` allocation, and mint ``HEX1`` based on the participant's sacrificed USD through the ``hexOneVault``.
 
 * Emits [SacrificeClaimed](#sacrificeclaimed).
 
