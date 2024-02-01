@@ -114,7 +114,7 @@ contract HexOneVault is IHexOneVault, Ownable {
     /// @param _depositor address of the user depositing.
     /// @param _amount amount of HEX being deposited.
     /// @param _duration of the HEX stake.
-    function deposit(address _depositor, uint256 _amount, uint16 _duration)
+    function delegateDeposit(address _depositor, uint256 _amount, uint16 _duration)
         external
         onlyAfterSacrifice
         onlyHexOneBootstrap
@@ -124,7 +124,7 @@ contract HexOneVault is IHexOneVault, Ownable {
         if (_amount == 0) revert InvalidDepositAmount(_amount);
         if (_depositor == address(0)) revert InvalidDepositor(_depositor);
 
-        IERC20(hexToken).safeTransferFrom(hexOneBootstrap, address(this), _amount);
+        IERC20(hexToken).safeTransferFrom(msg.sender, address(this), _amount);
 
         return _deposit(_depositor, _amount, _duration);
     }

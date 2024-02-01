@@ -346,7 +346,7 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         IERC20(hexToken).approve(hexOneVault, hexToStake);
 
         // call the vault to mint HEX1 in the name of the sender
-        (hexOneMinted, stakeId) = IHexOneVault(hexOneVault).deposit(msg.sender, hexToStake, 5555);
+        (hexOneMinted, stakeId) = IHexOneVault(hexOneVault).delegateDeposit(msg.sender, hexToStake, 5555);
 
         // mint hexit
         IHexitToken(hexitToken).mint(msg.sender, hexitMinted);

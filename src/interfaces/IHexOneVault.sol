@@ -56,7 +56,7 @@ interface IHexOneVault {
 
     function setSacrificeStatus() external;
     function setBaseData(address _hexOnePriceFeed, address _hexOneStaking, address _hexOneVault) external;
-    function deposit(address depositor, uint256 _amount, uint16 _duration)
+    function delegateDeposit(address depositor, uint256 _amount, uint16 _duration)
         external
         returns (uint256 amount, uint256 stakeId);
     function deposit(uint256 _amount, uint16 _duration) external returns (uint256 amount, uint256 stakeId);
