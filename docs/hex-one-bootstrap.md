@@ -62,6 +62,17 @@ The Airdrop Base Daily HEXIT decreases 50% daily for 30 days.
 |      25       |    0.166         |
 |      30       |    0.005         |
 
+## Structs
+```solidity
+struct UserInfo {
+    uint256 hexitShares;
+    uint256 sacrificedUSD;
+    bool claimedSacrifice;
+    bool claimedAirdrop;
+}
+```
+Tracks user sacrifice allocation of HEXIT, the total amount sacrificed in USD, and reward claim flags for both the sacrifice and airdrop phases.
+
 ## Events
 ### Sacrificed
 ```solidity
