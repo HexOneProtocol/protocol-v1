@@ -411,7 +411,10 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         if (hexitShares == 0) revert IneligibleForAirdrop(msg.sender);
 
         // increment the total amount of hexit minted by the contract
-        totalHexitMinted += hexitShares;
+        totalHexitMinted += hexitShares;   
+
+        // set the claimed airdrop flag to true because airdrop was claimed
+        userInfo.claimedAirdrop = true;     
 
         // mint HEXIT to the sender
         IHexitToken(hexitToken).mint(msg.sender, hexitShares);
