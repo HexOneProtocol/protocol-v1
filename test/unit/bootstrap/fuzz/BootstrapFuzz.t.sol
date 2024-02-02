@@ -1,45 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.20;
 
-import "../Base.t.sol";
+import "../../../Base.t.sol";
+
+import {BootstrapHelper} from "../BootstrapHelper.sol";
 
 /**
- *  @dev forge test --match-contract HexOneBootstrapTest --rpc-url "https://rpc.pulsechain.com" -vvv
+ *  @dev forge test --match-contract BootstrapFuzzTest --rpc-url "https://rpc.pulsechain.com" -vvv
  */
-contract HexOneBootstrapTest is Base {
-
-    /*//////////////////////////////////////////////////////////////////////////
-                                    CONFIGURATION
-    //////////////////////////////////////////////////////////////////////////*/
-
-    function test_deployment() public {
-        assertEq(bootstrap.pulseXRouter(), address(pulseXRouter));
-        assertEq(bootstrap.pulseXFactory(), address(pulseXFactory));
-        assertEq(bootstrap.hexToken(), hexToken);
-        assertEq(bootstrap.hexitToken(), address(hexit));
-        assertEq(bootstrap.daiToken(), daiToken);
-        assertEq(bootstrap.hexOneToken(), address(hex1));
-        assertEq(bootstrap.teamWallet(), receiver);
-    }
-
-    function test_setBaseData() public {
-        assertEq(bootstrap.hexOnePriceFeed(), address(feed));
-        assertEq(bootstrap.hexOneStaking(), address(staking));
-        assertEq(bootstrap.hexOneVault(), address(vault));
-    }
-
-    function test_setSacrificeTokens() public {
-        assertEq(bootstrap.tokenMultipliers(hexToken), 5555);
-        assertEq(bootstrap.tokenMultipliers(daiToken), 3000);
-        assertEq(bootstrap.tokenMultipliers(wplsToken), 2000);
-        assertEq(bootstrap.tokenMultipliers(plsxToken), 1000);
-    }
-
-    function test_setSacrificeStart() public {
-        assertEq(bootstrap.sacrificeStart(), block.timestamp);
-        assertEq(bootstrap.sacrificeEnd(), block.timestamp + 30 days);
-    }
-
+contract BootstrapFuzzTest is BootstrapHelper {
     /*//////////////////////////////////////////////////////////////////////////
                                     SACRIFICE
     //////////////////////////////////////////////////////////////////////////*/
@@ -435,37 +404,6 @@ contract HexOneBootstrapTest is Base {
         assertApproxEqRel(totalHexitShares, expectedHexitShares, maxSlippage);
     }
 
-    function test_sacrifice_revert_sacrificeHasNotStartedYet() public {
-        // start impersionating user
-        vm.startPrank(user);
-
-        // set a timestamp in the past
-        uint256 timestamp = block.timestamp - 1 days;
-        vm.warp(timestamp);
-
-        // expect the sacrifice function to revert because sacrifice has not started yet
-        vm.expectRevert(abi.encodeWithSelector(IHexOneBootstrap.SacrificeHasNotStartedYet.selector, timestamp));
-        bootstrap.sacrifice(hexToken, 100, 0);
-
-        // stop impersonating the user
-        vm.stopPrank();
-    }
-
-    function test_sacrifice_revert_sacrificeAlreadyEnded() public {
-        // start impersionating user
-        vm.startPrank(user);
-
-        // advance block timestamp by 30 days
-        skip(30 days);
-
-        // expect the sacrifice function to revert because sacrifice period already finished
-        vm.expectRevert(abi.encodeWithSelector(IHexOneBootstrap.SacrificeAlreadyEnded.selector, block.timestamp));
-        bootstrap.sacrifice(hexToken, 100, 0);
-
-        // stop impersonating the user
-        vm.stopPrank();
-    }
-
     /*//////////////////////////////////////////////////////////////////////////
                                 PROCESS SACRIFICE
     //////////////////////////////////////////////////////////////////////////*/
@@ -512,79 +450,6 @@ contract HexOneBootstrapTest is Base {
         assertEq(expectedPairAddr, pair);
     }
 
-    function test_processSacrifice_revert_sacrificeHasNotEndedYet() public {
-        // impersonate the deployer
-        vm.startPrank(deployer);
-
-        vm.expectRevert(abi.encodeWithSelector(IHexOneBootstrap.SacrificeHasNotEndedYet.selector, block.timestamp));
-        bootstrap.processSacrifice(1); // parameters here does not matter because it is never read
-
-        // stop impersonating the deployer
-        vm.stopPrank();
-    }
-
-    function test_processSacrifice_revert_sacrificeAlreadyProcessed() public {
-        // give HEX to the sender
-        uint256 amount = 1_000_000 * 1e8;
-        _dealToken(hexToken, user, amount);
-
-        // user sacrifices HEX
-        vm.startPrank(user);
-        _sacrifice(hexToken, amount);
-        vm.stopPrank();
-
-        // skip 30 days so ensure that sacrifice period already ended
-        skip(30 days);
-
-        // calculate the corresponding to 12.5% of the total HEX deposited
-        uint256 amountOfHexToDai = (amount * 1250) / 10000;
-
-        // impersonate the deployer
-        vm.startPrank(deployer);
-
-        // process sacrifice
-        uint256 amountOut = _processSacrifice(amountOfHexToDai);
-
-        // expect revert because deployer cant process the sacrifice twice
-        vm.expectRevert(IHexOneBootstrap.SacrificeAlreadyProcessed.selector);
-        bootstrap.processSacrifice(amountOut);
-
-        // stop impersonating the deployer
-        vm.stopPrank();
-    }
-
-    function test_processSacrifice_with_pairAlreadyCreated() public {
-        // give HEX to the sender
-        uint256 amount = 1_000_000 * 1e8;
-        deal(hexToken, user, amount);
-
-        // give HEX to the sender
-        _dealToken(hexToken, user, amount);
-
-        // user sacrifices HEX
-        vm.startPrank(user);
-        _sacrifice(hexToken, amount);
-        vm.stopPrank();
-
-        // assert total HEX sacrificed
-        assertEq(bootstrap.totalHexAmount(), amount);
-
-        // skip 30 days so ensure that sacrifice period already ended
-        skip(30 days);
-
-        // the sender creates a pulseXPair to try to DoS the processSacrifice function
-        vm.prank(attacker);
-        IPulseXFactory(pulseXFactory).createPair(address(hex1), daiToken);
-
-        // calculate the corresponding to 12.5% of the total HEX deposited
-        uint256 amountOfHexToDai = (amount * 1250) / 10000;
-
-        // deployer processes the sacrifice
-        vm.startPrank(deployer);
-        _processSacrifice(amountOfHexToDai);
-        vm.stopPrank();
-    }
-
     /*//////////////////////////////////////////////////////////////////////////
                                 CLAIM SACRIFICE
     //////////////////////////////////////////////////////////////////////////*/
@@ -629,150 +494,6 @@ contract HexOneBootstrapTest is Base {
 
         // assert user HEX1 balance
         assertEq(IERC20(hex1).balanceOf(user), hexOneMinted);
-    }
-
-    function test_claimSacrifice_revert_sacrificeHasNotBeenProcessed(uint256 amount) public {
-        vm.assume(amount > 1_000 * 1e8 && amount < 10_000_000 * 1e8);
-
-        // give HEX to the sender
-        _dealToken(hexToken, user, amount);
-
-        // user sacrifices HEX
-        vm.startPrank(user);
-        _sacrifice(hexToken, amount);
-        vm.stopPrank();
-
-        // assert total HEX sacrificed
-        assertEq(bootstrap.totalHexAmount(), amount);
-
-        // skip 30 days so ensure that sacrifice period already ended
-        skip(30 days);
-
-        // impersonate the user
-        vm.startPrank(user);
-
-        // claim HEX1 and HEXIT from the sacrifice
-        vm.expectRevert(IHexOneBootstrap.SacrificeHasNotBeenProcessedYet.selector);
-        bootstrap.claimSacrifice();
-
-        // stop impersonating the user
-        vm.stopPrank();
-    }
-
-    function test_claimSacrifice_revert_didNotParticipateInSacrifice(uint256 amount) public {
-        vm.assume(amount > 1_000 * 1e8 && amount < 10_000_000 * 1e8);
-
-        // give HEX to the sender
-        _dealToken(hexToken, user, amount);
-
-        // user sacrifices HEX
-        vm.startPrank(user);
-        _sacrifice(hexToken, amount);
-        vm.stopPrank();
-
-        // assert total HEX sacrificed
-        assertEq(bootstrap.totalHexAmount(), amount);
-
-        // skip 30 days so ensure that sacrifice period already ended
-        skip(30 days);
-
-        // calculate the corresponding to 12.5% of the total HEX deposited
-        uint256 amountOfHexToDai = (amount * 1250) / 10000;
-
-        // deployer processes the sacrifice
-        vm.startPrank(deployer);
-        _processSacrifice(amountOfHexToDai);
-        vm.stopPrank();
-
-        // impersonate an attacker who did not participate in the sacrifice
-        vm.startPrank(attacker);
-
-        // claim HEX1 and HEXIT from the sacrifice
-        vm.expectRevert(abi.encodeWithSelector(IHexOneBootstrap.DidNotParticipateInSacrifice.selector, attacker));
-        bootstrap.claimSacrifice();
-
-        // stop impersonating the user who did not sacrifice
-        vm.stopPrank();
-    }
-
-    function test_claimSacrifice_revert_claimPeriodAlreadyFinished(uint256 amount) public {
-        vm.assume(amount > 1_000 * 1e8 && amount < 10_000_000 * 1e8);
-
-        // give HEX to the sender
-        _dealToken(hexToken, user, amount);
-
-        // user sacrifices HEX
-        vm.startPrank(user);
-        _sacrifice(hexToken, amount);
-        vm.stopPrank();
-
-        // assert total HEX sacrificed
-        assertEq(bootstrap.totalHexAmount(), amount);
-
-        // skip 30 days to ensure that sacrifice period already ended
-        skip(30 days);
-
-        // calculate the corresponding to 12.5% of the total HEX deposited
-        uint256 amountOfHexToDai = (amount * 1250) / 10000;
-
-        // deployer processes the sacrifice
-        vm.startPrank(deployer);
-        _processSacrifice(amountOfHexToDai);
-        vm.stopPrank();
-
-        // skip 7 days to ensure that sacrifice claim period already ended
-        skip(7 days);
-
-        // impersonate the user
-        vm.startPrank(user);
-
-        // claim HEX1 and HEXIT from the sacrifice
-        vm.expectRevert(
-            abi.encodeWithSelector(IHexOneBootstrap.SacrificeClaimPeriodAlreadyFinished.selector, block.timestamp)
-        );
-        bootstrap.claimSacrifice();
-
-        // stop impersonating the user
-        vm.stopPrank();
-    }
-
-    function test_claimSacrifice_revert_alreadyClaimed(uint256 amount) public {
-        vm.assume(amount > 1_000 * 1e8 && amount < 10_000_000 * 1e8);
-
-        // give HEX to the sender
-        _dealToken(hexToken, user, amount);
-
-        // user sacrifices HEX
-        vm.startPrank(user);
-        _sacrifice(hexToken, amount);
-        vm.stopPrank();
-
-        // assert total HEX sacrificed
-        assertEq(bootstrap.totalHexAmount(), amount);
-
-        // skip 30 days to ensure that sacrifice period already ended
-        skip(30 days);
-
-        // calculate the corresponding to 12.5% of the total HEX deposited
-        uint256 amountOfHexToDai = (amount * 1250) / 10000;
-
-        // deployer processes the sacrifice
-        vm.startPrank(deployer);
-        _processSacrifice(amountOfHexToDai);
-        vm.stopPrank();
-
-        // impersonate the user
-        vm.startPrank(user);
-
-        // claim HEX1 and HEXIT from the sacrifice
-        bootstrap.claimSacrifice();
-
-        // expect call to revert because the user cant claim rewards froms sacrifice twice
-        vm.expectRevert(abi.encodeWithSelector(IHexOneBootstrap.SacrificeAlreadyClaimed.selector, user));
-        bootstrap.claimSacrifice();
-
-        // stop impersonating the user
-        vm.stopPrank();
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -844,160 +565,84 @@ contract HexOneBootstrapTest is Base {
         assertEq(bootstrap.totalHexitMinted(), hexitMintedDuringSacrifice + hexitForTeam + hexitForStaking);
     }
 
-    function test_startAirdrop_revert_sacrificeClaimPeriodNotFinished(uint256 amount) public {
-        vm.assume(amount > 1_000 * 1e8 && amount < 10_000_000 * 1e8);
-
-        // give HEX to the sender
-        _dealToken(hexToken, user, amount);
-
-        // user sacrifices HEX
-        vm.startPrank(user);
-        _sacrifice(hexToken, amount);
-        vm.stopPrank();
-
-        // assert total HEX sacrificed
-        assertEq(bootstrap.totalHexAmount(), amount);
-
-        // skip 30 days so ensure that sacrifice period already ended
-        skip(30 days);
-
-        // calculate the corresponding to 12.5% of the total HEX deposited
-        uint256 amountOfHexToDai = (amount * 1250) / 10000;
-
-        // deployer processes the sacrifice
-        vm.startPrank(deployer);
-        _processSacrifice(amountOfHexToDai);
-        vm.stopPrank();
-
-        // user claims HEX1 and HEXIT from the sacrifice
-        vm.startPrank(user);
-        bootstrap.claimSacrifice();
-        vm.stopPrank();
-
-        // note: still inside sacrifice claim period
-        skip(2 days);
-
-        // start the airdrop
-        vm.startPrank(deployer);
-
-        // expect revert because sacrifice claim period has not yet finished.
-        vm.expectRevert(
-            abi.encodeWithSelector(IHexOneBootstrap.SacrificeClaimPeriodHasNotFinished.selector, block.timestamp)
-        );
-        bootstrap.startAirdrop();
-
-        vm.stopPrank();
-    }
-
-    function test_startAirdrop_revert_airdropAlreadyStarted(uint256 amount) public {
-        vm.assume(amount > 1_000 * 1e8 && amount < 10_000_000 * 1e8);
-
-        // give HEX to the sender
-        _dealToken(hexToken, user, amount);
-
-        // user sacrifices HEX
-        vm.startPrank(user);
-        _sacrifice(hexToken, amount);
-        vm.stopPrank();
-
-        // assert total HEX sacrificed
-        assertEq(bootstrap.totalHexAmount(), amount);
-
-        // skip 30 days so ensure that sacrifice period already ended
-        skip(30 days);
-
-        // calculate the corresponding to 12.5% of the total HEX deposited
-        uint256 amountOfHexToDai = (amount * 1250) / 10000;
-
-        // deployer processes the sacrifice
-        vm.startPrank(deployer);
-        _processSacrifice(amountOfHexToDai);
-        vm.stopPrank();
-
-        // user claims HEX1 and HEXIT from the sacrifice
-        vm.startPrank(user);
-        bootstrap.claimSacrifice();
-        vm.stopPrank();
-
-        // skip the sacrifice claim period
-        skip(7 days);
-
-        // start the airdrop
-        vm.startPrank(deployer);
-
-        bootstrap.startAirdrop();
-        
-        // expect start airdrop to revert because it was already started
-        vm.expectRevert(IHexOneBootstrap.AirdropAlreadyStarted.selector);
-        bootstrap.startAirdrop();
-
-        vm.stopPrank();
-    }
-
     /*//////////////////////////////////////////////////////////////////////////
                                 CLAIM AIRDROP
     //////////////////////////////////////////////////////////////////////////*/
 
-    function test_claimAirdrop() public {}
+    function test_claimAirdrop_hexStakerAndSacrificeParticipant(uint256 amount) public {
+        // vm.assume(amount > 1_000 * 1e8 && amount < 10_000_000 * 1e8);
 
-    function test_claimAirdrop_onlyHexStaker() public {}
+        // // give HEX to the sender
+        // _dealToken(hexToken, user, amount * 2);
 
-    function test_claimAirdrop_onlySacrificeParticipant() public {}
+        // // user sacrifices HEX
+        // vm.startPrank(user);
+        // _sacrifice(hexToken, amount);
+        // vm.stopPrank();
 
-    function test_claimAirdrop_after_15days() public {}
+        // // assert total HEX sacrificed
+        // assertEq(bootstrap.totalHexAmount(), amount);
 
-    function test_claimAirdrop_after_30days() public {}
+        // // skip 30 days so ensure that sacrifice period already ended
+        // skip(30 days);
 
-    function test_claimAirdrop_revert_airdropHasNotStartedYet() public {}
+        // // calculate the corresponding to 12.5% of the total HEX deposited
+        // uint256 amountOfHexToDai = (amount * 1250) / 10000;
 
-    function test_claimAirdrop_revert_airdropAlreadyEnded() public {}
+        // // deployer processes the sacrifice
+        // vm.startPrank(deployer);
+        // _processSacrifice(amountOfHexToDai);
+        // vm.stopPrank();
 
-    function test_claimAirdrop_revert_airdropAlreadyClaimed() public {}
+        // // user claims HEX1 and HEXIT from the sacrifice
+        // vm.startPrank(user);
+        // bootstrap.claimSacrifice();
+        // vm.stopPrank();
 
-    function test_claimAirdrop_revert_ineligibleForAirdrop() public {}
+        // // skip the sacrifice claim period
+        // skip(7 days);
 
-    /*//////////////////////////////////////////////////////////////////////////
-                                HELPER FUNCTIONS
-    //////////////////////////////////////////////////////////////////////////*/
+        // // user creates a new HEX stake so that he is eligible to claim more HEXIT
+        // vm.prank(user);
+        // IHexToken(hexToken).stakeStart(amount, 5555);
 
-    function _dealToken(address _token, address _recipient, uint256 _amount) internal {
-        if (_token == plsxToken) {
-            vm.prank(0x39cF6f8620CbfBc20e1cC1caba1959Bd2FDf0954);
-            IERC20(plsxToken).transfer(_recipient, _amount);
-        } else {
-            deal(_token, _recipient, _amount);
-        }
+        // // start the airdrop
+        // vm.prank(deployer);
+        // bootstrap.startAirdrop();
+
+        // // store the total HEXIT minted by the bootstrap after starting the airdrop
+        // uint256 totalHexitBalanceBefore = IERC20(hexit).balanceOf(user);
+
+        // // store the user HEXIT balance before claiming the airdrop
+        // uint256 userHexitBalanceBefore = IERC20(hexit).balanceOf(user);
+
+        // // users claims airdrop
+        // vm.prank(user);
+        // bootstrap.claimAirdrop();
+
+        // // assert total HEXIT minted
+        // (, uint256 sacrificedUSD,, bool claimedAirdrop) = bootstrap.userInfos(user);
+
+        // // assert that user claimed the airdrop
+        // assertEq(claimedAirdrop, true);
+
+        // // assert user HEXIT balance
+        // uint256 hexitBalanceAfter = IERC20(hexit).balanceOf(user);
     }
 
-    function _sacrifice(address _token, uint256 _amount) internal returns (uint256) {
-        IERC20(_token).approve(address(bootstrap), _amount);
+    function test_claimAirdrop_onlyHexStaker(uint256 amount) public {
 
-        uint256 amountOut;
-        if (_token == hexToken) {
-            amountOut = _amount;
-            bootstrap.sacrifice(_token, _amount, 0);
-        } else {
-            address[] memory path = new address[](2);
-            path[0] = _token;
-            path[1] = hexToken;
-            uint256[] memory amounts = UniswapV2Library.getAmountsOut(pulseXFactory, _amount, path);
-
-            amountOut = amounts[1];
-
-            bootstrap.sacrifice(_token, _amount, amounts[1]);
-        }
-
-        return amountOut;
     }
 
-    function _processSacrifice(uint256 _amountOfHexToDai) internal returns (uint256) {
-        address[] memory path = new address[](2);
-        path[0] = hexToken;
-        path[1] = daiToken;
-        uint256[] memory amounts = UniswapV2Library.getAmountsOut(pulseXFactory, _amountOfHexToDai, path);
+    function test_claimAirdrop_onlySacrificeParticipant(uint256 amount) public {
 
-        bootstrap.processSacrifice(amounts[1]);
+    }
 
-        return amounts[1];
+    function test_claimAirdrop_after_15days(uint256 amount) public {
+
+    }
+
+    function test_claimAirdrop_after_30days(uint256 amount) public {
+
     }
 }

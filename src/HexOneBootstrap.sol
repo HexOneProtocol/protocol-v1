@@ -411,10 +411,10 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         if (hexitShares == 0) revert IneligibleForAirdrop(msg.sender);
 
         // increment the total amount of hexit minted by the contract
-        totalHexitMinted += hexitShares;   
+        totalHexitMinted += hexitShares;
 
         // set the claimed airdrop flag to true because airdrop was claimed
-        userInfo.claimedAirdrop = true;     
+        userInfo.claimedAirdrop = true;
 
         // mint HEXIT to the sender
         IHexitToken(hexitToken).mint(msg.sender, hexitShares);
@@ -510,7 +510,7 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
     }
 
     /// @dev computes the amount of HEX the user has in staking.
-    /// @notice HEX is calculating by the share rate of t-shares.
+    /// @notice amount of HEX stake is computed using share rate of t-shares.
     /// @param _user address of HEX staker.
     function _getHexStaked(address _user) internal view returns (uint256 hexAmount) {
         uint256 stakeCount = IHexToken(hexToken).stakeCount(_user);

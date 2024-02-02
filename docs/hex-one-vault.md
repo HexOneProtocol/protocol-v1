@@ -16,7 +16,7 @@ struct DepositInfo {
     bool active;
 }
 ```
-Tracks deposit data for specific `stakeId` owned by a specific `depositor`.
+Tracks deposit data of a specific `stakeId` owned by a specific `depositor`.
 
 ### UserInfo
 ```solidity
@@ -26,7 +26,7 @@ struct UserInfo {
     uint256 totalBorrowed;
 }
 ```
-Tracks deposit data for every deposit owned by a specific `depositor`.
+Tracks deposit data across every stakeId owned by a specific `depositor`.
 
 ## Events
 ### VaultActivated

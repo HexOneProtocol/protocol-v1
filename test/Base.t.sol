@@ -12,6 +12,7 @@ import {HexOneBootstrap} from "../src/HexOneBootstrap.sol";
 
 import {UniswapV2Library} from "../src/libraries/UniswapV2Library.sol";
 
+import {IHexToken} from "../src/interfaces/IHexToken.sol";
 import {IHexOneToken} from "../src/interfaces/IHexOneToken.sol";
 import {IHexitToken} from "../src/interfaces/IHexitToken.sol";
 import {IHexOneStaking} from "../src/interfaces/IHexOneStaking.sol";
