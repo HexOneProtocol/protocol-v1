@@ -91,8 +91,12 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
     /// @param _hexOneVault address of the HexOneVault.
     /// @param _hexOneBootstrap address of the HexOneBootstrap.
     function setBaseData(address _hexOneVault, address _hexOneBootstrap) external onlyOwner {
+        require(hexOneVault == address(0), "Base data already set");
+        require(hexOneVault == address(0), "Base data already set");
+
         require(_hexOneVault != address(0), "Invalid address");
         require(_hexOneBootstrap != address(0), "Invalid address");
+
         hexOneVault = _hexOneVault;
         hexOneBootstrap = _hexOneBootstrap;
     }
