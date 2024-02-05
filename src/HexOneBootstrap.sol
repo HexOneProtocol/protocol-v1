@@ -2,9 +2,9 @@
 pragma solidity ^0.8.20;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {LibString} from "solady/src/utils/LibString.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {LibString} from "solady/utils/LibString.sol";
 
 import {IHexOneBootstrap} from "./interfaces/IHexOneBootstrap.sol";
 import {IHexOnePriceFeed} from "./interfaces/IHexOnePriceFeed.sol";
@@ -136,6 +136,11 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
     /// @dev set the address of other protocol contracts.
     /// @notice can only be called by the owner.
     function setBaseData(address _hexOnePriceFeed, address _hexOneStaking, address _hexOneVault) external onlyOwner {
+        // prevent reinitialization
+        if (hexOnePriceFeed != address(0)) revert ContractAlreadySet();
+        if (hexOneStaking != address(0)) revert ContractAlreadySet();
+        if (hexOneVault != address(0)) revert ContractAlreadySet();
+
         if (_hexOnePriceFeed == address(0)) revert InvalidAddress(_hexOnePriceFeed);
         if (_hexOneStaking == address(0)) revert InvalidAddress(_hexOneStaking);
         if (_hexOneVault == address(0)) revert InvalidAddress(_hexOneVault);
@@ -169,6 +174,7 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
     /// @param _sacrificeStart timestamp in which the sacrifice is starting.
     function setSacrificeStart(uint256 _sacrificeStart) external onlyOwner {
         if (_sacrificeStart < block.timestamp) revert InvalidTimestamp(block.timestamp);
+        if (sacrificeStart != 0) revert SacrificeStartAlreadySet();
         sacrificeStart = _sacrificeStart;
         sacrificeEnd = _sacrificeStart + SACRIFICE_DURATION;
     }

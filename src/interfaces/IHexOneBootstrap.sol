@@ -47,6 +47,8 @@ interface IHexOneBootstrap {
     error AirdropAlreadyStarted();
     error AirdropAlreadyClaimed(address sender);
     error IneligibleForAirdrop(address sender);
+    error ContractAlreadySet();
+    error SacrificeStartAlreadySet();
 
     function getCurrentSacrificeDay() external view returns (uint256);
     function getCurrentAirdropDay() external view returns (uint256);

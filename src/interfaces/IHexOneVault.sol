@@ -53,6 +53,7 @@ interface IHexOneVault {
     error BorrowAmountTooHigh(uint256 amount);
     error DepositNotLiquidatable(address depositor, uint256 stakeId);
     error InvalidDepositor(address depositor);
+    error ContractAlreadySet();
 
     function setSacrificeStatus() external;
     function setBaseData(address _hexOnePriceFeed, address _hexOneStaking, address _hexOneVault) external;

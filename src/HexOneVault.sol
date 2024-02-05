@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {LibString} from "solady/utils/LibString.sol";
+import {LibString} from "solady/src/utils/LibString.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -85,6 +85,12 @@ contract HexOneVault is IHexOneVault, Ownable {
         external
         onlyOwner
     {
+        // prevent reinitialization
+        if (hexOnePriceFeed != address(0)) revert ContractAlreadySet();
+        if (hexOneStaking != address(0)) revert ContractAlreadySet();
+        if (hexOneBootstrap != address(0)) revert ContractAlreadySet();
+
+        // check for invalid addresses
         if (_hexOnePriceFeed == address(0)) revert InvalidAddress(_hexOnePriceFeed);
         if (_hexOneStaking == address(0)) revert InvalidAddress(_hexOneStaking);
         if (_hexOneBootstrap == address(0)) revert InvalidAddress(_hexOneBootstrap);
