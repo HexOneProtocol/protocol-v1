@@ -191,10 +191,10 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
     /// @dev returns the current day of the airdrop.
     /// @notice if the airdrop had just started this func would return day 1.
     function getCurrentAirdropDay() public view returns (uint256) {
-        if (block.timestamp < airdropStart) revert AirdropHasNotStartedYet(block.timestamp);
+        if (airdropStart == 0) revert AirdropHasNotStartedYet(block.timestamp);
         if (block.timestamp >= airdropEnd) revert AirdropAlreadyEnded(block.timestamp);
 
-        return ((block.timestamp) - airdropStart / 1 days) + 1;
+        return ((block.timestamp - airdropStart) / 1 days) + 1;
     }
 
     /// @dev allows user to participate in the sacrifice.
@@ -404,7 +404,7 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
     /// @dev amount of HEXIT being airdrop is computed based on the amount of HEX sacrificed
     /// and the amount of HEX in USD the user has staked.
     function claimAirdrop() external {
-        if (block.timestamp < airdropStart) revert AirdropHasNotStartedYet(block.timestamp);
+        if (airdropStart == 0) revert AirdropHasNotStartedYet(block.timestamp);
         if (block.timestamp >= airdropEnd) revert AirdropAlreadyEnded(block.timestamp);
 
         // check if the sender already claimed the airdrop
@@ -511,7 +511,7 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
 
         baseHexit = AIRDROP_HEXIT_INIT_AMOUNT;
         for (uint256 i = 2; i <= currentAirdropDay; ++i) {
-            baseHexit = (baseHexit * SACRIFICE_DECREASE_FACTOR) / FIXED_POINT;
+            baseHexit = (baseHexit * AIRDROP_DECREASE_FACTOR) / FIXED_POINT;
         }
     }
 
