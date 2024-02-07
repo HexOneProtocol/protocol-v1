@@ -51,19 +51,39 @@ interface IHexOneStaking {
         uint256 amountToDistribute;
     }
 
-    function setBaseData(address _hexOneProtocol, address _hexOneBootstrap) external;
+    event BaseDataSet(address hexOneVault, address hexOneBootstrap);
+    event StakeTokensAdded(address[] tokens, uint16[] weights);
+    event StakingEnabled(uint256 timestamp);
+    event Purchased(address sender, address poolToken, uint256 amount);
+    event Staked(address sender, address stakeToken, uint256 amount, uint256 stakeDay);
+    event Unstaked(address sender, address stakeToken, uint256 amount, uint256 hexRewards, uint256 hexitRewards);
+    event Claimed(address sender, address stakeToken, uint256 hexRewards, uint256 hexitRewards);
 
+    error InvalidAddress(address addr);
+    error InvalidRate(uint16 rate);
+    error BaseDataAlreadySet();
+    error StakingNotYetEnabled();
+    error NotHexOneBootstrap(address sender);
+    error NotHexOneVault(address sender);
+    error StakingAlreadyEnabled();
+    error NoRewardsToDistribute(address poolToken);
+    error MismatchedArray();
+    error InvalidArrayLength(uint256 length);
+    error StakeTokenAlreadyAdded(address token);
+    error InvalidPurchaseAmount(uint256 purchaseAmount);
+    error InvalidStakeAmount(uint256 stakeAmount);
+    error InvalidUnstakeAmount(uint256 unstakeAmount);
+    error InvalidStakeToken(address stakeToken);
+    error InvalidPoolToken(address poolToken);
+    error MinUnstakeDaysNotElapsed();
+    error InvalidSharesAmount(uint256 sharesAmount);
+
+    function setBaseData(address _hexOneVault, address _hexOneBootstrap) external;
     function enableStaking() external;
-
     function setStakeTokens(address[] calldata _tokens, uint16[] calldata _weights) external;
-
     function purchase(address _poolToken, uint256 _amount) external;
-
     function stake(address _stakeToken, uint256 _amount) external;
-
     function unstake(address _stakeToken, uint256 _amount) external;
-
     function claim(address _stakeToken) external;
-
     function getCurrentStakingDay() external view returns (uint256);
 }

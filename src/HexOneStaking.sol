@@ -53,15 +53,18 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
     /// @dev fixed point is used to calculate ratios in bps
     uint16 public constant FIXED_POINT = 1000;
 
+    /// @dev minimum amount of days to unstake
+    uint16 public constant MIN_UNSTAKE_DAYS = 2;
+
     /// @dev checks if staking is enabled
     modifier onlyWhenStakingEnabled() {
-        require(stakingEnabled, "Staking not enabled");
+        if (!stakingEnabled) revert StakingNotYetEnabled();
         _;
     }
 
     /// @dev checks if hexOneBootstrap is the sender
     modifier onlyHexOneBootstrap() {
-        require(msg.sender == hexOneBootstrap, "Bootstrap must be the sender");
+        if (msg.sender != hexOneBootstrap) revert NotHexOneBootstrap(msg.sender);
         _;
     }
 
@@ -72,10 +75,10 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
     constructor(address _hexToken, address _hexitToken, uint16 _hexDistRate, uint16 _hexitDistRate)
         Ownable(msg.sender)
     {
-        require(_hexToken != address(0), "Invalid address");
-        require(_hexitToken != address(0), "Invalid address");
-        require(_hexDistRate <= FIXED_POINT, "Invalid distribution rate");
-        require(_hexitDistRate <= FIXED_POINT, "Invalid distribution rate");
+        if (_hexToken == address(0)) revert InvalidAddress(_hexToken);
+        if (_hexitToken == address(0)) revert InvalidAddress(_hexitToken);
+        if (_hexDistRate > FIXED_POINT) revert InvalidRate(_hexDistRate);
+        if (_hexitDistRate > FIXED_POINT) revert InvalidRate(_hexitDistRate);
 
         hexToken = _hexToken;
         hexitToken = _hexitToken;
@@ -91,23 +94,29 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
     /// @param _hexOneVault address of the HexOneVault.
     /// @param _hexOneBootstrap address of the HexOneBootstrap.
     function setBaseData(address _hexOneVault, address _hexOneBootstrap) external onlyOwner {
-        require(hexOneVault == address(0), "Base data already set");
-        require(hexOneVault == address(0), "Base data already set");
+        if (hexOneVault != address(0)) revert BaseDataAlreadySet();
+        if (hexOneBootstrap != address(0)) revert BaseDataAlreadySet();
 
-        require(_hexOneVault != address(0), "Invalid address");
-        require(_hexOneBootstrap != address(0), "Invalid address");
+        if (_hexOneVault == address(0)) revert InvalidAddress(_hexOneVault);
+        if (_hexOneBootstrap == address(0)) revert InvalidAddress(_hexOneBootstrap);
 
         hexOneVault = _hexOneVault;
         hexOneBootstrap = _hexOneBootstrap;
+
+        emit BaseDataSet(_hexOneVault, _hexOneBootstrap);
     }
 
     /// @dev called once by the bootstrap to enable staking.
     /// staking can only be enabled if there are HEX and HEXIT rewards already deposited.
     function enableStaking() external onlyHexOneBootstrap {
-        require(!stakingEnabled, "Staking already enabled");
-        require(pools[hexToken].totalAssets > 0 && pools[hexitToken].totalAssets > 0, "No rewards to distribute");
+        if (stakingEnabled) revert StakingAlreadyEnabled();
+        if (pools[hexToken].totalAssets == 0) revert NoRewardsToDistribute(hexToken);
+        if (pools[hexitToken].totalAssets == 0) revert NoRewardsToDistribute(hexitToken);
+
         stakingEnabled = true;
         stakingLaunchTime = block.timestamp;
+
+        emit StakingEnabled(block.timestamp);
     }
 
     /// @dev add tokens that can be used to earn staking rewards.
@@ -115,18 +124,20 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
     /// @param _weights distribution rate for the respective token in bps.
     function setStakeTokens(address[] calldata _tokens, uint16[] calldata _weights) external onlyOwner {
         uint256 length = _tokens.length;
-        require(length > 0, "Zero length array");
-        require(length == _weights.length, "Mismatched array");
+        if (length == 0) revert InvalidArrayLength(length);
+        if (length != _weights.length) revert MismatchedArray();
 
         for (uint256 i; i < length; ++i) {
             address token = _tokens[i];
             uint16 rate = _weights[i];
-            require(!stakeTokens.contains(token), "Token already added");
-            require(rate != 0 && rate <= FIXED_POINT, "Invalid distribution rate");
+            if (stakeTokens.contains(token)) revert StakeTokenAlreadyAdded(token);
+            if (rate == 0 || rate > FIXED_POINT) revert InvalidRate(rate);
 
             stakeTokens.add(token);
             stakeTokenWeights[token] = rate;
         }
+
+        emit StakeTokensAdded(_tokens, _weights);
     }
 
     /// @dev adds HEX or HEXIT to the pool incrementing total assets.
@@ -135,12 +146,14 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
     /// @param _poolToken address of the pool token.
     /// @param _amount of HEX tokens to be added to the pool to be distributed.
     function purchase(address _poolToken, uint256 _amount) external {
-        require(_amount != 0, "Invalid purchase amount");
-        require(
-            (_poolToken == hexToken && msg.sender == hexOneVault)
-                || (_poolToken == hexitToken && msg.sender == hexOneBootstrap),
-            "Invalid sender for the specified pool token"
-        );
+        if (_amount == 0) revert InvalidPurchaseAmount(_amount);
+        if (_poolToken == hexToken) {
+            if (msg.sender != hexOneVault) revert NotHexOneVault(msg.sender);
+        } else if (_poolToken == hexitToken) {
+            if (msg.sender != hexOneBootstrap) revert NotHexOneBootstrap(msg.sender);
+        } else {
+            revert InvalidPoolToken(_poolToken);
+        }
 
         // if the pool staking day is not sync with the contract staking day
         // there might be gaps in pool history, so we need to updated it
@@ -154,14 +167,16 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
 
         // transfer tokens from the msg.sender to this contract
         IERC20(_poolToken).safeTransferFrom(msg.sender, address(this), _amount);
+
+        emit Purchased(msg.sender, _poolToken, _amount);
     }
 
     /// @dev allow users to stake HEXIT, HEX1 or HEX1/DAI to earn HEX and HEXIT rewards.
     /// @param _stakeToken address of the token being staked.
     /// @param _amount of token being staked.
     function stake(address _stakeToken, uint256 _amount) external nonReentrant onlyWhenStakingEnabled {
-        require(stakeTokens.contains(_stakeToken), "Token not allowed");
-        require(_amount > 0, "Invalid staking amount");
+        if (!stakeTokens.contains(_stakeToken)) revert InvalidStakeToken(_stakeToken);
+        if (_amount == 0) revert InvalidStakeAmount(_amount);
 
         // accrue rewards and update history for both the HEX and HEXIT pools
         _accrueRewards(msg.sender, _stakeToken);
@@ -174,7 +189,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
 
         // calculate the amount of HEX and HEXIT pool shares to give to the user
         uint256 shares = _calculateShares(_stakeToken, stakeAmount);
-        require(shares != 0, "Invalid shares amount");
+        if (shares == 0) revert InvalidSharesAmount(shares);
 
         // update the number of total shares in the HEX and HEXIT pools
         pools[hexToken].totalShares += shares;
@@ -193,16 +208,19 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         stakeInfo.lastDepositedDay = currentStakingDay;
         stakeInfo.hexSharesAmount += shares;
         stakeInfo.hexitSharesAmount += shares;
+
+        emit Staked(msg.sender, _stakeToken, _amount, currentStakingDay);
     }
 
     /// @dev unstake HEXIT, HEX1 or HEX1/DAI.
     /// @param _stakeToken address of the stake token.
     /// @param _amount amount to unstake.
     function unstake(address _stakeToken, uint256 _amount) external nonReentrant onlyWhenStakingEnabled {
-        require(stakeTokens.contains(_stakeToken), "Token not allowed");
-        require(_amount > 0, "Invalid amount to unstake");
+        if (!stakeTokens.contains(_stakeToken)) revert InvalidStakeToken(_stakeToken);
+        if (_amount == 0) revert InvalidUnstakeAmount(_amount);
+
         StakeInfo storage stakeInfo = stakingInfos[msg.sender][_stakeToken];
-        require(stakeInfo.lastDepositedDay + 2 <= getCurrentStakingDay(), "Minimum time to unstake is 2 days");
+        if (getCurrentStakingDay() < stakeInfo.lastDepositedDay + 2) revert MinUnstakeDaysNotElapsed();
 
         // accrue rewards for both HEX and HEXIT pools
         _accrueRewards(msg.sender, _stakeToken);
@@ -210,7 +228,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         // calculate the amount of HEX and HEXIT shares to unstake based
         // on the amount the user wants to unstake
         uint256 shares = _calculateShares(_stakeToken, _amount);
-        require(shares != 0, "Invalid shares amount");
+        if (shares == 0) revert InvalidSharesAmount(shares);
 
         // update user staking information
         stakeInfo.stakedAmount -= _amount;
@@ -245,12 +263,14 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
 
         // transfer amount stake token back to the user
         IERC20(_stakeToken).safeTransfer(msg.sender, _amount);
+
+        emit Unstaked(msg.sender, _stakeToken, _amount, hexRewards, hexitRewards);
     }
 
     /// @dev claim accrued rewards earned by the stake token.
     /// @param _stakeToken address of the token staked.
     function claim(address _stakeToken) external nonReentrant onlyWhenStakingEnabled {
-        require(stakeTokens.contains(_stakeToken), "Token not allowed");
+        if (!stakeTokens.contains(_stakeToken)) revert InvalidStakeToken(_stakeToken);
 
         // accrue rewards for both HEX and HEXIT pools
         _accrueRewards(msg.sender, _stakeToken);
@@ -275,6 +295,8 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         if (hexitRewards > 0) {
             IERC20(hexitToken).safeTransfer(msg.sender, hexitRewards);
         }
+
+        emit Claimed(msg.sender, _stakeToken, hexRewards, hexitRewards);
     }
 
     /// @dev returns the amount of days that passed since the staking started.
