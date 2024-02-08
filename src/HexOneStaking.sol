@@ -17,7 +17,7 @@ import {TokenUtils} from "./utils/TokenUtils.sol";
 contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
     /// @dev using EnumerableSet OZ library for addresses
     using EnumerableSet for EnumerableSet.AddressSet;
-    /// @dev using safeERC20 OZ library
+    /// @dev using safe ERC20 OZ library
     using SafeERC20 for IERC20;
 
     /// @dev tokens that are allowed to be staked.
@@ -346,13 +346,20 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
             // store the total shares emitted by the pool at a specific day
             history.totalShares = pool.totalShares;
 
-            // calculate the amount of pool token to distribute for a specific staking day
-            uint256 availableAssets = pool.totalAssets - pool.distributedAssets;
-            uint256 amountToDistribute = (availableAssets * pool.distributionRate) / FIXED_POINT;
-            history.amountToDistribute = amountToDistribute;
+            // if the number of total shares is zero then the amount of stakers to distribute
+            // rewards to is also zero, which means that no rewards should be distributed if
+            // there are no stakers.
+            if (pool.totalShares != 0) {
+                // calculate the amount of pool token to distribute for a specific staking day
+                uint256 availableAssets = pool.totalAssets - pool.distributedAssets;
+                uint256 amountToDistribute = (availableAssets * pool.distributionRate) / FIXED_POINT;
+                history.amountToDistribute = amountToDistribute;
 
-            // increment the distributedAssets by the pool
-            pool.distributedAssets += amountToDistribute;
+                // increment the distributedAssets by the pool
+                pool.distributedAssets += amountToDistribute;
+            } else {
+                history.amountToDistribute = 0;
+            }
 
             // increment the staking day in which the pool rewards were last updated
             currentStakingDay++;
