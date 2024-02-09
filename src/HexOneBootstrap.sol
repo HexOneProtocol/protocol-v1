@@ -448,7 +448,7 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         hexitShares = (hexitShares * tokenMultipliers[_tokenIn]) / MULTIPLIER_FIXED_POINT;
     }
 
-    function _calculateHexitAirdropShares() internal returns (uint256 hexitShares) {
+    function _calculateHexitAirdropShares() internal returns (uint256) {
         // get the amount of HEX the sender has staked in the HEX contract
         uint256 hexStaked = _getHexStaked(msg.sender);
 
@@ -459,7 +459,16 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         uint256 sacrificedUSD = userInfos[msg.sender].sacrificedUSD;
 
         // compute the amount of HEXIT to airdrop
-        hexitShares = (9 * sacrificedUSD) + hexStakedUSD + _airdropBaseHexitPerDollar();
+        uint256 hexitShares = (9 * sacrificedUSD) + hexStakedUSD;
+        if (hexitShares == 0) {
+            // if the user did not participate in the sacrifice and neither has HEX staked
+            // then the user does not have an airdrop allocation and this will return 0.
+            return hexitShares;
+        } else {
+            // if the user hexit shares are bigger than zero it means the user eligible
+            // to claim the airdrop.
+            return hexitShares + _airdropBaseHexitPerDollar();
+        }
     }
 
     /// @dev tries to consult the price of `tokenIn` in `tokenOut`.
