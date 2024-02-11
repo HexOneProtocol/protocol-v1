@@ -45,6 +45,8 @@ interface IHexOneStaking {
     /// @dev this struct stores the state in which the pool was at the
     /// end of each day.
     struct PoolHistory {
+        /// @dev available assets in the pool at a specific day
+        uint256 availableAssets;
         /// @dev total shares deposited in the pool at a specific day
         uint256 totalShares;
         /// @dev total amount of pool token to distribute for that day (1% of available)

@@ -220,7 +220,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         if (_amount == 0) revert InvalidUnstakeAmount(_amount);
 
         StakeInfo storage stakeInfo = stakingInfos[msg.sender][_stakeToken];
-        if (getCurrentStakingDay() < stakeInfo.lastDepositedDay + 2) revert MinUnstakeDaysNotElapsed();
+        if (getCurrentStakingDay() < stakeInfo.lastDepositedDay + MIN_UNSTAKE_DAYS) revert MinUnstakeDaysNotElapsed();
 
         // accrue rewards for both HEX and HEXIT pools
         _accrueRewards(msg.sender, _stakeToken);
@@ -346,12 +346,15 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
             // store the total shares emitted by the pool at a specific day
             history.totalShares = pool.totalShares;
 
+            // compute the available assets for that day
+            uint256 availableAssets = pool.totalAssets - pool.distributedAssets;
+            history.availableAssets = availableAssets;
+
             // if the number of total shares is zero then the amount of stakers to distribute
             // rewards to is also zero, which means that no rewards should be distributed if
             // there are no stakers.
             if (pool.totalShares != 0) {
                 // calculate the amount of pool token to distribute for a specific staking day
-                uint256 availableAssets = pool.totalAssets - pool.distributedAssets;
                 uint256 amountToDistribute = (availableAssets * pool.distributionRate) / FIXED_POINT;
                 history.amountToDistribute = amountToDistribute;
 
