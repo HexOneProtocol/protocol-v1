@@ -63,6 +63,8 @@ interface IHexOneStaking {
 
     error InvalidAddress(address addr);
     error InvalidRate(uint16 rate);
+    error InvalidWeight(uint16 weight);
+    error InvalidWeightSum(uint16 weightSum);
     error BaseDataAlreadySet();
     error StakingNotYetEnabled();
     error NotHexOneBootstrap(address sender);
