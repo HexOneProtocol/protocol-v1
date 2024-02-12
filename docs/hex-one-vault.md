@@ -99,12 +99,16 @@ Used by the owner to configure other protocol contract addresses.
 function deposit(uint256 _amount, uint16 _duration) external returns (uint256 amount, uint256 stakeId);
 ```
 
+Creates an `HEX` stake for the user and mints `HEX1`. Returns the `amount` of `HEX1` minted and the `stakeId`.
+
 * Emits [Deposited](#deposited).
 
 ### delegateDeposit
 ```solidity
 function delegateDeposit (address depositor, uint256 _amount, uint16 _duration) external returns (uint256 amount, uint256 stakeId);
 ```
+
+Used by the Hex One Bootstrap contract to create an `HEX` stake and mint `HEX1` to sacrifice participants.
 
 * Emits [Deposited](#deposited).
 
@@ -113,6 +117,8 @@ function delegateDeposit (address depositor, uint256 _amount, uint16 _duration) 
 function claim(uint256 _stakeId) external returns (uint256);
 ```
 
+Allow users to claim back their `HEX` by paying back `HEX1` if the underlying HEX stake is already mature.
+
 * Emits [Claimed](#claimed).
 
 ### borrow
@@ -120,11 +126,15 @@ function claim(uint256 _stakeId) external returns (uint256);
 function borrow(uint256 _amount, uint256 _stakeId) external;
 ```
 
+Allow user to mint `HEX1` based on the current spot price in dollars of their underlying HEX stake.
+
 * Emits [Borrowed](#borrowed).
   
 ### liquidate
 ```solidity
 function liquidate(address _depositor, uint256 _stakeId) external returns (uint256 hexAmount);
 ```
+
+Anyone can pay back `HEX1` to claim the underlying `HEX` + yield. Deposits are only liquidatable if `GRACE_PERIOD` has passed after the underlying HEX stake has matured.
 
 * Emits [Liquidated](#liquidated).
