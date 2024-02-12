@@ -221,7 +221,12 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
     /// @dev unstake HEXIT, HEX1 or HEX1/DAI.
     /// @param _stakeToken address of the stake token.
     /// @param _amount amount to unstake.
-    function unstake(address _stakeToken, uint256 _amount) external nonReentrant onlyWhenStakingEnabled {
+    function unstake(address _stakeToken, uint256 _amount)
+        external
+        nonReentrant
+        onlyWhenStakingEnabled
+        returns (uint256 hexRewards, uint256 hexitRewards)
+    {
         if (!stakeTokens.contains(_stakeToken)) revert InvalidStakeToken(_stakeToken);
         if (_amount == 0) revert InvalidUnstakeAmount(_amount);
 
@@ -244,8 +249,8 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
             stakeInfo.initStakeDay = 0;
             stakeInfo.lastClaimedDay = 0;
         }
-        uint256 hexRewards = stakeInfo.unclaimedHex;
-        uint256 hexitRewards = stakeInfo.unclaimedHexit;
+        hexRewards = stakeInfo.unclaimedHex;
+        hexitRewards = stakeInfo.unclaimedHexit;
         stakeInfo.unclaimedHex -= hexRewards;
         stakeInfo.unclaimedHexit -= hexitRewards;
         stakeInfo.totalHexClaimed += hexRewards;
@@ -275,15 +280,20 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
 
     /// @dev claim accrued rewards earned by the stake token.
     /// @param _stakeToken address of the token staked.
-    function claim(address _stakeToken) external nonReentrant onlyWhenStakingEnabled {
+    function claim(address _stakeToken)
+        external
+        nonReentrant
+        onlyWhenStakingEnabled
+        returns (uint256 hexRewards, uint256 hexitRewards)
+    {
         if (!stakeTokens.contains(_stakeToken)) revert InvalidStakeToken(_stakeToken);
 
         // accrue rewards for both HEX and HEXIT pools
         _accrueRewards(msg.sender, _stakeToken);
 
         StakeInfo storage stakeInfo = stakingInfos[msg.sender][_stakeToken];
-        uint256 hexRewards = stakeInfo.unclaimedHex;
-        uint256 hexitRewards = stakeInfo.unclaimedHexit;
+        hexRewards = stakeInfo.unclaimedHex;
+        hexitRewards = stakeInfo.unclaimedHexit;
 
         // update the amount of HEX and HEXIT left to claim to 0
         stakeInfo.unclaimedHex = 0;

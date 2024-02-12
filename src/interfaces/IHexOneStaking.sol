@@ -87,7 +87,9 @@ interface IHexOneStaking {
     function setStakeTokens(address[] calldata _tokens, uint16[] calldata _weights) external;
     function purchase(address _poolToken, uint256 _amount) external;
     function stake(address _stakeToken, uint256 _amount) external;
-    function unstake(address _stakeToken, uint256 _amount) external;
-    function claim(address _stakeToken) external;
-    function getCurrentStakingDay() external view returns (uint256);
+    function unstake(address _stakeToken, uint256 _amount)
+        external
+        returns (uint256 hexRewards, uint256 hexitRewards);
+    function claim(address _stakeToken) external returns (uint256 hexRewards, uint256 hexitRewards);
+    function getCurrentStakingDay() external view returns (uint256 day);
 }
