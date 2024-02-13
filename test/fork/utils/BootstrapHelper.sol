@@ -44,4 +44,18 @@ contract BootstrapHelper is Base {
 
         return amounts[1];
     }
+
+    function _getHexStaked(address _user) internal view returns (uint256 hexAmount) {
+        uint256 stakeCount = IHexToken(hexToken).stakeCount(_user);
+        if (stakeCount == 0) return 0;
+
+        uint256 shares;
+        for (uint256 i; i < stakeCount; ++i) {
+            IHexToken.StakeStore memory stakeStore = IHexToken(hexToken).stakeLists(_user, i);
+            shares += stakeStore.stakeShares;
+        }
+
+        IHexToken.GlobalsStore memory globals = IHexToken(hexToken).globals();
+        hexAmount = uint256((shares * uint256(globals.shareRate)) / 1e5);
+    }
 }

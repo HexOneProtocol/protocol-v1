@@ -569,13 +569,546 @@ contract BootstrapFuzzTest is BootstrapHelper {
                                 CLAIM AIRDROP
     //////////////////////////////////////////////////////////////////////////*/
 
-    function test_claimAirdrop_onlyHexStaker(uint256 amount) public {}
+    function test_claimAirdrop_onlyHexStaker(uint256 amount, uint256 amountHexStaked) public {
+        amount = bound(amount, 1_000 * 1e8, 10_000_000 * 1e8);
+        amountHexStaked = bound(amountHexStaked, 100 * 1e8, 100_000 * 1e8);
 
-    function test_claimAirdrop_onlySacrificeParticipant(uint256 amount) public {}
+        // give HEX to the sender
+        _dealToken(hexToken, user, amount);
 
-    function test_claimAirdrop_hexStakerAndSacrificeParticipant(uint256 amount) public {}
+        // user sacrifices HEX
+        vm.startPrank(user);
+        _sacrifice(hexToken, amount);
+        vm.stopPrank();
 
-    function test_claimAirdrop_after_15days(uint256 amount) public {}
+        // assert total HEX sacrificed
+        assertEq(bootstrap.totalHexAmount(), amount);
 
-    function test_claimAirdrop_after_30days(uint256 amount) public {}
+        // skip 30 days so ensure that sacrifice period already ended
+        skip(30 days);
+
+        // calculate the corresponding to 12.5% of the total HEX deposited
+        uint256 amountOfHexToDai = (amount * 1250) / 10000;
+
+        // deployer processes the sacrifice
+        vm.startPrank(deployer);
+        _processSacrifice(amountOfHexToDai);
+        vm.stopPrank();
+
+        // user claims HEX1 and HEXIT from the sacrifice
+        vm.startPrank(user);
+        bootstrap.claimSacrifice();
+        vm.stopPrank();
+
+        // skip the sacrifice claim period
+        skip(7 days);
+
+        // start the airdrop
+        vm.prank(deployer);
+        bootstrap.startAirdrop();
+
+        // HEX staker stakes HEX tokens to that he can be eligible to claim the airdrop
+        address staker = makeAddr("HEX staker");
+        deal(hexToken, staker, amountHexStaked);
+
+        vm.startPrank(staker);
+
+        IHexToken(hexToken).stakeStart(amountHexStaked, 5555);
+        bootstrap.claimAirdrop();
+
+        vm.stopPrank();
+
+        // assert user info
+        (,,, bool claimedAirdrop) = bootstrap.userInfos(staker);
+        assertEq(claimedAirdrop, true);
+
+        // assert HEXIT minted
+        uint256 realHexAmountStaked = _getHexStaked(staker);
+        uint256 amountOut = feed.consult(hexToken, realHexAmountStaked, daiToken);
+        assertEq(hexit.balanceOf(staker), amountOut + bootstrap.AIRDROP_HEXIT_INIT_AMOUNT());
+    }
+
+    function test_claimAirdrop_onlyHexStaker_after_15days(uint256 amount, uint256 amountHexStaked) public {
+        amount = bound(amount, 1_000 * 1e8, 10_000_000 * 1e8);
+        amountHexStaked = bound(amountHexStaked, 100 * 1e8, 100_000 * 1e8);
+
+        // give HEX to the sender
+        _dealToken(hexToken, user, amount);
+
+        // user sacrifices HEX
+        vm.startPrank(user);
+        _sacrifice(hexToken, amount);
+        vm.stopPrank();
+
+        // assert total HEX sacrificed
+        assertEq(bootstrap.totalHexAmount(), amount);
+
+        // skip 30 days so ensure that sacrifice period already ended
+        skip(30 days);
+
+        // calculate the corresponding to 12.5% of the total HEX deposited
+        uint256 amountOfHexToDai = (amount * 1250) / 10000;
+
+        // deployer processes the sacrifice
+        vm.startPrank(deployer);
+        _processSacrifice(amountOfHexToDai);
+        vm.stopPrank();
+
+        // user claims HEX1 and HEXIT from the sacrifice
+        vm.startPrank(user);
+        bootstrap.claimSacrifice();
+        vm.stopPrank();
+
+        // skip the sacrifice claim period
+        skip(7 days);
+
+        // start the airdrop
+        vm.prank(deployer);
+        bootstrap.startAirdrop();
+
+        // HEX staker stakes HEX tokens to that he can be eligible to claim the airdrop
+        address staker = makeAddr("HEX staker");
+        deal(hexToken, staker, amountHexStaked);
+
+        // skip the first 15 days of the airdrop claim period
+        skip(14 days);
+
+        vm.startPrank(staker);
+
+        IHexToken(hexToken).stakeStart(amountHexStaked, 5555);
+        bootstrap.claimAirdrop();
+
+        vm.stopPrank();
+
+        // assert user info
+        (,,, bool claimedAirdrop) = bootstrap.userInfos(staker);
+        assertEq(claimedAirdrop, true);
+
+        // assert HEXIT minted
+        uint256 realHexAmountStaked = _getHexStaked(staker);
+        uint256 amountOut = feed.consult(hexToken, realHexAmountStaked, daiToken);
+        uint256 baseHexit = 170 * 1e18;
+        uint256 maxSlippage = 1e16;
+        assertApproxEqRel(hexit.balanceOf(staker), amountOut + baseHexit, maxSlippage);
+    }
+
+    function test_claimAirdrop_onlyHexStaker_after_30days(uint256 amount, uint256 amountHexStaked) public {
+        amount = bound(amount, 1_000 * 1e8, 10_000_000 * 1e8);
+        amountHexStaked = bound(amountHexStaked, 100 * 1e8, 100_000 * 1e8);
+
+        // give HEX to the sender
+        _dealToken(hexToken, user, amount);
+
+        // user sacrifices HEX
+        vm.startPrank(user);
+        _sacrifice(hexToken, amount);
+        vm.stopPrank();
+
+        // assert total HEX sacrificed
+        assertEq(bootstrap.totalHexAmount(), amount);
+
+        // skip 30 days so ensure that sacrifice period already ended
+        skip(30 days);
+
+        // calculate the corresponding to 12.5% of the total HEX deposited
+        uint256 amountOfHexToDai = (amount * 1250) / 10000;
+
+        // deployer processes the sacrifice
+        vm.startPrank(deployer);
+        _processSacrifice(amountOfHexToDai);
+        vm.stopPrank();
+
+        // user claims HEX1 and HEXIT from the sacrifice
+        vm.startPrank(user);
+        bootstrap.claimSacrifice();
+        vm.stopPrank();
+
+        // skip the sacrifice claim period
+        skip(7 days);
+
+        // start the airdrop
+        vm.prank(deployer);
+        bootstrap.startAirdrop();
+
+        // HEX staker stakes HEX tokens to that he can be eligible to claim the airdrop
+        address staker = makeAddr("HEX staker");
+        deal(hexToken, staker, amountHexStaked);
+
+        // skip the first 15 days of the airdrop claim period
+        skip(29 days);
+
+        vm.startPrank(staker);
+
+        IHexToken(hexToken).stakeStart(amountHexStaked, 5555);
+        bootstrap.claimAirdrop();
+
+        vm.stopPrank();
+
+        // assert user info
+        (,,, bool claimedAirdrop) = bootstrap.userInfos(staker);
+        assertEq(claimedAirdrop, true);
+
+        // assert HEXIT minted
+        uint256 realHexAmountStaked = _getHexStaked(staker);
+        uint256 amountOut = feed.consult(hexToken, realHexAmountStaked, daiToken);
+        uint256 baseHexit = 517 * 1e13;
+        uint256 maxSlippage = 1e16;
+        assertApproxEqRel(hexit.balanceOf(staker), amountOut + baseHexit, maxSlippage);
+    }
+
+    function test_claimAirdrop_onlySacrificeParticipant(uint256 amount) public {
+        amount = bound(amount, 1_000 * 1e8, 10_000_000 * 1e8);
+
+        // give HEX to the sender
+        _dealToken(hexToken, user, amount);
+
+        // user sacrifices HEX
+        vm.startPrank(user);
+        _sacrifice(hexToken, amount);
+        vm.stopPrank();
+
+        // assert total HEX sacrificed
+        assertEq(bootstrap.totalHexAmount(), amount);
+
+        // skip 30 days so ensure that sacrifice period already ended
+        skip(30 days);
+
+        // calculate the corresponding to 12.5% of the total HEX deposited
+        uint256 amountOfHexToDai = (amount * 1250) / 10000;
+
+        // deployer processes the sacrifice
+        vm.startPrank(deployer);
+        _processSacrifice(amountOfHexToDai);
+        vm.stopPrank();
+
+        // user claims HEX1 and HEXIT from the sacrifice
+        vm.startPrank(user);
+        bootstrap.claimSacrifice();
+        vm.stopPrank();
+
+        // skip the sacrifice claim period
+        skip(7 days);
+
+        // start the airdrop
+        vm.prank(deployer);
+        bootstrap.startAirdrop();
+
+        uint256 userHexitBalanceBefore = hexit.balanceOf(user);
+
+        // sacrifice participant tries to claim the airdrop
+        vm.prank(user);
+        bootstrap.claimAirdrop();
+
+        // assert user info
+        (, uint256 sacrificedUSD,, bool claimedAirdrop) = bootstrap.userInfos(user);
+        assertEq(claimedAirdrop, true);
+
+        // assert HEXIT claimed
+        uint256 baseHexit = bootstrap.AIRDROP_HEXIT_INIT_AMOUNT();
+        assertEq(hexit.balanceOf(user), userHexitBalanceBefore + (sacrificedUSD * 9 + baseHexit));
+    }
+
+    function test_claimAirdrop_onlySacrificeParticipant_after_15days(uint256 amount) public {
+        amount = bound(amount, 1_000 * 1e8, 10_000_000 * 1e8);
+
+        // give HEX to the sender
+        _dealToken(hexToken, user, amount);
+
+        // user sacrifices HEX
+        vm.startPrank(user);
+        _sacrifice(hexToken, amount);
+        vm.stopPrank();
+
+        // assert total HEX sacrificed
+        assertEq(bootstrap.totalHexAmount(), amount);
+
+        // skip 30 days so ensure that sacrifice period already ended
+        skip(30 days);
+
+        // calculate the corresponding to 12.5% of the total HEX deposited
+        uint256 amountOfHexToDai = (amount * 1250) / 10000;
+
+        // deployer processes the sacrifice
+        vm.startPrank(deployer);
+        _processSacrifice(amountOfHexToDai);
+        vm.stopPrank();
+
+        // user claims HEX1 and HEXIT from the sacrifice
+        vm.startPrank(user);
+        bootstrap.claimSacrifice();
+        vm.stopPrank();
+
+        // skip the sacrifice claim period
+        skip(7 days);
+
+        // start the airdrop
+        vm.prank(deployer);
+        bootstrap.startAirdrop();
+
+        uint256 userHexitBalanceBefore = hexit.balanceOf(user);
+
+        // skip half of the airdrop claim period
+        skip(14 days);
+
+        // sacrifice participant tries to claim the airdrop
+        vm.prank(user);
+        bootstrap.claimAirdrop();
+
+        // assert user info
+        (, uint256 sacrificedUSD,, bool claimedAirdrop) = bootstrap.userInfos(user);
+        assertEq(claimedAirdrop, true);
+
+        // assert HEXIT claimed
+        uint256 baseHexit = 170 * 1e18;
+        uint256 maxSlippage = 1e16;
+        assertApproxEqRel(hexit.balanceOf(user), userHexitBalanceBefore + (sacrificedUSD * 9 + baseHexit), maxSlippage);
+    }
+
+    function test_claimAirdrop_onlySacrificeParticipant_after_30days(uint256 amount) public {
+        amount = bound(amount, 1_000 * 1e8, 10_000_000 * 1e8);
+
+        // give HEX to the sender
+        _dealToken(hexToken, user, amount);
+
+        // user sacrifices HEX
+        vm.startPrank(user);
+        _sacrifice(hexToken, amount);
+        vm.stopPrank();
+
+        // assert total HEX sacrificed
+        assertEq(bootstrap.totalHexAmount(), amount);
+
+        // skip 30 days so ensure that sacrifice period already ended
+        skip(30 days);
+
+        // calculate the corresponding to 12.5% of the total HEX deposited
+        uint256 amountOfHexToDai = (amount * 1250) / 10000;
+
+        // deployer processes the sacrifice
+        vm.startPrank(deployer);
+        _processSacrifice(amountOfHexToDai);
+        vm.stopPrank();
+
+        // user claims HEX1 and HEXIT from the sacrifice
+        vm.startPrank(user);
+        bootstrap.claimSacrifice();
+        vm.stopPrank();
+
+        // skip the sacrifice claim period
+        skip(7 days);
+
+        // start the airdrop
+        vm.prank(deployer);
+        bootstrap.startAirdrop();
+
+        uint256 userHexitBalanceBefore = hexit.balanceOf(user);
+
+        // skip to the last day of the airdrop claim period
+        skip(29 days);
+
+        // sacrifice participant tries to claim the airdrop
+        vm.prank(user);
+        bootstrap.claimAirdrop();
+
+        // assert user info
+        (, uint256 sacrificedUSD,, bool claimedAirdrop) = bootstrap.userInfos(user);
+        assertEq(claimedAirdrop, true);
+
+        // assert HEXIT claimed
+        uint256 baseHexit = 517 * 1e13;
+        uint256 maxSlippage = 1e16;
+        assertApproxEqRel(hexit.balanceOf(user), userHexitBalanceBefore + (sacrificedUSD * 9 + baseHexit), maxSlippage);
+    }
+
+    function test_claimAirdrop_hexStakerAndSacrificeParticipant(uint256 amount, uint256 amountHexStaked) public {
+        amount = bound(amount, 1_000 * 1e8, 10_000_000 * 1e8);
+        amountHexStaked = bound(amountHexStaked, 100 * 1e8, 100_000 * 1e8);
+
+        // give HEX to the sender
+        _dealToken(hexToken, user, amount + amountHexStaked);
+
+        // user sacrifices HEX
+        vm.startPrank(user);
+        _sacrifice(hexToken, amount);
+        vm.stopPrank();
+
+        // assert total HEX sacrificed
+        assertEq(bootstrap.totalHexAmount(), amount);
+
+        // skip 30 days so ensure that sacrifice period already ended
+        skip(30 days);
+
+        // calculate the corresponding to 12.5% of the total HEX deposited
+        uint256 amountOfHexToDai = (amount * 1250) / 10000;
+
+        // deployer processes the sacrifice
+        vm.startPrank(deployer);
+        _processSacrifice(amountOfHexToDai);
+        vm.stopPrank();
+
+        // user claims HEX1 and HEXIT from the sacrifice
+        vm.startPrank(user);
+        bootstrap.claimSacrifice();
+        vm.stopPrank();
+
+        // skip the sacrifice claim period
+        skip(7 days);
+
+        // start the airdrop
+        vm.prank(deployer);
+        bootstrap.startAirdrop();
+
+        // user stakes HEX to get a bigger allocation in the HEXIT airdrop
+        uint256 userHexitBalanceBefore = hexit.balanceOf(user);
+        vm.startPrank(user);
+
+        IHexToken(hexToken).stakeStart(amountHexStaked, 5555);
+        bootstrap.claimAirdrop();
+
+        vm.stopPrank();
+
+        // assert user info
+        (, uint256 sacrificedUSD,, bool claimedAirdrop) = bootstrap.userInfos(user);
+        assertEq(claimedAirdrop, true);
+
+        // assert HEXIT minted
+        uint256 realHexAmountStaked = _getHexStaked(user);
+        uint256 amountOut = feed.consult(hexToken, realHexAmountStaked, daiToken);
+        assertEq(
+            hexit.balanceOf(user),
+            userHexitBalanceBefore + (sacrificedUSD * 9) + amountOut + bootstrap.AIRDROP_HEXIT_INIT_AMOUNT()
+        );
+    }
+
+    function test_claimAirdrop_hexStakerAndSacrificeParticipant_after_15_days(uint256 amount, uint256 amountHexStaked)
+        public
+    {
+        amount = bound(amount, 1_000 * 1e8, 10_000_000 * 1e8);
+        amountHexStaked = bound(amountHexStaked, 100 * 1e8, 100_000 * 1e8);
+
+        // give HEX to the sender
+        _dealToken(hexToken, user, amount + amountHexStaked);
+
+        // user sacrifices HEX
+        vm.startPrank(user);
+        _sacrifice(hexToken, amount);
+        vm.stopPrank();
+
+        // assert total HEX sacrificed
+        assertEq(bootstrap.totalHexAmount(), amount);
+
+        // skip 30 days so ensure that sacrifice period already ended
+        skip(30 days);
+
+        // calculate the corresponding to 12.5% of the total HEX deposited
+        uint256 amountOfHexToDai = (amount * 1250) / 10000;
+
+        // deployer processes the sacrifice
+        vm.startPrank(deployer);
+        _processSacrifice(amountOfHexToDai);
+        vm.stopPrank();
+
+        // user claims HEX1 and HEXIT from the sacrifice
+        vm.startPrank(user);
+        bootstrap.claimSacrifice();
+        vm.stopPrank();
+
+        // skip the sacrifice claim period
+        skip(7 days);
+
+        // start the airdrop
+        vm.prank(deployer);
+        bootstrap.startAirdrop();
+
+        // skip half of the airdrop claim period
+        skip(14 days);
+
+        // user stakes HEX to get a bigger allocation in the HEXIT airdrop
+        uint256 userHexitBalanceBefore = hexit.balanceOf(user);
+        vm.startPrank(user);
+
+        IHexToken(hexToken).stakeStart(amountHexStaked, 5555);
+        bootstrap.claimAirdrop();
+
+        vm.stopPrank();
+
+        // assert user info
+        (, uint256 sacrificedUSD,, bool claimedAirdrop) = bootstrap.userInfos(user);
+        assertEq(claimedAirdrop, true);
+
+        // assert HEXIT minted
+        uint256 realHexAmountStaked = _getHexStaked(user);
+        uint256 amountOut = feed.consult(hexToken, realHexAmountStaked, daiToken);
+        uint256 baseHexit = 170 * 1e18;
+        uint256 maxSlippage = 1e16;
+        assertApproxEqRel(
+            hexit.balanceOf(user), userHexitBalanceBefore + (sacrificedUSD * 9) + amountOut + baseHexit, maxSlippage
+        );
+    }
+
+    function test_claimAirdrop_hexStakerAndSacrificeParticipant_after_30_days(uint256 amount, uint256 amountHexStaked)
+        public
+    {
+        amount = bound(amount, 1_000 * 1e8, 10_000_000 * 1e8);
+        amountHexStaked = bound(amountHexStaked, 100 * 1e8, 100_000 * 1e8);
+
+        // give HEX to the sender
+        _dealToken(hexToken, user, amount + amountHexStaked);
+
+        // user sacrifices HEX
+        vm.startPrank(user);
+        _sacrifice(hexToken, amount);
+        vm.stopPrank();
+
+        // assert total HEX sacrificed
+        assertEq(bootstrap.totalHexAmount(), amount);
+
+        // skip 30 days so ensure that sacrifice period already ended
+        skip(30 days);
+
+        // calculate the corresponding to 12.5% of the total HEX deposited
+        uint256 amountOfHexToDai = (amount * 1250) / 10000;
+
+        // deployer processes the sacrifice
+        vm.startPrank(deployer);
+        _processSacrifice(amountOfHexToDai);
+        vm.stopPrank();
+
+        // user claims HEX1 and HEXIT from the sacrifice
+        vm.startPrank(user);
+        bootstrap.claimSacrifice();
+        vm.stopPrank();
+
+        // skip the sacrifice claim period
+        skip(7 days);
+
+        // start the airdrop
+        vm.prank(deployer);
+        bootstrap.startAirdrop();
+
+        // skip to the last day of the airdrop claim period
+        skip(29 days);
+
+        // user stakes HEX to get a bigger allocation in the HEXIT airdrop
+        uint256 userHexitBalanceBefore = hexit.balanceOf(user);
+        vm.startPrank(user);
+
+        IHexToken(hexToken).stakeStart(amountHexStaked, 5555);
+        bootstrap.claimAirdrop();
+
+        vm.stopPrank();
+
+        // assert user info
+        (, uint256 sacrificedUSD,, bool claimedAirdrop) = bootstrap.userInfos(user);
+        assertEq(claimedAirdrop, true);
+
+        // assert HEXIT minted
+        uint256 realHexAmountStaked = _getHexStaked(user);
+        uint256 amountOut = feed.consult(hexToken, realHexAmountStaked, daiToken);
+        uint256 baseHexit = 517 * 1e13;
+        uint256 maxSlippage = 1e16;
+        assertApproxEqRel(
+            hexit.balanceOf(user), userHexitBalanceBefore + (sacrificedUSD * 9) + amountOut + baseHexit, maxSlippage
+        );
+    }
 }
