@@ -340,13 +340,15 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
             _updatePoolHistory(hexitToken);
         }
 
-        // calculate the amount of HEX and HEXIT rewards since the last day claimed
-        (uint256 hexRewards, uint256 hexitRewards) = _calculateRewards(_user, _stakeToken);
-
-        // increment the rewards accrued as unclaimed rewards
         StakeInfo storage stakeInfo = stakingInfos[_user][_stakeToken];
-        stakeInfo.unclaimedHex += hexRewards;
-        stakeInfo.unclaimedHexit += hexitRewards;
+        if (stakeInfo.hexSharesAmount > 0 && stakeInfo.hexitSharesAmount > 0) {
+            // calculate the amount of HEX and HEXIT rewards since the last day claimed
+            (uint256 hexRewards, uint256 hexitRewards) = _calculateRewards(_user, _stakeToken);
+
+            // increment the rewards accrued as unclaimed rewards
+            stakeInfo.unclaimedHex += hexRewards;
+            stakeInfo.unclaimedHexit += hexitRewards;
+        }
     }
 
     /// @dev updates daily rewards since they were last updated
