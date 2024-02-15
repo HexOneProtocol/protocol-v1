@@ -303,7 +303,7 @@ contract HexOneVault is IHexOneVault, Ownable {
     /// @dev tries to consult the price of HEX in DAI (dollars).
     /// @notice if consult reverts with PriceTooStale then it needs to
     /// update the oracle and only then consult the price again.
-    function _getHexPrice(uint256 _amountIn) internal returns (uint256) {
+    function _getHexQuote(uint256 _amountIn) internal returns (uint256) {
         try IHexOnePriceFeed(hexOnePriceFeed).consult(hexToken, _amountIn, daiToken) returns (uint256 amountOut) {
             if (amountOut == 0) revert PriceConsultationFailedInvalidQuote(amountOut);
             return amountOut;
@@ -339,7 +339,7 @@ contract HexOneVault is IHexOneVault, Ownable {
     function _calculateBorrowableAmount(address _depositor, uint256 _stakeId) internal returns (uint256) {
         DepositInfo memory depositInfo = depositInfos[_depositor][_stakeId];
         uint256 hexOneBorrowed = depositInfo.borrowed;
-        uint256 hexStakePrice = _getHexPrice(depositInfo.amount);
+        uint256 hexStakePrice = _getHexQuote(depositInfo.amount);
 
         if (hexStakePrice > hexOneBorrowed) {
             return hexStakePrice - hexOneBorrowed;
