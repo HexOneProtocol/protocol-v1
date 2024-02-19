@@ -33,7 +33,7 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
     EnumerableSet.AddressSet private pairTokens;
 
     /// @dev period in which the oracle becomes stale.
-    uint256 public constant PERIOD = 1 hours;
+    uint256 public constant PERIOD = 2000;
 
     /// @dev address of the pulsex factory.
     address public immutable factory;
