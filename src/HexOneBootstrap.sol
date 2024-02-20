@@ -182,19 +182,21 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
     /// @dev returns the current day of the sacrifice.
     /// @notice if the sacrifice had just been activated this func would return day 1.
     function getCurrentSacrificeDay() public view returns (uint256) {
-        if (block.timestamp < sacrificeStart) revert SacrificeHasNotStartedYet(block.timestamp);
+        uint256 sacrificeLaunch = sacrificeStart;
+        if (block.timestamp < sacrificeLaunch) revert SacrificeHasNotStartedYet(block.timestamp);
         if (block.timestamp >= sacrificeEnd) revert SacrificeAlreadyEnded(block.timestamp);
 
-        return ((block.timestamp - sacrificeStart) / 1 days) + 1;
+        return ((block.timestamp - sacrificeLaunch) / 1 days) + 1;
     }
 
     /// @dev returns the current day of the airdrop.
     /// @notice if the airdrop had just started this func would return day 1.
     function getCurrentAirdropDay() public view returns (uint256) {
-        if (airdropStart == 0) revert AirdropHasNotStartedYet(block.timestamp);
+        uint256 airdropLaunch = airdropStart;
+        if (airdropLaunch == 0) revert AirdropHasNotStartedYet(block.timestamp);
         if (block.timestamp >= airdropEnd) revert AirdropAlreadyEnded(block.timestamp);
 
-        return ((block.timestamp - airdropStart) / 1 days) + 1;
+        return ((block.timestamp - airdropLaunch) / 1 days) + 1;
     }
 
     /// @dev allows user to participate in the sacrifice.
@@ -284,12 +286,14 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
             hexToSwap, _amountOutMinDai, path, address(this), block.timestamp
         );
 
+        address vaultAddr = hexOneVault;
+
         // enable hex one vault to start working because sacrifice has been processed.
-        IHexOneVault(hexOneVault).setSacrificeStatus();
+        IHexOneVault(vaultAddr).setSacrificeStatus();
 
         // create a new deposit for `MAX_DURATION` in the vault with 12.5% of the total minted HEX
-        IERC20(hexToken).approve(hexOneVault, hexToSwap);
-        (uint256 hexOneMinted,) = IHexOneVault(hexOneVault).deposit(hexToSwap, 5555);
+        IERC20(hexToken).approve(vaultAddr, hexToSwap);
+        (uint256 hexOneMinted,) = IHexOneVault(vaultAddr).deposit(hexToSwap, 5555);
 
         // check if there's an already created HEX1/DAI pair
         address hexOneDaiPair = IPulseXFactory(pulseXFactory).getPair(hexOneToken, daiToken);
@@ -348,11 +352,13 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         hexitMinted = userInfo.hexitShares;
         totalHexitMinted += hexitMinted;
 
+        address vaultAddr = hexOneVault;
+
         // approve the vault to spend HEX
-        IERC20(hexToken).approve(hexOneVault, hexToStake);
+        IERC20(hexToken).approve(vaultAddr, hexToStake);
 
         // call the vault to mint HEX1 in the name of the sender
-        (hexOneMinted, stakeId) = IHexOneVault(hexOneVault).delegateDeposit(msg.sender, hexToStake, 5555);
+        (hexOneMinted, stakeId) = IHexOneVault(vaultAddr).delegateDeposit(msg.sender, hexToStake, 5555);
 
         // mint hexit
         IHexitToken(hexitToken).mint(msg.sender, hexitMinted);
@@ -367,13 +373,15 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         if (block.timestamp < sacrificeClaimPeriodEnd) revert SacrificeClaimPeriodHasNotFinished(block.timestamp);
         if (airdropStarted) revert AirdropAlreadyStarted();
 
+        uint256 sacrificeMintedHexit = totalHexitMinted;
+
         // 50% more of the total HEXIT minted during the sacrifice phase is minted to
         // the team
-        uint256 hexitTeamAlloc = (totalHexitMinted * HEXIT_TEAM_RATE) / FIXED_POINT;
+        uint256 hexitTeamAlloc = (sacrificeMintedHexit * HEXIT_TEAM_RATE) / FIXED_POINT;
 
         // 33% more of the total HEXIT minted during the sacrifice phase is used to
         // purchase HEXIT
-        uint256 hexitStakingAlloc = (totalHexitMinted * HEXIT_STAKING_RATE) / FIXED_POINT;
+        uint256 hexitStakingAlloc = (sacrificeMintedHexit * HEXIT_STAKING_RATE) / FIXED_POINT;
 
         // set airdrop started to true
         airdropStarted = true;
@@ -389,14 +397,16 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         // minted hexit staking allocation to this contract
         IHexitToken(hexitToken).mint(address(this), hexitStakingAlloc);
 
+        address stakingAddr = hexOneStaking;
+
         // approve the staking contract to spend HEXIT
-        IERC20(hexitToken).approve(hexOneStaking, hexitStakingAlloc);
+        IERC20(hexitToken).approve(stakingAddr, hexitStakingAlloc);
 
         // add the minted HEXIT to the staking contract
-        IHexOneStaking(hexOneStaking).purchase(hexitToken, hexitStakingAlloc);
+        IHexOneStaking(stakingAddr).purchase(hexitToken, hexitStakingAlloc);
 
         // enable staking
-        IHexOneStaking(hexOneStaking).enableStaking();
+        IHexOneStaking(stakingAddr).enableStaking();
 
         emit AirdropStarted(hexitTeamAlloc, hexitStakingAlloc);
     }
