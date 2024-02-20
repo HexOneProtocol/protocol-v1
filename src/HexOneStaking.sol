@@ -21,7 +21,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
     using SafeERC20 for IERC20;
 
     /// @dev fixed point is used to calculate ratios in bps
-    uint16 public constant FIXED_POINT = 1000;
+    uint16 public constant FIXED_POINT = 10_000;
     /// @dev minimum amount of days to unstake
     uint16 public constant MIN_UNSTAKE_DAYS = 2;
 

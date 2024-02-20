@@ -41,8 +41,6 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
 
     /// @dev fixed point used to calculate percentages.
     uint16 public constant FIXED_POINT = 10_000;
-    /// @dev fixed point used to scale down numbers multiplied by multiplier (5555 for HEX).
-    uint16 public constant MULTIPLIER_FIXED_POINT = 1000;
 
     /// @dev HEXIT rate minted for the team after sacrifice ends.
     uint16 public constant HEXIT_TEAM_RATE = 5000;
@@ -455,7 +453,7 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         hexitShares = (sacrificedUSD * _sacrificeBaseHexitPerDollar()) / 1e18;
 
         // apply the multiplier based on the sacrificed token
-        hexitShares = (hexitShares * tokenMultipliers[_tokenIn]) / MULTIPLIER_FIXED_POINT;
+        hexitShares = (hexitShares * tokenMultipliers[_tokenIn]) / FIXED_POINT;
     }
 
     function _calculateHexitAirdropShares() internal returns (uint256) {

@@ -24,9 +24,9 @@ contract HexOneVault is IHexOneVault, Ownable {
     /// @dev max HEX stake duration.
     uint16 public constant MAX_DURATION = 5555;
     /// @dev fixed point in basis points
-    uint16 public constant FIXED_POINT = 1000;
+    uint16 public constant FIXED_POINT = 10_000;
     /// @dev deposit fee of 5% in basis points.
-    uint16 public constant DEPOSIT_FEE = 50;
+    uint16 public constant DEPOSIT_FEE = 500;
 
     /// @dev HEX token address.
     address public immutable hexToken;
