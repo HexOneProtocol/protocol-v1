@@ -51,6 +51,7 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
         for (uint256 i; i < _pairs.length; i++) {
             // check if pair was already added
             address pair = _pairs[i];
+            if (pair == address(0)) revert InvalidPair(pair);
             if (pairTokens.contains(pair)) revert PairAlreadyAdded(pair);
 
             // get the reserves of the pair and the last time the reserves were updated
