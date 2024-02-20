@@ -317,10 +317,11 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
 
     /// @dev returns the amount of days that passed since the staking started.
     function getCurrentStakingDay() public view returns (uint256) {
-        if (stakingLaunchTime == 0) {
+        uint256 stakingLaunch = stakingLaunchTime;
+        if (stakingLaunch == 0) {
             return 0;
         } else {
-            return (block.timestamp - stakingLaunchTime) / 1 days;
+            return (block.timestamp - stakingLaunch) / 1 days;
         }
     }
 
