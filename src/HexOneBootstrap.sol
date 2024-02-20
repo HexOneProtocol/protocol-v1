@@ -316,7 +316,7 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         emit SacrificeProcessed(hexOneDaiPair, amountHexOneSent, amountDaiSent, liquidity);
     }
 
-    /// @dev claim HEXIT and HEXIT based on the total amount sacrificed.
+    /// @dev claim HEX and HEXIT based on the total amount sacrificed.
     function claimSacrifice() external returns (uint256 stakeId, uint256 hexOneMinted, uint256 hexitMinted) {
         // check if sacrifice has already been processed
         if (!sacrificeProcessed) revert SacrificeHasNotBeenProcessedYet();
