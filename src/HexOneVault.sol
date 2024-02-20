@@ -289,10 +289,11 @@ contract HexOneVault is IHexOneVault, Ownable {
         userInfo.totalBorrowed += hexOneMinted;
 
         // approve the staking contract to spend the feeAmount
-        IERC20(hexToken).approve(hexOneStaking, feeAmount);
+        address stakingAddr = hexOneStaking;
+        IERC20(hexToken).approve(stakingAddr, feeAmount);
 
         // send the fee to the staking contract to be distributed as a reward
-        IHexOneStaking(hexOneStaking).purchase(hexToken, feeAmount);
+        IHexOneStaking(stakingAddr).purchase(hexToken, feeAmount);
 
         // mint the max amount possible to the sender based on the HEX price
         IHexOneToken(hexOneToken).mint(_depositor, hexOneMinted);
