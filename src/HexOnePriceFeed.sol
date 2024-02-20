@@ -93,10 +93,12 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
         (uint256 price0Cumulative, uint256 price1Cumulative, uint32 blockTimestamp) =
             UniswapV2OracleLibrary.currentCumulativePrices(pair);
 
+        Observation memory lastObservation = pairLastObservation[pair];
+
         // calculate how much time has passed since the pair was last updated
         uint32 timeElapsed;
         unchecked {
-            timeElapsed = blockTimestamp - pairLastObservation[pair].blockTimestampLast;
+            timeElapsed = blockTimestamp - lastObservation.blockTimestampLast;
         }
 
         // if the pair has already been updated in the last 2 hours revert
@@ -105,12 +107,10 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
         // compute the new price average since the price was last updated
         PriceAverage storage priceAverage = pairPriceAverage[pair];
         unchecked {
-            priceAverage.price0Average = FixedPoint.uq112x112(
-                uint224((price0Cumulative - pairLastObservation[pair].price0CumulativeLast) / timeElapsed)
-            );
-            priceAverage.price1Average = FixedPoint.uq112x112(
-                uint224((price1Cumulative - pairLastObservation[pair].price1CumulativeLast) / timeElapsed)
-            );
+            priceAverage.price0Average =
+                FixedPoint.uq112x112(uint224((price0Cumulative - lastObservation.price0CumulativeLast) / timeElapsed));
+            priceAverage.price1Average =
+                FixedPoint.uq112x112(uint224((price1Cumulative - lastObservation.price1CumulativeLast) / timeElapsed));
         }
 
         // update the last pair observation with the newly fetched cumulative prices and timestamp

@@ -20,6 +20,16 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
     /// @dev using safe ERC20 OZ library
     using SafeERC20 for IERC20;
 
+    /// @dev fixed point is used to calculate ratios in bps
+    uint16 public constant FIXED_POINT = 1000;
+    /// @dev minimum amount of days to unstake
+    uint16 public constant MIN_UNSTAKE_DAYS = 2;
+
+    /// @dev address of the HEX token
+    address public immutable hexToken;
+    /// @dev address of the HEXIT token
+    address public immutable hexitToken;
+
     /// @dev tokens that are allowed to be staked.
     EnumerableSet.AddressSet private stakeTokens;
 
@@ -28,33 +38,23 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
     /// @dev stake token => distribution weight (10%, 20% or 70%)
     mapping(address => uint256) public stakeTokenWeights;
 
-    /// @dev current staking day => pool token => PoolRewards
-    mapping(uint256 => mapping(address => PoolHistory)) public poolHistory;
-    /// @dev the timestamp in which the staking launched
-    uint256 public stakingLaunchTime;
-    /// @dev tracks if staking is enabled or not
-    bool public stakingEnabled;
-
     /// @dev user address => stake token => StakeInfo
     mapping(address => mapping(address => StakeInfo)) public stakingInfos;
     /// @dev stake token => total amount of token staked
     mapping(address => uint256) public totalStakedAmount;
 
-    /// @dev address of the HEX token
-    address public immutable hexToken;
-    /// @dev address of the HEXIT token
-    address public immutable hexitToken;
+    /// @dev current staking day => pool token => PoolRewards
+    mapping(uint256 => mapping(address => PoolHistory)) public poolHistory;
+
+    /// @dev the timestamp in which the staking launched
+    uint256 public stakingLaunchTime;
+    /// @dev tracks if staking is enabled or not
+    bool public stakingEnabled;
 
     /// @dev address of the hexOneVault
     address public hexOneVault;
     /// @dev address of the HexOneBootstrap
     address public hexOneBootstrap;
-
-    /// @dev fixed point is used to calculate ratios in bps
-    uint16 public constant FIXED_POINT = 1000;
-
-    /// @dev minimum amount of days to unstake
-    uint16 public constant MIN_UNSTAKE_DAYS = 2;
 
     /// @dev checks if staking is enabled
     modifier onlyWhenStakingEnabled() {

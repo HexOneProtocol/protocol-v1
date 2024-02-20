@@ -68,6 +68,11 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
     /// @dev recipient of the HEXIT tokens minted after sacrifice claim period ends.
     address public immutable teamWallet;
 
+    /// @dev flag to store the status of sacrifice.
+    bool public sacrificeProcessed;
+    /// @dev flag to store the status of the airdrop.
+    bool public airdropStarted;
+
     /// @dev HEX1 price feed contract address.
     address public hexOnePriceFeed;
     /// @dev HEX1 staking contract address.
@@ -99,11 +104,6 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
     mapping(address => UserInfo) public userInfos;
     /// @dev maps each sacrifice token to the corresponding multiplier deposit bonus.
     mapping(address => uint16) public tokenMultipliers;
-
-    /// @dev flag to store the status of sacrifice.
-    bool public sacrificeProcessed;
-    /// @dev flag to store the status of the airdrop.
-    bool public airdropStarted;
 
     /// @dev allowed tokens for sacrifice: HEX, DAI, WPLS & PLSX.
     EnumerableSet.AddressSet private sacrificeTokens;

@@ -35,6 +35,9 @@ contract HexOneVault is IHexOneVault, Ownable {
     /// @dev HEX1 token address.
     address public immutable hexOneToken;
 
+    /// @dev flag to track if sacrifice has already finished.
+    bool public sacrificeFinished;
+
     /// @dev HEX1 price feed contract address.
     address public hexOnePriceFeed;
     /// @dev HEX1 staking contract address.
@@ -46,9 +49,6 @@ contract HexOneVault is IHexOneVault, Ownable {
     mapping(address => mapping(uint256 => DepositInfo)) public depositInfos;
     /// @dev depositor => UserInfo
     mapping(address => UserInfo) public userInfos;
-
-    /// @dev flag to track if sacrifice has already finished.
-    bool public sacrificeFinished;
 
     /// @dev checks if the sacrifice has already finished.
     modifier onlyAfterSacrifice() {
