@@ -131,7 +131,6 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
         for (uint256 i; i < length; ++i) {
             address token = _tokens[i];
             uint16 weight = _weights[i];
-            if (stakeTokens.contains(token)) revert StakeTokenAlreadyAdded(token);
             if (token == address(0)) revert InvalidStakeToken(token);
             if (weight == 0 || weight > FIXED_POINT) revert InvalidWeight(weight);
 

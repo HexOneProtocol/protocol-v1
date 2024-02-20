@@ -73,10 +73,10 @@ contract StakingRevertTest is StakingHelper {
         vm.stopPrank();
     }
 
-    function test_revert_setStakeTokens_TokenAlreadyAdded() public {
+    function test_revert_setStakeTokens_InvalidStakeToken() public {
         address[] memory tokens = new address[](2);
         tokens[0] = daiToken;
-        tokens[1] = daiToken;
+        tokens[1] = address(0);
 
         uint16[] memory weights = new uint16[](2);
         weights[0] = 800;
@@ -84,7 +84,7 @@ contract StakingRevertTest is StakingHelper {
 
         vm.startPrank(deployer);
 
-        vm.expectRevert(abi.encodeWithSelector(IHexOneStaking.StakeTokenAlreadyAdded.selector, daiToken));
+        vm.expectRevert(abi.encodeWithSelector(IHexOneStaking.InvalidStakeToken.selector, address(0)));
         staking.setStakeTokens(tokens, weights);
 
         vm.stopPrank();

@@ -25,7 +25,6 @@ interface IHexOneBootstrap {
     error ZeroLengthArray();
     error InvalidTimestamp(uint256 timestamp);
     error InvalidAddress(address addr);
-    error TokenAlreadyAdded(address token);
     error InvalidMultiplier(uint256 multiplier);
     error SacrificeHasNotStartedYet(uint256 timestamp);
     error SacrificeAlreadyEnded(uint256 timestamp);

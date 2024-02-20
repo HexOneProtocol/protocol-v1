@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.20;
 
-import {Test, console2 as console} from "forge-std/Test.sol";
+import {Test, stdError, console2 as console} from "forge-std/Test.sol";
 
 import {HexOneToken} from "../../src/HexOneToken.sol";
 import {HexitToken} from "../../src/HexitToken.sol";

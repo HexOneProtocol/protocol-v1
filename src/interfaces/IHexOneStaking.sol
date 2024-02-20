@@ -73,7 +73,6 @@ interface IHexOneStaking {
     error NoRewardsToDistribute(address poolToken);
     error MismatchedArray();
     error InvalidArrayLength(uint256 length);
-    error StakeTokenAlreadyAdded(address token);
     error InvalidPurchaseAmount(uint256 purchaseAmount);
     error InvalidStakeAmount(uint256 stakeAmount);
     error InvalidUnstakeAmount(uint256 unstakeAmount);

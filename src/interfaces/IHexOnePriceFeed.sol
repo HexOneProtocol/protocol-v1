@@ -4,7 +4,6 @@ pragma solidity ^0.8.20;
 interface IHexOnePriceFeed {
     event PriceUpdated(address pair);
 
-    error PairAlreadyAdded(address pair);
     error EmptyReserveZero(address pair);
     error EmptyReserveOne(address pair);
     error InvalidFactory(address factory);
