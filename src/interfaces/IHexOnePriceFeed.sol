@@ -5,7 +5,8 @@ interface IHexOnePriceFeed {
     event PriceUpdated(address pair);
 
     error PairAlreadyAdded(address pair);
-    error EmptyReserves(address pair);
+    error EmptyReserveZero(address pair);
+    error EmptyReserveOne(address pair);
     error InvalidFactory(address factory);
     error InvalidNumberOfPairs(uint256 numberOfPairs);
     error PeriodNotElapsed(address pair);

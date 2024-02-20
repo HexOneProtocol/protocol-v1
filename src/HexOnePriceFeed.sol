@@ -58,7 +58,8 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
             (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) = pulseXPair.getReserves();
 
             // check if pair has reserves
-            if (reserve0 == 0 || reserve1 == 0) revert EmptyReserves(pair);
+            if (reserve0 == 0) revert EmptyReserveZero(pair);
+            if (reserve1 == 0) revert EmptyReserveOne(pair);
 
             // add pair contract to allowed pair tokens
             pairTokens.add(pair);
