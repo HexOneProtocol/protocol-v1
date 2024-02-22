@@ -364,6 +364,6 @@ contract HexOneVault is IHexOneVault, Ownable {
     /// @dev returns if the deposit is liquiditable.
     function _depositLiquidatable(uint256 _depositHexDay, uint16 _duration) internal view returns (bool) {
         uint256 currHexDay = IHexToken(hexToken).currentDay();
-        return currHexDay > (_depositHexDay + _duration + GRACE_PERIOD);
+        return currHexDay >= (_depositHexDay + _duration + GRACE_PERIOD);
     }
 }

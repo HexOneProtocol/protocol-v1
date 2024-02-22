@@ -3,3 +3,6 @@ src = "src"
 out = "out"
 libs = ["lib"]
 solc = "0.8.20"
+
+[fuzz]
+runs = 1000
