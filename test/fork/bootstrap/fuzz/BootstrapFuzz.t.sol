@@ -39,10 +39,10 @@ contract BootstrapFuzzTest is BootstrapHelper {
         assertEq(sacrificedUSD, hexPriceInDai);
 
         // assert that the hexit tokens to be minted are correct
-        uint256 multiplier = 5555;
+        uint256 multiplier = 55555;
         uint256 baseHexitPerDollar = 5_555_555 * 1e18;
         uint256 expectedHexitShares = (hexPriceInDai * baseHexitPerDollar) / 1e18;
-        expectedHexitShares = (expectedHexitShares * multiplier) / 1000;
+        expectedHexitShares = (expectedHexitShares * multiplier) / 10_000;
         assertEq(totalHexitShares, expectedHexitShares);
     }
 

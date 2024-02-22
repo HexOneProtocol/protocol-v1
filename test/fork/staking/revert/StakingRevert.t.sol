@@ -96,12 +96,12 @@ contract StakingRevertTest is StakingHelper {
         tokens[1] = daiToken;
 
         uint16[] memory weights = new uint16[](2);
-        weights[0] = 1200;
-        weights[1] = 200;
+        weights[0] = 12000;
+        weights[1] = 2000;
 
         vm.startPrank(deployer);
 
-        vm.expectRevert(abi.encodeWithSelector(IHexOneStaking.InvalidWeight.selector, 1200));
+        vm.expectRevert(abi.encodeWithSelector(IHexOneStaking.InvalidWeight.selector, 12000));
         staking.setStakeTokens(tokens, weights);
 
         vm.stopPrank();
@@ -113,12 +113,12 @@ contract StakingRevertTest is StakingHelper {
         tokens[1] = daiToken;
 
         uint16[] memory weights = new uint16[](2);
-        weights[0] = 900;
-        weights[1] = 200;
+        weights[0] = 9000;
+        weights[1] = 2000;
 
         vm.startPrank(deployer);
 
-        vm.expectRevert(abi.encodeWithSelector(IHexOneStaking.InvalidWeightSum.selector, 1100));
+        vm.expectRevert(abi.encodeWithSelector(IHexOneStaking.InvalidWeightSum.selector, 11000));
         staking.setStakeTokens(tokens, weights);
 
         vm.stopPrank();

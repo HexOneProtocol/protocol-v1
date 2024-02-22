@@ -36,10 +36,10 @@ contract BootstrapDeploymentTest is Base {
     //////////////////////////////////////////////////////////////////////////*/
 
     function test_setSacrificeTokens() public {
-        assertEq(bootstrap.tokenMultipliers(hexToken), 5555);
-        assertEq(bootstrap.tokenMultipliers(daiToken), 3000);
-        assertEq(bootstrap.tokenMultipliers(wplsToken), 2000);
-        assertEq(bootstrap.tokenMultipliers(plsxToken), 1000);
+        assertEq(bootstrap.tokenMultipliers(hexToken), 55_555);
+        assertEq(bootstrap.tokenMultipliers(daiToken), 30_000);
+        assertEq(bootstrap.tokenMultipliers(wplsToken), 20_000);
+        assertEq(bootstrap.tokenMultipliers(plsxToken), 10_000);
     }
 
     /*//////////////////////////////////////////////////////////////////////////

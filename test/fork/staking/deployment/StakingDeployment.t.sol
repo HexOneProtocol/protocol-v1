@@ -20,10 +20,10 @@ contract StakingDeploymentTest is Base {
 
         // assert daily distribution rate for each pool is set to 1%
         (,,,, uint16 hexDistRate) = staking.pools(hexToken);
-        assertEq(hexDistRate, 10);
+        assertEq(hexDistRate, 100);
 
         (,,,, uint16 hexitDistRate) = staking.pools(address(hexit));
-        assertEq(hexitDistRate, 10);
+        assertEq(hexitDistRate, 100);
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -40,8 +40,8 @@ contract StakingDeploymentTest is Base {
     //////////////////////////////////////////////////////////////////////////*/
 
     function test_setStakeTokens() public {
-        assertEq(staking.stakeTokenWeights(hexOneDaiPair), 700);
-        assertEq(staking.stakeTokenWeights(address(hex1)), 200);
-        assertEq(staking.stakeTokenWeights(address(hexit)), 100);
+        assertEq(staking.stakeTokenWeights(hexOneDaiPair), 7000);
+        assertEq(staking.stakeTokenWeights(address(hex1)), 2000);
+        assertEq(staking.stakeTokenWeights(address(hexit)), 1000);
     }
 }

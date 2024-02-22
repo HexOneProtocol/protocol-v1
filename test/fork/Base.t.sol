@@ -70,9 +70,9 @@ contract Base is Test {
         pairs[2] = plsxDaiPair;
         feed = new HexOnePriceFeed(pulseXFactory, pairs);
 
-        // deploy the staking contract
-        uint16 hexDistRate = 10;
-        uint16 hexitDistRate = 10;
+        // deploy the staking contract with 1% distribution rate of each token in bps
+        uint16 hexDistRate = 100;
+        uint16 hexitDistRate = 100;
         staking = new HexOneStaking(hexToken, address(hexit), hexDistRate, hexitDistRate);
 
         // deploy the vault contract
@@ -101,10 +101,10 @@ contract Base is Test {
 
         // create an array with the corresponding multiplier for each sacrifice token
         uint16[] memory multipliers = new uint16[](4);
-        multipliers[0] = 5555;
-        multipliers[1] = 3000;
-        multipliers[2] = 2000;
-        multipliers[3] = 1000;
+        multipliers[0] = 55555;
+        multipliers[1] = 30000;
+        multipliers[2] = 20000;
+        multipliers[3] = 10000;
 
         bootstrap.setBaseData(address(feed), address(staking), address(vault));
 
@@ -131,9 +131,9 @@ contract Base is Test {
 
         // prepare the distribution weights for each stake token
         uint16[] memory weights = new uint16[](3);
-        weights[0] = 700;
-        weights[1] = 200;
-        weights[2] = 100;
+        weights[0] = 7000;
+        weights[1] = 2000;
+        weights[2] = 1000;
 
         // set the allowed staking tokens and distribution weights
         staking.setStakeTokens(stakeTokens, weights);
