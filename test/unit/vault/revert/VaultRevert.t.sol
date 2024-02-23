@@ -7,6 +7,7 @@ contract VaultRevertTest is Base {
     function setUp() public override {
         super.setUp();
 
+        // set sacrifice status to true
         vm.prank(bootstrap);
         vault.setSacrificeStatus();
     }
@@ -110,7 +111,7 @@ contract VaultRevertTest is Base {
     }
 
     /*//////////////////////////////////////////////////////////////////////////
-                                    CLAIM
+                                CLAIM
     //////////////////////////////////////////////////////////////////////////*/
 
     function test_revert_claim_DepositNotActive_DoesNotExist() public {
@@ -183,7 +184,7 @@ contract VaultRevertTest is Base {
     }
 
     /*//////////////////////////////////////////////////////////////////////////
-                                    BORROW
+                                BORROW
     //////////////////////////////////////////////////////////////////////////*/
 
     function test_revert_borrow_InvalidBorrowAmount() public {
@@ -203,7 +204,17 @@ contract VaultRevertTest is Base {
         vm.stopPrank();
     }
 
-    function test_revert_borrow_DepositNotActive() public {}
+    function test_revert_borrow_DepositNotActive() public {
+        uint256 stakeId = 1;
+        uint256 amount = 1000e18; // 1000 USD
+
+        vm.startPrank(user);
+
+        vm.expectRevert(abi.encodeWithSelector(IHexOneVault.DepositNotActive.selector, user, stakeId));
+        vault.borrow(amount, stakeId);
+
+        vm.stopPrank();
+    }
 
     function test_revert_borrow_BorrowAmountTooHigh() public {
         uint256 amount = 1000e8;

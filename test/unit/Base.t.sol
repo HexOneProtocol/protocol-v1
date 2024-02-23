@@ -18,6 +18,8 @@ import {IHexOneVault} from "../../src/interfaces/IHexOneVault.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Base is Test {
+    uint256 public constant HEX_DAI_INIT_RATE = 10000000000000000;
+
     HexOneToken public hex1;
     HexitToken public hexit;
     HexOneVault public vault;
@@ -66,7 +68,7 @@ contract Base is Test {
         hexit.setHexOneBootstrap(address(bootstrap));
 
         // set HEX/DAI rate in the price feed mock
-        feed.setRate(address(hexToken), address(daiToken), 15275940385037058);
+        feed.setRate(address(hexToken), address(daiToken), HEX_DAI_INIT_RATE);
 
         // configure the vault
         vault.setBaseData(address(feed), address(staking), bootstrap);

@@ -196,6 +196,7 @@ contract HexOneVault is IHexOneVault, Ownable {
 
         // if the amount the depositor is trying to borrow is bigger than the max borrowable amount revert.
         uint256 maxBorrowableAmount = _calculateBorrowableAmount(msg.sender, _stakeId);
+        if (maxBorrowableAmount == 0) revert InvalidBorrowAmount(0);
         if (_amount > maxBorrowableAmount) revert BorrowAmountTooHigh(_amount);
 
         // update the total amount borrowed by the user accross all it's stakes

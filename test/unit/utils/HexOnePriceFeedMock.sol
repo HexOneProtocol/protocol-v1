@@ -18,6 +18,6 @@ contract HexOnePriceFeedMock {
     function update(address, address) external {}
 
     function consult(address tokenIn, uint256 amountIn, address tokenOut) external view returns (uint256 amountOut) {
-        return amountIn * rates[tokenIn][tokenOut] / 1e18;
+        return amountIn * rates[tokenIn][tokenOut] / 1e8;
     }
 }
