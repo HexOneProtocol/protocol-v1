@@ -45,6 +45,9 @@ contract HexOneVault is IHexOneVault, Ownable {
     /// @dev HEX1 bootstrap contract address.
     address public hexOneBootstrap;
 
+    /// @dev current stakeId
+    uint256 public currentId;
+
     /// @dev depositor => stakeId => DepositInfo
     mapping(address => mapping(uint256 => DepositInfo)) public depositInfos;
     /// @dev depositor => UserInfo
@@ -265,7 +268,7 @@ contract HexOneVault is IHexOneVault, Ownable {
 
         // stake HEX, get stakeId
         IHexToken(hexToken).stakeStart(realAmount, _duration);
-        stakeId = IHexToken(hexToken).stakeCount(address(this)) - 1;
+        stakeId = currentId;
 
         // get the current HEX day, and t-shares of the stake
         uint256 currentHexDay = IHexToken(hexToken).currentDay();
@@ -288,6 +291,9 @@ contract HexOneVault is IHexOneVault, Ownable {
         hexOneMinted = _calculateBorrowableAmount(_depositor, stakeId);
         depositInfo.borrowed += hexOneMinted;
         userInfo.totalBorrowed += hexOneMinted;
+
+        // increment the current stakeId
+        currentId++;
 
         // approve the staking contract to spend the feeAmount
         address stakingAddr = hexOneStaking;
