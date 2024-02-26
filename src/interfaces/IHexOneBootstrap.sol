@@ -32,6 +32,7 @@ interface IHexOneBootstrap {
     error InvalidAmountIn(uint256 amountIn);
     error InvalidAmountOutMin(uint256 amountOutMin);
     error InvalidSacrificeToken(address token);
+    error SacrificeTokenAlreadyAdded(address token);
     error InvalidQuote(uint256 quote);
     error PriceConsultationFailedBytes(bytes revertData);
     error PriceConsultationFailedString(string revertReason);

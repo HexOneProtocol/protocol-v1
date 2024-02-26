@@ -70,6 +70,7 @@ interface IHexOneStaking {
     error NotHexOneBootstrap(address sender);
     error NotHexOneVault(address sender);
     error StakingAlreadyEnabled();
+    error StakeTokenAlreadyAdded(address token);
     error NoRewardsToDistribute(address poolToken);
     error MismatchedArray();
     error InvalidArrayLength(uint256 length);

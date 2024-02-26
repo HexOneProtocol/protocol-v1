@@ -162,7 +162,7 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
             if (token == address(0)) revert InvalidSacrificeToken(token);
             if (multiplier == 0) revert InvalidMultiplier(multiplier);
 
-            sacrificeTokens.add(token);
+            if (!sacrificeTokens.add(token)) revert SacrificeTokenAlreadyAdded(token);
             tokenMultipliers[token] = multiplier;
         }
     }

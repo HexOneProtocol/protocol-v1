@@ -11,6 +11,7 @@ interface IHexOnePriceFeed {
     error PeriodNotElapsed(address pair);
     error InvalidPair(address pair);
     error PriceTooStale();
+    error PairAlreadyAdded(address pair);
 
     function update(address _tokenIn, address _tokenOut) external;
     function consult(address _tokenIn, uint256 _amountIn, address _tokenOut)

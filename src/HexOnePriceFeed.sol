@@ -62,7 +62,7 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
             if (reserve1 == 0) revert EmptyReserveOne(pair);
 
             // add pair contract to allowed pair tokens
-            pairTokens.add(pair);
+            if (!pairTokens.add(pair)) revert PairAlreadyAdded(pair);
 
             // update the last observation made for this pair
             Observation storage observation = pairLastObservation[pair];
