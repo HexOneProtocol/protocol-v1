@@ -211,6 +211,7 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
 
         // calculate the hexit shares of the token being sacrificed
         (uint256 hexitShares, uint256 amountSacrificedUSD) = _calculateHexitSacrificeShares(_token, _amountIn);
+        if (amountSacrificedUSD < 1e18) revert InvalidSacrificeAmount(amountSacrificedUSD);
 
         // update the user info to increment the total hexit shares and usd sacrificed by the sender
         UserInfo storage userInfo = userInfos[msg.sender];

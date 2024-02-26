@@ -112,7 +112,7 @@ contract HexOneVault is IHexOneVault, Ownable {
         returns (uint256 hexOneMinted, uint256 stakeId)
     {
         if (_duration < MIN_DURATION || _duration > MAX_DURATION) revert InvalidDepositDuration(_duration);
-        if (_amount == 0) revert InvalidDepositAmount(_amount);
+        if (_amount < 1e7) revert InvalidDepositAmount(_amount);
 
         IERC20(hexToken).safeTransferFrom(msg.sender, address(this), _amount);
 
@@ -130,7 +130,7 @@ contract HexOneVault is IHexOneVault, Ownable {
         returns (uint256 hexOneMinted, uint256 stakeId)
     {
         if (_duration < MIN_DURATION || _duration > MAX_DURATION) revert InvalidDepositDuration(_duration);
-        if (_amount == 0) revert InvalidDepositAmount(_amount);
+        if (_amount < 1e7) revert InvalidDepositAmount(_amount);
         if (_depositor == address(0)) revert InvalidDepositor(_depositor);
 
         IERC20(hexToken).safeTransferFrom(msg.sender, address(this), _amount);

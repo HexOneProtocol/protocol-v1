@@ -182,7 +182,7 @@ contract HexOneStaking is Ownable, ReentrancyGuard, IHexOneStaking {
     /// @param _amount of token being staked.
     function stake(address _stakeToken, uint256 _amount) external nonReentrant onlyWhenStakingEnabled {
         if (!stakeTokens.contains(_stakeToken)) revert InvalidStakeToken(_stakeToken);
-        if (_amount == 0) revert InvalidStakeAmount(_amount);
+        if (_amount < 1e14) revert InvalidStakeAmount(_amount);
 
         // accrue rewards and update history for both the HEX and HEXIT pools
         _accrueRewards(msg.sender, _stakeToken);

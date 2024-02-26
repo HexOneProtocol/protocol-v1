@@ -15,7 +15,7 @@ contract BootstrapFuzzTest is BootstrapHelper {
 
     function test_sacrifice_hex(uint256 amount) public {
         // bound the amount being used as an input
-        amount = bound(amount, 1e8, 1_000_000 * 1e8);
+        amount = bound(amount, 100e8, 1_000_000 * 1e8);
 
         // give HEX to the sender
         _dealToken(hexToken, user, amount);
@@ -120,7 +120,7 @@ contract BootstrapFuzzTest is BootstrapHelper {
 
     function test_sacrifice_plsx(uint256 amount) public {
         // bound the amount being used as an input
-        amount = bound(amount, 10_000 * 1e18, 1_000_000_000 * 1e18);
+        amount = bound(amount, 100_000 * 1e18, 1_000_000_000 * 1e18);
 
         // deal PLSX to the sender
         _dealToken(plsxToken, user, amount);
@@ -157,7 +157,7 @@ contract BootstrapFuzzTest is BootstrapHelper {
 
     function test_sacrifice_hex_after_15days(uint256 amount) public {
         // bound the amount being used as an input
-        amount = bound(amount, 1e8, 1_000_000 * 1e8);
+        amount = bound(amount, 100e8, 1_000_000 * 1e8);
 
         // give HEX to the sender
         _dealToken(hexToken, user, amount);
@@ -249,7 +249,7 @@ contract BootstrapFuzzTest is BootstrapHelper {
 
     function test_sacrifice_plsx_after_15days(uint256 amount) public {
         // bound the amount being used as an input
-        amount = bound(amount, 10_000 * 1e18, 1_000_000_000 * 1e18);
+        amount = bound(amount, 100_000 * 1e18, 1_000_000_000 * 1e18);
 
         // give PLSX to the sender
         _dealToken(plsxToken, user, amount);
@@ -280,7 +280,7 @@ contract BootstrapFuzzTest is BootstrapHelper {
 
     function test_sacrifice_hex_after_30days(uint256 amount) public {
         // bound the amount being used as an input
-        amount = bound(amount, 1e8, 1_000_000 * 1e8);
+        amount = bound(amount, 100e8, 1_000_000 * 1e8);
 
         // give HEX to the sender
         _dealToken(hexToken, user, amount);
@@ -344,7 +344,7 @@ contract BootstrapFuzzTest is BootstrapHelper {
 
     function test_sacrifice_wpls_after_30days(uint256 amount) public {
         // bound the amount being used as an input
-        amount = bound(amount, 10_000 * 1e18, 10_000_000 * 1e18);
+        amount = bound(amount, 100_000 * 1e18, 10_000_000 * 1e18);
 
         // give WPLS to the sender
         _dealToken(wplsToken, user, amount);
@@ -375,7 +375,7 @@ contract BootstrapFuzzTest is BootstrapHelper {
 
     function test_sacrifice_plsx_after_30days(uint256 amount) public {
         // bound the amount being used as an input
-        amount = bound(amount, 10_000 * 1e18, 1_000_000_000 * 1e18);
+        amount = bound(amount, 100_000 * 1e18, 1_000_000_000 * 1e18);
 
         // give PLSX to the sender
         _dealToken(plsxToken, user, amount);

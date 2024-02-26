@@ -35,6 +35,7 @@ interface IHexOneBootstrap {
     error SacrificeTokenAlreadyAdded(address token);
     error InvalidQuote(uint256 quote);
     error PriceConsultationFailedBytes(bytes revertData);
+    error InvalidSacrificeAmount(uint256 sacrificeAmountUSD);
     error PriceConsultationFailedString(string revertReason);
     error SacrificeAlreadyProcessed();
     error SacrificeHasNotBeenProcessedYet();
