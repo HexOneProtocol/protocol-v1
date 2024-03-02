@@ -63,6 +63,7 @@ The Airdrop Base Daily HEXIT decreases 50% daily for 30 days.
 |      30       |    0.005         |
 
 ## Structs
+### UserInfo
 ```solidity
 struct UserInfo {
     uint256 hexitShares;
@@ -72,6 +73,15 @@ struct UserInfo {
 }
 ```
 Tracks user sacrifice allocation of HEXIT, the total amount sacrificed in USD, and reward claim flags for both the sacrifice and airdrop phases.
+
+### TokenSacrificeInfo
+```solidity
+struct TokenSacrificeInfo {
+    uint256 amountSacrificed;
+    uint256 amountSacrificedUSD;
+}
+```
+Tracks the total amount sacrificed by a user of a certain sacrifice token and it's USD value.
 
 ## Events
 ### Sacrificed
@@ -176,10 +186,10 @@ Allows sacrifice participants to mint their ``HEXIT`` allocation, and mint ``HEX
 
 ### startAirdrop
 ```solidity
-function startAidrop() external;
+function startAirdrop() external;
 ```
 
-Can only be called once by the owner to start the aidrop. On top of the total ``HEXIT`` minted during sacrifice 50% more HEXIT is minted to the `teamWallet`, and another 33% is minted to the Hex One Staking contract be distributed as staking rewards.
+Can only be called once by the owner to start the airdrop. On top of the total ``HEXIT`` minted during sacrifice 50% more HEXIT is minted to the `teamWallet`, and another 33% is minted to the Hex One Staking contract be distributed as staking rewards.
 
 * Emits [AirdropStared](#airdropstarted).
 

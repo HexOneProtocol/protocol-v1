@@ -9,6 +9,11 @@ interface IHexOneBootstrap {
         bool claimedAirdrop;
     }
 
+    struct TokenSacrificeInfo {
+        uint256 amountSacrificed;
+        uint256 amountSacrificedUSD;
+    }
+
     event Sacrificed(
         address indexed user,
         address indexed token,
@@ -16,6 +21,7 @@ interface IHexOneBootstrap {
         uint256 amountSacrificedUSD,
         uint256 hexitSharesEarned
     );
+
     event SacrificeProcessed(address hexOneDaiPair, uint256 hexOneAmount, uint256 daiAmount, uint256 liquidity);
     event SacrificeClaimed(address indexed user, uint256 hexOneMinted, uint256 hexitMinted);
     event AirdropStarted(uint256 hexitTeamAlloc, uint256 hexitStakingAlloc);

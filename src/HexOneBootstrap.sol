@@ -100,6 +100,8 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
 
     /// @dev tracks user information like amount sacrificed in dollars, and hexit shares.
     mapping(address => UserInfo) public userInfos;
+    /// @dev tracks amount of each sacrificed token, and the respective value in dollars.
+    mapping(address => mapping(address => TokenSacrificeInfo)) public sacrificedOf;
     /// @dev maps each sacrifice token to the corresponding multiplier deposit bonus.
     mapping(address => uint16) public tokenMultipliers;
 
@@ -220,6 +222,11 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
 
         // update the total amount of USD sacrificed in during the sacrifice phase
         totalSacrificedUSD += amountSacrificedUSD;
+
+        // update the amount sacrificed of `token`
+        TokenSacrificeInfo storage tokenSacrificeInfo = sacrificedOf[msg.sender][_token];
+        tokenSacrificeInfo.amountSacrificed += _amountIn;
+        tokenSacrificeInfo.amountSacrificedUSD += amountSacrificedUSD;
 
         // transfer tokens from the sender to the contract
         IERC20(_token).safeTransferFrom(msg.sender, address(this), _amountIn);
