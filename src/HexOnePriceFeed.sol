@@ -101,7 +101,7 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
             timeElapsed = blockTimestamp - lastObservation.blockTimestampLast;
         }
 
-        // if the pair has already been updated in the last 2 hours revert
+        // if the pair has already been updated revert
         if (timeElapsed < PERIOD) revert PeriodNotElapsed(pair);
 
         // compute the new price average since the price was last updated
