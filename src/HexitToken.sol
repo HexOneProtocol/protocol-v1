@@ -25,6 +25,7 @@ contract HexitToken is ERC20, Ownable, IHexitToken {
     /// @dev set the address of the bootstrap.
     /// @param _hexOneBootstrap address of the bootstrap.
     function setHexOneBootstrap(address _hexOneBootstrap) external onlyOwner {
+        if (hexOneBootstrap != address(0)) revert BootstrapAlreadySet();
         if (_hexOneBootstrap == address(0)) revert InvalidAddress();
         hexOneBootstrap = _hexOneBootstrap;
         emit BootstrapInitialized(_hexOneBootstrap);

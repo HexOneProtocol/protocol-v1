@@ -25,6 +25,7 @@ contract HexOneToken is ERC20, Ownable, IHexOneToken {
     /// @dev set the address of the vault.
     /// @param _hexOneVault address of the vault.
     function setHexOneVault(address _hexOneVault) external onlyOwner {
+        if (hexOneVault != address(0)) revert VaultAlreadySet();
         if (_hexOneVault == address(0)) revert InvalidAddress();
         hexOneVault = _hexOneVault;
         emit VaultInitialized(_hexOneVault);
