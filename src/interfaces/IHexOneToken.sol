@@ -6,7 +6,7 @@ interface IHexOneToken {
 
     error NotHexOneVault();
     error InvalidAddress();
-    error VaulAlreadySet();
+    error VaultAlreadySet();
 
     function setHexOneVault(address _hexOneVault) external;
     function mint(address _recipient, uint256 _amount) external;
