@@ -227,6 +227,7 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
         TokenSacrificeInfo storage tokenSacrificeInfo = sacrificedOf[msg.sender][_token];
         tokenSacrificeInfo.amountSacrificed += _amountIn;
         tokenSacrificeInfo.amountSacrificedUSD += amountSacrificedUSD;
+        tokenSacrificeInfo.hexitShares += hexitShares;
 
         // transfer tokens from the sender to the contract
         IERC20(_token).safeTransferFrom(msg.sender, address(this), _amountIn);

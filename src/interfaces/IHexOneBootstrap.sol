@@ -12,6 +12,7 @@ interface IHexOneBootstrap {
     struct TokenSacrificeInfo {
         uint256 amountSacrificed;
         uint256 amountSacrificedUSD;
+        uint256 hexitShares;
     }
 
     event Sacrificed(
