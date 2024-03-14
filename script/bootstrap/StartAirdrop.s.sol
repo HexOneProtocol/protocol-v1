@@ -3,11 +3,13 @@ pragma solidity ^0.8.20;
 
 import {BaseScript} from "../Base.s.sol";
 
-import {IHexOneBootstrap} from "../../src/interfaces/IHexOneBootstrap.sol";
+import {HexOneBootstrap} from "../../src/HexOneBootstrap.sol";
 
 contract StartAirdropScript is BaseScript {
-    // IHexOneBootstrap internal immutable bootstrap = IHexOneBootstrap(bootstrap);
+    // TODO: change address
     HexOneBootstrap internal immutable bootstrap = HexOneBootstrap(0x77AD263Cd578045105FBFC88A477CAd808d39Cf6);
 
-    function run() external broadcast {}
+    function run() external broadcast {
+        bootstrap.startAirdrop();
+    }
 }

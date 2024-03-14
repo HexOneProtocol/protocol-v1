@@ -4,7 +4,7 @@ out/
 
 # broadcasts
 !broadcast
-broadcast/*
+broadcast/
 broadcast/*/31337/
 
 # Dotenv file
