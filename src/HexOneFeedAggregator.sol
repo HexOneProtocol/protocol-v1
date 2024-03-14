@@ -7,8 +7,6 @@ import {TokenUtils} from "./utils/TokenUtils.sol";
 import {IHexOneFeedAggregator} from "./interfaces/IHexOneFeedAggregator.sol";
 import {IHexOnePriceFeed} from "./interfaces/IHexOnePriceFeed.sol";
 
-import {console2 as console} from "forge-std/Test.sol";
-
 contract HexOneFeedAggregator is IHexOneFeedAggregator {
     address public immutable hexOnePriceFeed;
     address public immutable hexToken;
@@ -17,6 +15,7 @@ contract HexOneFeedAggregator is IHexOneFeedAggregator {
     address public immutable usdcToken;
     address public immutable usdtToken;
 
+    /// @dev stores USDC and USDT decimals
     mapping(address => uint8) public decimals;
 
     constructor(
@@ -34,13 +33,11 @@ contract HexOneFeedAggregator is IHexOneFeedAggregator {
         usdcToken = _usdcToken;
         usdtToken = _usdtToken;
 
-        decimals[_hexToken] = TokenUtils.expectDecimals(_hexToken);
-        decimals[_daiToken] = TokenUtils.expectDecimals(_daiToken);
-        decimals[_wplsToken] = TokenUtils.expectDecimals(_wplsToken);
         decimals[_usdcToken] = TokenUtils.expectDecimals(_usdcToken);
         decimals[_usdtToken] = TokenUtils.expectDecimals(_usdtToken);
     }
 
+    /// @dev returns an HEX/USD quote by computing the mean of 4 liquidity pools.
     function computeHexPrice(uint256 _amountIn) external returns (uint256 amountOut) {
         // quote 1: get a quote from HEX/DAI in DAI
         uint256 hexDaiQuote = _consult(hexToken, _amountIn, daiToken);
@@ -87,6 +84,7 @@ contract HexOneFeedAggregator is IHexOneFeedAggregator {
         }
     }
 
+    /// @dev convert an `_amount` to be represented with the same decimals as `_token`.
     function _convert(address _token, uint256 _amount) internal view returns (uint256) {
         uint8 tokenDecimals = decimals[_token];
         if (tokenDecimals >= 18) {
