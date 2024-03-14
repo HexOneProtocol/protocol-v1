@@ -6,3 +6,6 @@ solc = "0.8.20"
 
 [fuzz]
 runs = 1000
+
+[rpc_endpoints]
+pulsechain = "${PULSECHAIN_RPC_URL}"
