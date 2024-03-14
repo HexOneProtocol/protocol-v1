@@ -1,0 +1,51 @@
+# Deployment Guide
+Quick guide on deploying and setting up the protocol on Pulsechain Mainnet or locally using scripts.
+
+## Pulsechain Deployment
+
+### Deployment
+### Set Sacrifice Start
+### Process Sacrifice
+### Start Airdrop
+### Renounce Ownership
+
+## Local Pulsechain Fork Node
+Start an anvil node forking Pulsechain Mainnet.
+```
+anvil --accounts 1 --balance 1000000 --fork-url https://rpc.pulsechain.com
+```
+
+Add the listed private key by anvil to the `.env` file.
+```
+export PRIVATE_KEY="PRIVATE_KEY"
+```
+
+### Deployment
+Used to deploy and configure the protocol.
+```
+forge script script/Deploy.s.sol:DeploymentScript --fork-url http://localhost:8545 --broadcast
+```
+
+### Set Sacrifice Start
+Used to set initial sacrifice timestamp.
+```
+forge script script/bootstrap/SacrificeStart.s.sol:SacrificeStartScript --fork-url http://localhost:8545 --broadcast
+```
+
+### Process Sacrifice
+Used to process the sacrifice
+```
+
+```
+
+### Start Airdrop
+Used to start the `HEXIT` airdrop.
+```
+
+```
+
+### Renounce Ownership
+Used to renounce ownership once bootstraping is complete. 
+```
+
+```
