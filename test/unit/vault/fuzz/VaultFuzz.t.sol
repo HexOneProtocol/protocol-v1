@@ -224,7 +224,7 @@ contract VaultFuzzTest is Base {
 
         // bound amount borrowable so that it is not more than the max amount
         uint256 fee = (hexToDeposit * 500) / 10_000;
-        uint256 maxHexOneBorrowable = feed.consult(address(hexToken), hexToDeposit - fee, address(daiToken));
+        uint256 maxHexOneBorrowable = aggregator.computeHexPrice(hexToDeposit - fee);
         hexOneToBorrow = bound(hexOneToBorrow, 1e8, maxHexOneBorrowable - hexOneBorrowed);
 
         // if the rate increased since the deposit

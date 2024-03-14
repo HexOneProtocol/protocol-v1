@@ -9,6 +9,7 @@ import {HexOneStaking} from "../../src/HexOneStaking.sol";
 import {HexOnePriceFeed} from "../../src/HexOnePriceFeed.sol";
 import {HexOneVault} from "../../src/HexOneVault.sol";
 import {HexOneBootstrap} from "../../src/HexOneBootstrap.sol";
+import {HexOneFeedAggregator} from "../../src/HexOneFeedAggregator.sol";
 
 import {UniswapV2Library} from "../../src/libraries/UniswapV2Library.sol";
 
@@ -19,6 +20,7 @@ import {IHexOneStaking} from "../../src/interfaces/IHexOneStaking.sol";
 import {IHexOnePriceFeed} from "../../src/interfaces/IHexOnePriceFeed.sol";
 import {IHexOneVault} from "../../src/interfaces/IHexOneVault.sol";
 import {IHexOneBootstrap} from "../../src/interfaces/IHexOneBootstrap.sol";
+import {IHexOneFeedAggregator} from "../../src/interfaces/IHexOneFeedAggregator.sol";
 
 import {IPulseXPair} from "../../src/interfaces/pulsex/IPulseXPair.sol";
 import {IPulseXFactory} from "../../src/interfaces/pulsex/IPulseXFactory.sol";
@@ -31,12 +33,17 @@ contract Base is Test {
     HexOnePriceFeed public feed;
     HexOneVault public vault;
     HexOneBootstrap public bootstrap;
+    HexOneFeedAggregator public aggregator;
 
     address public pulseXFactory = 0x1715a3E4A142d8b698131108995174F37aEBA10D;
     address public pulseXRouter = 0x98bf93ebf5c380C0e6Ae8e192A7e2AE08edAcc02;
+
     address public hexDaiPair = 0x6F1747370B1CAcb911ad6D4477b718633DB328c8;
     address public wplsDaiPair = 0xE56043671df55dE5CDf8459710433C10324DE0aE;
     address public plsxDaiPair = 0xB2893ceA8080bF43b7b60B589EDaAb5211D98F23;
+    address public hexWplsPair = 0xf1F4ee610b2bAbB05C635F726eF8B0C568c8dc65;
+    address public wplsUsdcPair = 0x6753560538ECa67617A9Ce605178F788bE7E524E;
+    address public wplsUsdtPair = 0x322Df7921F28F1146Cdf62aFdaC0D6bC0Ab80711;
 
     address public hexOneDaiPair;
 
@@ -44,6 +51,8 @@ contract Base is Test {
     address public daiToken = 0xefD766cCb38EaF1dfd701853BFCe31359239F305;
     address public wplsToken = 0xA1077a294dDE1B09bB078844df40758a5D0f9a27;
     address public plsxToken = 0x95B303987A60C71504D99Aa1b13B4DA07b0790ab;
+    address public usdcToken = 0x15D38573d2feeb82e7ad5187aB8c1D52810B1f07;
+    address public usdtToken = 0x0Cb6F5a34ad42ec934882A05265A7d5F59b51A2f;
 
     address public user = makeAddr("user");
     address public attacker = makeAddr("attacker");
@@ -53,6 +62,7 @@ contract Base is Test {
     function setUp() public virtual {
         // setup the fork
         vm.createSelectFork("https://rpc.pulsechain.com", 19530000);
+        // vm.createSelectFork("https://rpc.pulsechain.com");
 
         // impersonate the deployer
         vm.startPrank(deployer);
@@ -64,16 +74,22 @@ contract Base is Test {
         hexit = new HexitToken("Hexit Token", "HEXIT");
 
         // deploy the price feed
-        address[] memory pairs = new address[](3);
+        address[] memory pairs = new address[](6);
         pairs[0] = hexDaiPair;
         pairs[1] = wplsDaiPair;
         pairs[2] = plsxDaiPair;
+        pairs[3] = hexWplsPair;
+        pairs[4] = wplsUsdcPair;
+        pairs[5] = wplsUsdtPair;
         feed = new HexOnePriceFeed(pulseXFactory, pairs);
 
         // deploy the staking contract with 1% distribution rate of each token in bps
         uint16 hexDistRate = 100;
         uint16 hexitDistRate = 100;
         staking = new HexOneStaking(hexToken, address(hexit), hexDistRate, hexitDistRate);
+
+        // deploy the feed aggregator
+        aggregator = new HexOneFeedAggregator(address(feed), hexToken, daiToken, wplsToken, usdcToken, usdtToken);
 
         // deploy the vault contract
         vault = new HexOneVault(hexToken, daiToken, address(hex1));
@@ -115,7 +131,7 @@ contract Base is Test {
         bootstrap.setSacrificeStart(block.timestamp);
 
         // set the vault base data
-        vault.setBaseData(address(feed), address(staking), address(bootstrap));
+        vault.setBaseData(address(aggregator), address(staking), address(bootstrap));
 
         // create an HEX1/DAI pair
         hexOneDaiPair = IPulseXFactory(pulseXFactory).getPair(address(hex1), daiToken);

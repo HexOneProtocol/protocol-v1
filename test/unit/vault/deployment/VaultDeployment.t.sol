@@ -19,7 +19,7 @@ contract VaultDeploymentTest is Base {
     //////////////////////////////////////////////////////////////////////////*/
 
     function test_setBaseData() public {
-        assertEq(vault.hexOnePriceFeed(), address(feed));
+        assertEq(vault.hexOneFeedAggregator(), address(aggregator));
         assertEq(vault.hexOneStaking(), address(staking));
         assertEq(vault.hexOneBootstrap(), bootstrap);
     }

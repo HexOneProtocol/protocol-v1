@@ -73,7 +73,7 @@ contract HexOnePriceFeed is IHexOnePriceFeed {
             // update the initial price average of the pair
             PriceAverage storage priceAverage = pairPriceAverage[pair];
             priceAverage.price0Average = FixedPoint.uq112x112(FixedPoint.fraction(reserve1, reserve0)._x);
-            priceAverage.price1Average = FixedPoint.uq112x112(FixedPoint.fraction(reserve1, reserve0)._x);
+            priceAverage.price1Average = FixedPoint.uq112x112(FixedPoint.fraction(reserve0, reserve1)._x);
         }
 
         factory = _factory;
