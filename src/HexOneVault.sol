@@ -7,7 +7,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {IHexOneVault} from "./interfaces/IHexOneVault.sol";
-import {IHexOnePriceFeed} from "./interfaces/IHexOnePriceFeed.sol";
+import {IHexOneFeedAggregator} from "./interfaces/IHexOneFeedAggregator.sol";
 import {IHexOneToken} from "./interfaces/IHexOneToken.sol";
 import {IHexToken} from "./interfaces/IHexToken.sol";
 import {IHexOneStaking} from "./interfaces/IHexOneStaking.sol";
@@ -39,7 +39,7 @@ contract HexOneVault is IHexOneVault, Ownable {
     bool public sacrificeFinished;
 
     /// @dev HEX1 price feed contract address.
-    address public hexOnePriceFeed;
+    address public hexOneFeedAggregator;
     /// @dev HEX1 staking contract address.
     address public hexOneStaking;
     /// @dev HEX1 bootstrap contract address.
@@ -84,21 +84,21 @@ contract HexOneVault is IHexOneVault, Ownable {
     }
 
     /// @dev set other protocol contracts.
-    function setBaseData(address _hexOnePriceFeed, address _hexOneStaking, address _hexOneBootstrap)
+    function setBaseData(address _hexOneFeedAggregator, address _hexOneStaking, address _hexOneBootstrap)
         external
         onlyOwner
     {
         // prevent reinitialization
-        if (hexOnePriceFeed != address(0)) revert ContractAlreadySet();
+        if (hexOneFeedAggregator != address(0)) revert ContractAlreadySet();
         if (hexOneStaking != address(0)) revert ContractAlreadySet();
         if (hexOneBootstrap != address(0)) revert ContractAlreadySet();
 
         // check for invalid addresses
-        if (_hexOnePriceFeed == address(0)) revert InvalidAddress(_hexOnePriceFeed);
+        if (_hexOneFeedAggregator == address(0)) revert InvalidAddress(_hexOneFeedAggregator);
         if (_hexOneStaking == address(0)) revert InvalidAddress(_hexOneStaking);
         if (_hexOneBootstrap == address(0)) revert InvalidAddress(_hexOneBootstrap);
 
-        hexOnePriceFeed = _hexOnePriceFeed;
+        hexOneFeedAggregator = _hexOneFeedAggregator;
         hexOneStaking = _hexOneStaking;
         hexOneBootstrap = _hexOneBootstrap;
     }
@@ -308,29 +308,9 @@ contract HexOneVault is IHexOneVault, Ownable {
         emit Deposited(_depositor, stakeId, hexOneMinted, realAmount, currentHexDay, _duration);
     }
 
-    /// @dev tries to consult the price of HEX in DAI (dollars).
-    /// @notice if consult reverts with PriceTooStale then it needs to
-    /// update the oracle and only then consult the price again.
-    function _getHexQuote(uint256 _amountIn) internal returns (uint256) {
-        try IHexOnePriceFeed(hexOnePriceFeed).consult(hexToken, _amountIn, daiToken) returns (uint256 amountOut) {
-            if (amountOut == 0) revert PriceConsultationFailedInvalidQuote(amountOut);
-            return amountOut;
-        } catch (bytes memory reason) {
-            bytes4 err = bytes4(reason);
-            if (err == IHexOnePriceFeed.PriceTooStale.selector) {
-                IHexOnePriceFeed(hexOnePriceFeed).update(hexToken, daiToken);
-                return IHexOnePriceFeed(hexOnePriceFeed).consult(hexToken, _amountIn, daiToken);
-            } else {
-                revert PriceConsultationFailedBytes(reason);
-            }
-        } catch Error(string memory reason) {
-            revert PriceConsultationFailedString(reason);
-        } catch Panic(uint256 code) {
-            string memory stringErrorCode = LibString.toString(code);
-            revert PriceConsultationFailedString(
-                string.concat("HexOnePriceFeed reverted: Panic code ", stringErrorCode)
-            );
-        }
+    /// @dev onsult the price of HEX in DAI (dollars).
+    function _getHexQuote(uint256 _amountIn) internal returns (uint256 amountOut) {
+        return IHexOneFeedAggregator(hexOneFeedAggregator).computeHexPrice(_amountIn);
     }
 
     /// @param _stakeId id to end the HEX stake.

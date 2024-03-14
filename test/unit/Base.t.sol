@@ -10,6 +10,7 @@ import {HexOneVault} from "../../src/HexOneVault.sol";
 import {HexOneBootstrap} from "../../src/HexOneBootstrap.sol";
 
 import {HexOnePriceFeedMock} from "./utils/HexOnePriceFeedMock.sol";
+import {HexOneFeedAggregatorMock} from "./utils/HexOneFeedAggregatorMock.sol";
 import {HexTokenMock} from "./utils/HexTokenMock.sol";
 import {DaiTokenMock} from "./utils/DaiTokenMock.sol";
 
@@ -26,6 +27,7 @@ contract Base is Test {
     HexOneStaking public staking;
 
     HexOnePriceFeedMock public feed;
+    HexOneFeedAggregatorMock public aggregator;
     DaiTokenMock public daiToken;
 
     HexTokenMock public hexToken;
@@ -55,6 +57,9 @@ contract Base is Test {
         // deploy the price feed mock
         feed = new HexOnePriceFeedMock();
 
+        // deploy the feed aggregator mock
+        aggregator = new HexOneFeedAggregatorMock(address(feed), address(hexToken), address(daiToken));
+
         // deploy the vault
         vault = new HexOneVault(address(hexToken), address(daiToken), address(hex1));
 
@@ -71,7 +76,7 @@ contract Base is Test {
         feed.setRate(address(hexToken), address(daiToken), HEX_DAI_INIT_RATE);
 
         // configure the vault
-        vault.setBaseData(address(feed), address(staking), bootstrap);
+        vault.setBaseData(address(aggregator), address(staking), bootstrap);
 
         // configure the staking contract
         staking.setBaseData(address(vault), bootstrap);

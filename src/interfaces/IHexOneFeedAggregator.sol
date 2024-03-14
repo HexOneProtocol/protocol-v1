@@ -5,4 +5,6 @@ interface IHexOneFeedAggregator {
     error InvalidQuote(uint256 quote);
     error PriceConsultationFailedBytes(bytes revertData);
     error PriceConsultationFailedString(string revertReason);
+
+    function computeHexPrice(uint256 _hexAmountIn) external returns (uint256 hexAmountOut);
 }
