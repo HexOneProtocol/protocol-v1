@@ -30,22 +30,22 @@ contract HexOneBootstrap is IHexOneBootstrap, Ownable {
     uint256 public constant SACRIFICE_CLAIM_DURATION = 7 days;
 
     /// @dev base hexit amount per dollar for the first day of the airdrop.
-    uint256 public constant AIRDROP_HEXIT_INIT_AMOUNT = 2_777_778 * 1e18;
+    uint256 public constant AIRDROP_HEXIT_INIT_AMOUNT = 5_555_555 * 1e18;
     /// @dev duration of the airdrop.
-    uint256 public constant AIRDROP_DURATION = 30 days;
+    uint256 public constant AIRDROP_DURATION = 15 days;
 
     /// @dev the sacrifice base hexit amount per dollar decreases 4.76% daily.
     uint16 public constant SACRIFICE_DECREASE_FACTOR = 9524;
-    /// @dev the airdrop base hexit amount per dollar decreases 50% daily.
-    uint16 public constant AIRDROP_DECREASE_FACTOR = 5000;
+    /// @dev the airdrop base hexit amount per dollar decreases 4.76% daily.
+    uint16 public constant AIRDROP_DECREASE_FACTOR = 9524;
 
     /// @dev fixed point used to calculate percentages.
     uint16 public constant FIXED_POINT = 10_000;
 
     /// @dev HEXIT rate minted for the team after sacrifice ends.
-    uint16 public constant HEXIT_TEAM_RATE = 5000;
+    uint16 public constant HEXIT_TEAM_RATE = 6667;
     /// @dev HEXIT rate sent to staking to be distributed as rewards.
-    uint16 public constant HEXIT_STAKING_RATE = 3333;
+    uint16 public constant HEXIT_STAKING_RATE = 46667;
     /// @dev HEX rate to swap for DAI when sacrifice is being processed.
     uint16 public constant LIQUIDITY_SWAP_RATE = 1250;
 

@@ -38,9 +38,9 @@ abstract contract BaseScript is Script {
 
     // bootstrap sacrifice tokens multiplier
     uint16 internal constant HEX_SACRIFICE_MULTIPLIER = 55555;
-    uint16 internal constant DAI_SACRIFICE_MULTIPLIER = 30000;
-    uint16 internal constant WPLS_SACRIFICE_MULTIPLIER = 20000;
-    uint16 internal constant PLSX_SACRIFICE_MULTIPLIER = 10000;
+    uint16 internal constant DAI_SACRIFICE_MULTIPLIER = 55555;
+    uint16 internal constant WPLS_SACRIFICE_MULTIPLIER = 55555;
+    uint16 internal constant PLSX_SACRIFICE_MULTIPLIER = 55555;
 
     uint256 internal deployerPrivateKey;
 
