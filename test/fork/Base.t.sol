@@ -61,8 +61,8 @@ contract Base is Test {
 
     function setUp() public virtual {
         // setup the fork
-        vm.createSelectFork("https://rpc.pulsechain.com", 19530000);
-        // vm.createSelectFork("https://rpc.pulsechain.com");
+        // vm.createSelectFork("https://rpc.pulsechain.com", 19530000);
+        vm.createSelectFork("https://rpc.pulsechain.com");
 
         // impersonate the deployer
         vm.startPrank(deployer);

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.20;
 
+import {console2 as console} from "forge-std/Test.sol";
+
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {LibString} from "solady/src/utils/LibString.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -141,7 +143,8 @@ contract HexOneVault is IHexOneVault, Ownable {
     /// @dev used to claim HEX after t-shares maturity.
     /// @notice if there HEX1 borrowed it must be repaid.
     /// @param _stakeId stake being claimed.
-    function claim(uint256 _stakeId) external onlyAfterSacrifice returns (uint256 hexClaimed) {
+    /// @param _stakeIdParam blabla
+    function claim(uint256 _stakeId, uint40 _stakeIdParam) external onlyAfterSacrifice returns (uint256 hexClaimed) {
         // revert if the deposit is not active
         DepositInfo storage depositInfo = depositInfos[msg.sender][_stakeId];
         if (!depositInfo.active) revert DepositNotActive(msg.sender, _stakeId);
@@ -175,7 +178,7 @@ contract HexOneVault is IHexOneVault, Ownable {
         depositInfo.active = false;
 
         // unstake HEX + yield
-        hexClaimed = _unstake(_stakeId);
+        hexClaimed = _unstake(_stakeId, _stakeIdParam);
 
         // transfer HEX + yield back to the depositor
         IERC20(hexToken).safeTransfer(msg.sender, hexClaimed);
@@ -217,7 +220,12 @@ contract HexOneVault is IHexOneVault, Ownable {
     /// @dev liquiditate an HEX if `GRACE_PERIOD` has passed since stake maturity.
     /// @param _depositor address of the HEX depositor.
     /// @param _stakeId id of the HEX stake to be liquidated.
-    function liquidate(address _depositor, uint256 _stakeId) external onlyAfterSacrifice returns (uint256 hexAmount) {
+    /// @param _stakeIdParam blabla
+    function liquidate(address _depositor, uint256 _stakeId, uint40 _stakeIdParam)
+        external
+        onlyAfterSacrifice
+        returns (uint256 hexAmount)
+    {
         // revert if the deposit is not active
         DepositInfo storage depositInfo = depositInfos[_depositor][_stakeId];
         if (!depositInfo.active) revert DepositNotActive(_depositor, _stakeId);
@@ -246,7 +254,7 @@ contract HexOneVault is IHexOneVault, Ownable {
         }
 
         // unstake HEX + yield
-        hexAmount = _unstake(_stakeId);
+        hexAmount = _unstake(_stakeId, _stakeIdParam);
 
         // transfer HEX + yield to the sender
         IERC20(hexToken).safeTransfer(msg.sender, hexAmount);
@@ -269,6 +277,8 @@ contract HexOneVault is IHexOneVault, Ownable {
         // stake HEX, get stakeId
         IHexToken(hexToken).stakeStart(realAmount, _duration);
         stakeId = currentId;
+        console.log("1. stakeId:   ", stakeId);
+        console.log("1. currentId: ", currentId);
 
         // get the current HEX day, and t-shares of the stake
         uint256 currentHexDay = IHexToken(hexToken).currentDay();
@@ -314,10 +324,10 @@ contract HexOneVault is IHexOneVault, Ownable {
     }
 
     /// @param _stakeId id to end the HEX stake.
-    function _unstake(uint256 _stakeId) internal returns (uint256) {
-        IHexToken.StakeStore memory stakeStore = IHexToken(hexToken).stakeLists(address(this), _stakeId);
+    /// @param _stakeIdParam blabla.
+    function _unstake(uint256 _stakeId, uint40 _stakeIdParam) internal returns (uint256) {
         uint256 balanceBefore = IERC20(hexToken).balanceOf(address(this));
-        IHexToken(hexToken).stakeEnd(_stakeId, stakeStore.stakeId);
+        IHexToken(hexToken).stakeEnd(_stakeId, _stakeIdParam);
         uint256 balanceAfter = IERC20(hexToken).balanceOf(address(this));
         return balanceAfter - balanceBefore;
     }

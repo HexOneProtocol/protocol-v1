@@ -61,7 +61,9 @@ interface IHexOneVault {
         external
         returns (uint256 amount, uint256 stakeId);
     function deposit(uint256 _amount, uint16 _duration) external returns (uint256 amount, uint256 stakeId);
-    function claim(uint256 _stakeId) external returns (uint256);
+    function claim(uint256 _stakeId, uint40 _stakeIdParam) external returns (uint256);
     function borrow(uint256 _amount, uint256 _stakeId) external;
-    function liquidate(address _depositor, uint256 _stakeId) external returns (uint256 hexAmount);
+    function liquidate(address _depositor, uint256 _stakeId, uint40 _stakeIdParam)
+        external
+        returns (uint256 hexAmount);
 }
