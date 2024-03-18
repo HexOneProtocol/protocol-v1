@@ -48,10 +48,13 @@ contract HexOneVault is IHexOneVault, Ownable {
     /// @dev current stakeId
     uint256 public currentId;
 
+    /// @dev every stake id
+    uint256[] public stakeIds;
+
     /// @dev depositor => stakeId => DepositInfo
     mapping(address => mapping(uint256 => DepositInfo)) public depositInfos;
     /// @dev depositor => stakeIds[]
-    mapping(address => uint256[]) public stakeIds;
+    mapping(address => uint256[]) public userStakeIds;
     /// @dev depositor => UserInfo
     mapping(address => UserInfo) public userInfos;
 
@@ -103,6 +106,10 @@ contract HexOneVault is IHexOneVault, Ownable {
         hexOneFeedAggregator = _hexOneFeedAggregator;
         hexOneStaking = _hexOneStaking;
         hexOneBootstrap = _hexOneBootstrap;
+    }
+
+    function getUserStakeIds(address _user) external view returns (uint256[] memory) {
+        return userStakeIds[_user];
     }
 
     /// @dev allows users to make a deposit and mint HEX1.
@@ -296,7 +303,10 @@ contract HexOneVault is IHexOneVault, Ownable {
         userInfo.totalShares += shares;
 
         // add stake id to the sender stake ids array
-        stakeIds[_depositor].push(stakeId);
+        userStakeIds[_depositor].push(stakeId);
+
+        // add stake id to the total stake ids array
+        stakeIds.push(stakeId);
 
         // calculate the max amount borrowable
         hexOneMinted = _calculateBorrowableAmount(_depositor, stakeId);
