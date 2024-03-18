@@ -294,6 +294,7 @@ contract HexOneVault is IHexOneVault, Ownable {
         depositInfo.amount = realAmount;
         depositInfo.shares = shares;
         depositInfo.depositHexDay = currentHexDay;
+        depositInfo.depositor = _depositor;
         depositInfo.duration = _duration;
         depositInfo.active = true;
 

@@ -8,6 +8,7 @@ interface IHexOneVault {
         uint256 borrowed;
         uint256 depositHexDay;
         uint256 depositAmountUSD;
+        address depositor;
         uint16 duration;
         bool active;
     }
