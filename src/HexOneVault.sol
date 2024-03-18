@@ -297,6 +297,7 @@ contract HexOneVault is IHexOneVault, Ownable {
         hexOneMinted = _calculateBorrowableAmount(_depositor, stakeId);
         depositInfo.borrowed += hexOneMinted;
         userInfo.totalBorrowed += hexOneMinted;
+        depositInfo.depositAmountUSD = hexOneMinted;
 
         // increment the current stakeId
         currentId++;
