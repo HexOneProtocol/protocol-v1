@@ -385,7 +385,7 @@ contract StakingFuzzTest is StakingHelper {
         assertEq(hexOneAmount, amount);
 
         // convert HEX1 deposited amount to pool shares
-        uint256 shares = (_convertToShares(address(hex1), amount) * 200) / 1000;
+        uint256 shares = (_convertToShares(address(hex1), amount) * 1000) / 10000;
 
         // assert HEX pool total shares
         (,, uint256 hexPoolTotalShares,,) = staking.pools(hexToken);
@@ -456,7 +456,7 @@ contract StakingFuzzTest is StakingHelper {
         assertEq(hexOneAmount, amount + amountToIncrease);
 
         // convert HEX1/DAI deposited amount to pool shares
-        uint256 shares = (_convertToShares(address(hex1), amount + amountToIncrease) * 200) / 1000;
+        uint256 shares = (_convertToShares(address(hex1), amount + amountToIncrease) * 1000) / 10000;
 
         // assert HEX pool total shares
         (,, uint256 hexPoolTotalShares,,) = staking.pools(hexToken);
@@ -527,7 +527,7 @@ contract StakingFuzzTest is StakingHelper {
         assertEq(hexOneAmount, amount + amountToIncrease);
 
         // convert HEX1 deposited amount to pool shares
-        uint256 shares = (_convertToShares(address(hex1), amount + amountToIncrease) * 200) / 1000;
+        uint256 shares = (_convertToShares(address(hex1), amount + amountToIncrease) * 1000) / 10000;
 
         {
             // assert HEX pool total shares and distributed amounts
@@ -550,18 +550,18 @@ contract StakingFuzzTest is StakingHelper {
         assertEq(hexitSharesAmount, shares);
     }
 
-    function test_stake_hexit(uint256 amount) public {
+    function test_stake_hexitHexOne(uint256 amount) public {
         // bound HEXIT token amount
         amount = bound(amount, 1e18, 1_000_000 * 1e18);
 
         // deal HEXIT to the user
-        deal(address(hexit), user, amount);
+        deal(hexitHexOnePair, user, amount);
 
         // user stakes HEXIT
         vm.startPrank(user);
 
-        hexit.approve(address(staking), amount);
-        staking.stake(address(hexit), amount);
+        IERC20(hexitHexOnePair).approve(address(staking), amount);
+        staking.stake(hexitHexOnePair, amount);
 
         vm.stopPrank();
 
@@ -575,12 +575,12 @@ contract StakingFuzzTest is StakingHelper {
         assertEq(hexitPoolHistoryShares, 0);
         assertEq(hexitAmountToDistribute, 0);
 
-        // assert total HEX1/DAI staked amount
-        uint256 hexitAmount = staking.totalStakedAmount(address(hexit));
-        assertEq(hexitAmount, amount);
+        // assert total HEXIT/HEX1 staked amount
+        uint256 hexitHexOneAmount = staking.totalStakedAmount(hexitHexOnePair);
+        assertEq(hexitHexOneAmount, amount);
 
-        // convert HEX1/DAI deposited amount to pool shares
-        uint256 shares = (_convertToShares(address(hex1), amount) * 100) / 1000;
+        // convert HEXIT/HEX1 deposited amount to pool shares
+        uint256 shares = (_convertToShares(hexitHexOnePair, amount) * 2000) / 10000;
 
         // assert HEX pool total shares
         (,, uint256 hexPoolTotalShares,,) = staking.pools(hexToken);
@@ -601,7 +601,7 @@ contract StakingFuzzTest is StakingHelper {
             ,
             ,
             ,
-        ) = staking.stakingInfos(user, address(hexit));
+        ) = staking.stakingInfos(user, hexitHexOnePair);
         assertEq(stakedAmount, amount);
         assertEq(initStakeDay, 0);
         assertEq(lastDepositedDay, 0);
@@ -609,30 +609,30 @@ contract StakingFuzzTest is StakingHelper {
         assertEq(hexitSharesAmount, shares);
     }
 
-    function test_stake_hexit_increaseStake(uint256 amountToIncrease) public {
-        // bound the amount of HEXIT to increase staking
+    function test_stake_hexitHexOne_increaseStake(uint256 amountToIncrease) public {
+        // bound the amount of HEXIT/HEX1 to increase staking
         amountToIncrease = bound(amountToIncrease, 1e18, 1_000_000 * 1e18);
 
-        // deal HEXIT to the user
+        // deal HEXIT/HEX1 to the user
         uint256 amount = 100_000 * 1e18;
-        deal(address(hexit), user, amount);
+        deal(hexitHexOnePair, user, amount);
 
-        // user stakes HEXIT
+        // user stakes HEXIT/HEX1
         vm.startPrank(user);
 
-        hexit.approve(address(staking), amount);
-        staking.stake(address(hexit), amount);
+        IERC20(hexitHexOnePair).approve(address(staking), amount);
+        staking.stake(hexitHexOnePair, amount);
 
         vm.stopPrank();
 
-        // deal HEXIT to the user so that he can increase its stake
-        deal(address(hexit), user, amountToIncrease);
+        // deal HEXIT/HEX1 to the user so that he can increase its stake
+        deal(hexitHexOnePair, user, amountToIncrease);
 
         // user wants to increase its stake of HEXIT
         vm.startPrank(user);
 
-        hexit.approve(address(staking), amountToIncrease);
-        staking.stake(address(hexit), amountToIncrease);
+        IERC20(hexitHexOnePair).approve(address(staking), amountToIncrease);
+        staking.stake(hexitHexOnePair, amountToIncrease);
 
         vm.stopPrank();
 
@@ -647,11 +647,11 @@ contract StakingFuzzTest is StakingHelper {
         assertEq(hexitAmountToDistribute, 0);
 
         // assert total HEX1/DAI staked amount
-        uint256 hexitAmount = staking.totalStakedAmount(address(hexit));
+        uint256 hexitAmount = staking.totalStakedAmount(hexitHexOnePair);
         assertEq(hexitAmount, amount + amountToIncrease);
 
-        // convert HEX1/DAI deposited amount to pool shares
-        uint256 shares = (_convertToShares(address(hexit), amount + amountToIncrease) * 100) / 1000;
+        // convert HEXIT/HEX1 deposited amount to pool shares
+        uint256 shares = (_convertToShares(address(hexitHexOnePair), amount + amountToIncrease) * 2000) / 10000;
 
         // assert HEX pool total shares
         (,, uint256 hexPoolTotalShares,,) = staking.pools(hexToken);
@@ -663,28 +663,28 @@ contract StakingFuzzTest is StakingHelper {
 
         // assert user stake information
         (uint256 stakedAmount,,,, uint256 hexSharesAmount, uint256 hexitSharesAmount,,,,) =
-            staking.stakingInfos(user, address(hexit));
+            staking.stakingInfos(user, hexitHexOnePair);
         assertEq(stakedAmount, amount + amountToIncrease);
         assertEq(hexSharesAmount, shares);
         assertEq(hexitSharesAmount, shares);
     }
 
-    function test_stake_hexit_increaseStake_afterDays(uint256 amountToIncrease, uint256 intervalDays) public {
-        // bound the amount of HEXIT to increase staking
+    function test_stake_hexitHexOne_increaseStake_afterDays(uint256 amountToIncrease, uint256 intervalDays) public {
+        // bound the amount of HEXIT/HEX1 to increase staking
         amountToIncrease = bound(amountToIncrease, 1e18, 1_000_000 * 1e18);
 
         // bound the amount of days that passed between the first and second time the user staked.
         intervalDays = bound(intervalDays, 1 days, 120 days);
 
-        // deal HEXIT to the user
+        // deal HEXIT/HEX1 to the user
         uint256 amount = 100_000 * 1e18;
-        deal(address(hexit), user, amount);
+        deal(hexitHexOnePair, user, amount);
 
         // user stakes HEXIT
         vm.startPrank(user);
 
-        hexit.approve(address(staking), amount);
-        staking.stake(address(hexit), amount);
+        IERC20(hexitHexOnePair).approve(address(staking), amount);
+        staking.stake(hexitHexOnePair, amount);
 
         vm.stopPrank();
 
@@ -693,13 +693,13 @@ contract StakingFuzzTest is StakingHelper {
         uint256 currentStakingDay = staking.getCurrentStakingDay();
 
         // deal HEXIT to the user so that he can stake more
-        deal(address(hexit), user, amountToIncrease);
+        deal(hexitHexOnePair, user, amountToIncrease);
 
         // user increases its stake after interval days have passed since the first stake
         vm.startPrank(user);
 
-        hexit.approve(address(staking), amountToIncrease);
-        staking.stake(address(hexit), amountToIncrease);
+        IERC20(hexitHexOnePair).approve(address(staking), amountToIncrease);
+        staking.stake(hexitHexOnePair, amountToIncrease);
 
         vm.stopPrank();
 
@@ -717,12 +717,12 @@ contract StakingFuzzTest is StakingHelper {
             hexitAmountToDistribute += amountToDistribute;
         }
 
-        // assert total HEXIT staked amount
-        uint256 hexitAmount = staking.totalStakedAmount(address(hexit));
-        assertEq(hexitAmount, amount + amountToIncrease);
+        // assert total HEXIT/HEX1 staked amount
+        uint256 hexitHexOneAmount = staking.totalStakedAmount(hexitHexOnePair);
+        assertEq(hexitHexOneAmount, amount + amountToIncrease);
 
-        // convert HEXIT deposited amount to pool shares
-        uint256 shares = (_convertToShares(address(hex1), amount + amountToIncrease) * 100) / 1000;
+        // convert HEXIT/HEX1 deposited amount to pool shares
+        uint256 shares = (_convertToShares(hexitHexOnePair, amount + amountToIncrease) * 2000) / 10000;
 
         {
             // assert HEX pool total shares and distributed amounts
@@ -738,7 +738,7 @@ contract StakingFuzzTest is StakingHelper {
 
         // assert user stake information
         (uint256 stakedAmount,,, uint256 lastDepositedDay, uint256 hexSharesAmount, uint256 hexitSharesAmount,,,,) =
-            staking.stakingInfos(user, address(hexit));
+            staking.stakingInfos(user, hexitHexOnePair);
         assertEq(stakedAmount, amount + amountToIncrease);
         assertEq(lastDepositedDay, staking.getCurrentStakingDay());
         assertEq(hexSharesAmount, shares);
@@ -931,20 +931,20 @@ contract StakingFuzzTest is StakingHelper {
         assertEq(IERC20(address(hex1)).balanceOf(user), userHexOneBalanceBefore + amount);
     }
 
-    function test_unstake_hexit(uint256 amount, uint256 intervalDays) public {
-        // bound HEXIT token amount
+    function test_unstake_hexitHexOne(uint256 amount, uint256 intervalDays) public {
+        // bound HEXIT/HEX1 token amount
         amount = bound(amount, 1e18, 1_000_000 * 1e18);
         // bound the interval days between the stake and unstake
         intervalDays = bound(intervalDays, 2 days, 365 days);
 
-        // deal HEXIT to the user
-        deal(address(hexit), user, amount);
+        // deal HEXIT/HEX1 to the user
+        deal(hexitHexOnePair, user, amount);
 
-        // user stakes HEXIT
+        // user stakes HEXIT/HEX1
         vm.startPrank(user);
 
-        hexit.approve(address(staking), amount);
-        staking.stake(address(hexit), amount);
+        IERC20(hexitHexOnePair).approve(address(staking), amount);
+        staking.stake(address(hexitHexOnePair), amount);
 
         vm.stopPrank();
 
@@ -958,7 +958,7 @@ contract StakingFuzzTest is StakingHelper {
         // user unstakes HEXIT
         vm.startPrank(user);
 
-        staking.unstake(address(hexit), amount);
+        staking.unstake(hexitHexOnePair, amount);
 
         vm.stopPrank();
 
@@ -991,7 +991,7 @@ contract StakingFuzzTest is StakingHelper {
                 uint256 unclaimedHexit,
                 uint256 totalHexClaimed,
                 uint256 totalHexitClaimed
-            ) = staking.stakingInfos(user, address(hexit));
+            ) = staking.stakingInfos(user, hexitHexOnePair);
             assertEq(stakedAmount, 0);
             assertEq(lastClaimedDay, 0);
             assertEq(hexSharesAmount, 0);
@@ -1002,8 +1002,8 @@ contract StakingFuzzTest is StakingHelper {
             assertEq(totalHexitClaimed, hexitAmountDistributed);
         }
 
-        // assert total staked amount of HEX1
-        assertEq(staking.totalStakedAmount(address(hexit)), 0);
+        // assert total staked amount of HEXIT/HEX1
+        assertEq(staking.totalStakedAmount(hexitHexOnePair), 0);
 
         // assert HEX pool shares
         (,, uint256 hexTotalShares,,) = staking.pools(hexToken);
@@ -1017,7 +1017,7 @@ contract StakingFuzzTest is StakingHelper {
         assertEq(IERC20(hexToken).balanceOf(user), userHexBalanceBefore + hexAmountDistributed);
 
         // assert that HEXIT rewards plus the amount staked is returned to the user
-        assertEq(hexit.balanceOf(user), userHexitBalanceBefore + hexitAmountDistributed + amount);
+        assertEq(hexit.balanceOf(user), userHexitBalanceBefore + hexitAmountDistributed);
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -1176,20 +1176,20 @@ contract StakingFuzzTest is StakingHelper {
         assertEq(hexit.balanceOf(user), userHexitBalanceBefore + hexitRewards);
     }
 
-    function test_claim_hexit(uint256 amount, uint256 intervalDays) public {
+    function test_claim_hexitHexOne(uint256 amount, uint256 intervalDays) public {
         // bound HEXIT token amount
         amount = bound(amount, 1e18, 1_000_000 * 1e18);
         // bound the interval days between the stake and unstake
         intervalDays = bound(intervalDays, 2 days, 365 days);
 
         // deal HEXIT to the user
-        deal(address(hexit), user, amount);
+        deal(hexitHexOnePair, user, amount);
 
         // user stakes HEXIT
         vm.startPrank(user);
 
-        hexit.approve(address(staking), amount);
-        staking.stake(address(hexit), amount);
+        IERC20(hexitHexOnePair).approve(address(staking), amount);
+        staking.stake(hexitHexOnePair, amount);
 
         vm.stopPrank();
 
@@ -1202,7 +1202,7 @@ contract StakingFuzzTest is StakingHelper {
         // user claims it's HEX and HEXIT rewards
         vm.startPrank(user);
 
-        (uint256 hexRewards, uint256 hexitRewards) = staking.claim(address(hexit));
+        (uint256 hexRewards, uint256 hexitRewards) = staking.claim(hexitHexOnePair);
 
         vm.stopPrank();
 
@@ -1237,7 +1237,7 @@ contract StakingFuzzTest is StakingHelper {
                 uint256 unclaimedHexit,
                 uint256 totalHexClaimed,
                 uint256 totalHexitClaimed
-            ) = staking.stakingInfos(user, address(hexit));
+            ) = staking.stakingInfos(user, hexitHexOnePair);
             assertEq(lastClaimedDay, currentStakingDay);
             assertEq(unclaimedHex, 0);
             assertEq(unclaimedHexit, 0);

@@ -16,7 +16,7 @@ contract ProcessSacrificeScript is BaseScript {
         address[] memory path = new address[](2);
         path[0] = HEX_TOKEN;
         path[1] = DAI_TOKEN;
-        uint256[] memory amounts = UniswapV2Library.getAmountsOut(PULSEX_FACTORY, hexToSwap, path);
+        uint256[] memory amounts = UniswapV2Library.getAmountsOut(PULSEX_FACTORY_V1, hexToSwap, path);
 
         bootstrap.processSacrifice(amounts[1]);
     }

@@ -41,7 +41,7 @@ contract StakingDeploymentTest is Base {
 
     function test_setStakeTokens() public {
         assertEq(staking.stakeTokenWeights(hexOneDaiPair), 7000);
-        assertEq(staking.stakeTokenWeights(address(hex1)), 2000);
-        assertEq(staking.stakeTokenWeights(address(hexit)), 1000);
+        assertEq(staking.stakeTokenWeights(hexitHexOnePair), 2000);
+        assertEq(staking.stakeTokenWeights(address(hex1)), 1000);
     }
 }

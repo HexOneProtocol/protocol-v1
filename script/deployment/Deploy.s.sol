@@ -25,8 +25,9 @@ contract DeploymentScript is BaseScript {
     HexOneVault internal vault;
     HexOneBootstrap internal bootstrap;
 
-    // HEX1/DAI LP token
+    // LP tokens
     address internal hex1DaiPair;
+    address internal hexitHex1Pair;
 
     function run() external {
         // deploy the protocol
@@ -54,7 +55,7 @@ contract DeploymentScript is BaseScript {
         pairs[3] = HEX_WPLS_PAIR;
         pairs[4] = WPLS_USDC_PAIR;
         pairs[5] = WPLS_USDT_PAIR;
-        feed = new HexOnePriceFeed(PULSEX_FACTORY, pairs);
+        feed = new HexOnePriceFeed(PULSEX_FACTORY_V1, pairs);
 
         // deploy feed aggregator
         aggregator = new HexOneFeedAggregator(address(feed), HEX_TOKEN, DAI_TOKEN, WPLS_TOKEN, USDC_TOKEN, USDT_TOKEN);
@@ -67,7 +68,7 @@ contract DeploymentScript is BaseScript {
 
         // deploy bootstrap
         bootstrap = new HexOneBootstrap(
-            PULSEX_ROUTER, PULSEX_FACTORY, HEX_TOKEN, address(hexit), DAI_TOKEN, address(hex1), TEAM_WALLET
+            PULSEX_ROUTER, PULSEX_FACTORY_V2, HEX_TOKEN, address(hexit), DAI_TOKEN, address(hex1), TEAM_WALLET
         );
     }
 
@@ -78,23 +79,30 @@ contract DeploymentScript is BaseScript {
         // configure HEXIT token
         hexit.setHexOneBootstrap(address(bootstrap));
 
+        // create HEX1/DAI pair
+        hex1DaiPair = IPulseXFactory(PULSEX_FACTORY_V2).getPair(address(hex1), DAI_TOKEN);
+        if (hex1DaiPair == address(0)) {
+            hex1DaiPair = IPulseXFactory(PULSEX_FACTORY_V2).createPair(address(hex1), DAI_TOKEN);
+        }
+
+        // create HEXIT/HEX1 pair
+        hexitHex1Pair = IPulseXFactory(PULSEX_FACTORY_V2).getPair(address(hexit), address(hex1));
+        if (hexitHex1Pair == address(0)) {
+            hexitHex1Pair = IPulseXFactory(PULSEX_FACTORY_V2).createPair(address(hexit), address(hex1));
+        }
+
         // configure staking
         staking.setBaseData(address(vault), address(bootstrap));
 
-        hex1DaiPair = IPulseXFactory(PULSEX_FACTORY).getPair(address(hex1), DAI_TOKEN);
-        if (hex1DaiPair == address(0)) {
-            hex1DaiPair = IPulseXFactory(PULSEX_FACTORY).createPair(address(hex1), DAI_TOKEN);
-        }
-
         address[] memory stakeTokens = new address[](3);
         stakeTokens[0] = hex1DaiPair;
-        stakeTokens[1] = address(hex1);
-        stakeTokens[2] = address(hexit);
+        stakeTokens[1] = hexitHex1Pair;
+        stakeTokens[2] = address(hex1);
 
         uint16[] memory weights = new uint16[](3);
         weights[0] = HEX1_DAI_WEIGHT;
-        weights[1] = HEX1_WEIGHT;
-        weights[2] = HEXIT_WEIGHT;
+        weights[1] = HEXIT_HEX1_WEIGHT;
+        weights[2] = HEX1_WEIGHT;
 
         staking.setStakeTokens(stakeTokens, weights);
 
@@ -128,5 +136,6 @@ contract DeploymentScript is BaseScript {
         console.log("HexOneVault:          ", address(vault));
         console.log("HexOneBootstrap:      ", address(bootstrap));
         console.log("HEX1/DAI pair:        ", address(hex1DaiPair));
+        console.log("HEXIT/HEX1 pair:      ", address(hexitHex1Pair));
     }
 }

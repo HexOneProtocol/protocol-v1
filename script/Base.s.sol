@@ -8,7 +8,8 @@ abstract contract BaseScript is Script {
     address internal constant TEAM_WALLET = address(0x1337);
 
     // pulsex
-    address internal constant PULSEX_FACTORY = 0x1715a3E4A142d8b698131108995174F37aEBA10D;
+    address internal constant PULSEX_FACTORY_V1 = 0x1715a3E4A142d8b698131108995174F37aEBA10D;
+    address internal constant PULSEX_FACTORY_V2 = 0x29eA7545DEf87022BAdc76323F373EA1e707C523;
     address internal constant PULSEX_ROUTER = 0x98bf93ebf5c380C0e6Ae8e192A7e2AE08edAcc02;
 
     // pulsex pairs
@@ -33,8 +34,8 @@ abstract contract BaseScript is Script {
 
     // stake tokens weight
     uint16 internal constant HEX1_DAI_WEIGHT = 7000;
-    uint16 internal constant HEX1_WEIGHT = 2000;
-    uint16 internal constant HEXIT_WEIGHT = 1000;
+    uint16 internal constant HEXIT_HEX1_WEIGHT = 2000;
+    uint16 internal constant HEX1_WEIGHT = 1000;
 
     // bootstrap sacrifice tokens multiplier
     uint16 internal constant HEX_SACRIFICE_MULTIPLIER = 55555;

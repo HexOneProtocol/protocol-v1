@@ -35,7 +35,8 @@ contract Base is Test {
     HexOneBootstrap public bootstrap;
     HexOneFeedAggregator public aggregator;
 
-    address public pulseXFactory = 0x1715a3E4A142d8b698131108995174F37aEBA10D;
+    address public pulseXFactoryV1 = 0x1715a3E4A142d8b698131108995174F37aEBA10D;
+    address public pulseXFactoryV2 = 0x29eA7545DEf87022BAdc76323F373EA1e707C523;
     address public pulseXRouter = 0x98bf93ebf5c380C0e6Ae8e192A7e2AE08edAcc02;
 
     address public hexDaiPair = 0x6F1747370B1CAcb911ad6D4477b718633DB328c8;
@@ -46,6 +47,7 @@ contract Base is Test {
     address public wplsUsdtPair = 0x322Df7921F28F1146Cdf62aFdaC0D6bC0Ab80711;
 
     address public hexOneDaiPair;
+    address public hexitHexOnePair;
 
     address public hexToken = 0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39;
     address public daiToken = 0xefD766cCb38EaF1dfd701853BFCe31359239F305;
@@ -61,8 +63,7 @@ contract Base is Test {
 
     function setUp() public virtual {
         // setup the fork
-        // vm.createSelectFork("https://rpc.pulsechain.com", 19530000);
-        vm.createSelectFork("https://rpc.pulsechain.com");
+        vm.createSelectFork("https://rpc.pulsechain.com", 19530000);
 
         // impersonate the deployer
         vm.startPrank(deployer);
@@ -81,7 +82,7 @@ contract Base is Test {
         pairs[3] = hexWplsPair;
         pairs[4] = wplsUsdcPair;
         pairs[5] = wplsUsdtPair;
-        feed = new HexOnePriceFeed(pulseXFactory, pairs);
+        feed = new HexOnePriceFeed(pulseXFactoryV1, pairs);
 
         // deploy the staking contract with 1% distribution rate of each token in bps
         uint16 hexDistRate = 100;
@@ -96,7 +97,7 @@ contract Base is Test {
 
         // deploy the bootstrap contract
         bootstrap = new HexOneBootstrap(
-            address(pulseXRouter), address(pulseXFactory), hexToken, address(hexit), daiToken, address(hex1), receiver
+            address(pulseXRouter), address(pulseXFactoryV2), hexToken, address(hexit), daiToken, address(hex1), receiver
         );
 
         // set the vault to have permissions to mint HEX1
@@ -117,10 +118,10 @@ contract Base is Test {
 
         // create an array with the corresponding multiplier for each sacrifice token
         uint16[] memory multipliers = new uint16[](4);
-        multipliers[0] = 55555;
-        multipliers[1] = 30000;
-        multipliers[2] = 20000;
-        multipliers[3] = 10000;
+        multipliers[0] = 55_555;
+        multipliers[1] = 55_555;
+        multipliers[2] = 55_555;
+        multipliers[3] = 55_555;
 
         bootstrap.setBaseData(address(feed), address(staking), address(vault));
 
@@ -134,16 +135,22 @@ contract Base is Test {
         vault.setBaseData(address(aggregator), address(staking), address(bootstrap));
 
         // create an HEX1/DAI pair
-        hexOneDaiPair = IPulseXFactory(pulseXFactory).getPair(address(hex1), daiToken);
+        hexOneDaiPair = IPulseXFactory(pulseXFactoryV2).getPair(address(hex1), daiToken);
         if (hexOneDaiPair == address(0)) {
-            hexOneDaiPair = IPulseXFactory(pulseXFactory).createPair(address(hex1), daiToken);
+            hexOneDaiPair = IPulseXFactory(pulseXFactoryV2).createPair(address(hex1), daiToken);
+        }
+
+        // create an HEXIT/HEX1 pair
+        hexitHexOnePair = IPulseXFactory(pulseXFactoryV2).getPair(address(hexit), address(hex1));
+        if (hexitHexOnePair == address(0)) {
+            hexitHexOnePair = IPulseXFactory(pulseXFactoryV2).createPair(address(hexit), address(hex1));
         }
 
         // prepare the allowed staking tokens
         address[] memory stakeTokens = new address[](3);
         stakeTokens[0] = hexOneDaiPair;
-        stakeTokens[1] = address(hex1);
-        stakeTokens[2] = address(hexit);
+        stakeTokens[1] = hexitHexOnePair;
+        stakeTokens[2] = address(hex1);
 
         // prepare the distribution weights for each stake token
         uint16[] memory weights = new uint16[](3);

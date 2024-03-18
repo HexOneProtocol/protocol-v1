@@ -75,10 +75,10 @@ contract BootstrapFuzzTest is BootstrapHelper {
         assertEq(sacrificedUSD, amount);
 
         // assert that the HEXIT tokens to be minted are correct
-        uint256 multiplier = 3000;
+        uint256 multiplier = 55555;
         uint256 baseHexitPerDollar = 5_555_555 * 1e18;
         uint256 expectedHexitShares = (amount * baseHexitPerDollar) / 1e18;
-        expectedHexitShares = (expectedHexitShares * multiplier) / 1000;
+        expectedHexitShares = (expectedHexitShares * multiplier) / 10000;
         assertEq(totalHexitShares, expectedHexitShares);
     }
 
@@ -111,10 +111,10 @@ contract BootstrapFuzzTest is BootstrapHelper {
         assertEq(sacrificedUSD, wplsPriceInDai);
 
         // assert that the hexit tokens to be minted are correct
-        uint256 multiplier = 2000;
+        uint256 multiplier = 55555;
         uint256 baseHexitPerDollar = 5_555_555 * 1e18;
         uint256 expectedHexitShares = (wplsPriceInDai * baseHexitPerDollar) / 1e18;
-        expectedHexitShares = (expectedHexitShares * multiplier) / 1000;
+        expectedHexitShares = (expectedHexitShares * multiplier) / 10000;
         assertEq(totalHexitShares, expectedHexitShares);
     }
 
@@ -148,10 +148,10 @@ contract BootstrapFuzzTest is BootstrapHelper {
         assertEq(sacrificedUSD, plsxPriceInDai);
 
         // assert that the hexit tokens to be minted are correct
-        uint256 multiplier = 1000;
+        uint256 multiplier = 55555;
         uint256 baseHexitPerDollar = 5_555_555 * 1e18;
         uint256 expectedHexitShares = (plsxPriceInDai * baseHexitPerDollar) / 1e18;
-        expectedHexitShares = (expectedHexitShares * multiplier) / 1000;
+        expectedHexitShares = (expectedHexitShares * multiplier) / 10000;
         assertEq(totalHexitShares, expectedHexitShares);
     }
 
@@ -179,10 +179,10 @@ contract BootstrapFuzzTest is BootstrapHelper {
 
         // assert that the hexit tokens to be minted are correct
         uint256 maxSlippage = 1e16;
-        uint256 multiplier = 5555;
+        uint256 multiplier = 55555;
         uint256 baseHexitPerDollar = 2_806_714 * 1e18;
         uint256 expectedHexitShares = (hexPriceInDai * baseHexitPerDollar) / 1e18;
-        expectedHexitShares = (expectedHexitShares * multiplier) / 1000;
+        expectedHexitShares = (expectedHexitShares * multiplier) / 10000;
         assertApproxEqRel(totalHexitShares, expectedHexitShares, maxSlippage);
     }
 
@@ -209,7 +209,7 @@ contract BootstrapFuzzTest is BootstrapHelper {
 
         // assert that the hexit tokens to be minted are correct
         uint256 maxSlippage = 1e16;
-        uint256 multiplier = 3000;
+        uint256 multiplier = 5555;
         uint256 baseHexitPerDollar = 2_806_714 * 1e18;
         uint256 expectedHexitShares = (amount * baseHexitPerDollar) / 1e18;
         expectedHexitShares = (expectedHexitShares * multiplier) / 1000;
@@ -240,7 +240,7 @@ contract BootstrapFuzzTest is BootstrapHelper {
 
         // assert that the hexit tokens to be minted are correct
         uint256 maxSlippage = 1e16;
-        uint256 multiplier = 2000;
+        uint256 multiplier = 5555;
         uint256 baseHexitPerDollar = 2_806_714 * 1e18;
         uint256 expectedHexitShares = (wplsPriceInDai * baseHexitPerDollar) / 1e18;
         expectedHexitShares = (expectedHexitShares * multiplier) / 1000;
@@ -271,7 +271,7 @@ contract BootstrapFuzzTest is BootstrapHelper {
 
         // assert that the hexit tokens to be minted are correct
         uint256 maxSlippage = 1e16;
-        uint256 multiplier = 1000;
+        uint256 multiplier = 5555;
         uint256 baseHexitPerDollar = 2_806_714 * 1e18;
         uint256 expectedHexitShares = (plsxPriceInDai * baseHexitPerDollar) / 1e18;
         expectedHexitShares = (expectedHexitShares * multiplier) / 1000;
@@ -335,7 +335,7 @@ contract BootstrapFuzzTest is BootstrapHelper {
 
         // assert that the hexit tokens to be minted are correct
         uint256 maxSlippage = 1e16;
-        uint256 multiplier = 3000;
+        uint256 multiplier = 5555;
         uint256 baseHexitPerDollar = 1_350_479 * 1e18;
         uint256 expectedHexitShares = (amount * baseHexitPerDollar) / 1e18;
         expectedHexitShares = (expectedHexitShares * multiplier) / 1000;
@@ -366,7 +366,7 @@ contract BootstrapFuzzTest is BootstrapHelper {
 
         // assert that the hexit tokens to be minted are correct
         uint256 maxSlippage = 1e16;
-        uint256 multiplier = 2000;
+        uint256 multiplier = 5555;
         uint256 baseHexitPerDollar = 1_350_479 * 1e18;
         uint256 expectedHexitShares = (wplsPriceInDai * baseHexitPerDollar) / 1e18;
         expectedHexitShares = (expectedHexitShares * multiplier) / 1000;
@@ -397,7 +397,7 @@ contract BootstrapFuzzTest is BootstrapHelper {
 
         // assert that the hexit tokens to be minted are correct
         uint256 maxSlippage = 1e16;
-        uint256 multiplier = 1000;
+        uint256 multiplier = 5555;
         uint256 baseHexitPerDollar = 1_350_479 * 1e18;
         uint256 expectedHexitShares = (plsxPriceInDai * baseHexitPerDollar) / 1e18;
         expectedHexitShares = (expectedHexitShares * multiplier) / 1000;
@@ -443,11 +443,6 @@ contract BootstrapFuzzTest is BootstrapHelper {
 
         // assert vault sacrifice status is set to true
         assertEq(vault.sacrificeFinished(), true);
-
-        // assert that a new pair was created
-        address expectedPairAddr = UniswapV2Library.pairFor(pulseXFactory, address(hex1), daiToken);
-        address pair = IPulseXFactory(pulseXFactory).getPair(address(hex1), daiToken);
-        assertEq(expectedPairAddr, pair);
     }
 
     /*//////////////////////////////////////////////////////////////////////////

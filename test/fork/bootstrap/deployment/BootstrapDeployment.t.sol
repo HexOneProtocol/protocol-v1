@@ -13,7 +13,7 @@ contract BootstrapDeploymentTest is Base {
 
     function test_deployment() public {
         assertEq(bootstrap.pulseXRouter(), address(pulseXRouter));
-        assertEq(bootstrap.pulseXFactory(), address(pulseXFactory));
+        assertEq(bootstrap.pulseXFactory(), address(pulseXFactoryV2));
         assertEq(bootstrap.hexToken(), hexToken);
         assertEq(bootstrap.hexitToken(), address(hexit));
         assertEq(bootstrap.daiToken(), daiToken);
@@ -37,9 +37,9 @@ contract BootstrapDeploymentTest is Base {
 
     function test_setSacrificeTokens() public {
         assertEq(bootstrap.tokenMultipliers(hexToken), 55_555);
-        assertEq(bootstrap.tokenMultipliers(daiToken), 30_000);
-        assertEq(bootstrap.tokenMultipliers(wplsToken), 20_000);
-        assertEq(bootstrap.tokenMultipliers(plsxToken), 10_000);
+        assertEq(bootstrap.tokenMultipliers(daiToken), 55_555);
+        assertEq(bootstrap.tokenMultipliers(wplsToken), 55_555);
+        assertEq(bootstrap.tokenMultipliers(plsxToken), 55_555);
     }
 
     /*//////////////////////////////////////////////////////////////////////////

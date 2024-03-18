@@ -24,7 +24,7 @@ contract BootstrapHelper is Base {
             address[] memory path = new address[](2);
             path[0] = _token;
             path[1] = hexToken;
-            uint256[] memory amounts = UniswapV2Library.getAmountsOut(pulseXFactory, _amount, path);
+            uint256[] memory amounts = UniswapV2Library.getAmountsOut(pulseXFactoryV1, _amount, path);
 
             amountOut = amounts[1];
 
@@ -38,7 +38,7 @@ contract BootstrapHelper is Base {
         address[] memory path = new address[](2);
         path[0] = hexToken;
         path[1] = daiToken;
-        uint256[] memory amounts = UniswapV2Library.getAmountsOut(pulseXFactory, _amountOfHexToDai, path);
+        uint256[] memory amounts = UniswapV2Library.getAmountsOut(pulseXFactoryV1, _amountOfHexToDai, path);
 
         bootstrap.processSacrifice(amounts[1]);
 
