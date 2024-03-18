@@ -50,6 +50,8 @@ contract HexOneVault is IHexOneVault, Ownable {
 
     /// @dev depositor => stakeId => DepositInfo
     mapping(address => mapping(uint256 => DepositInfo)) public depositInfos;
+    /// @dev depositor => stakeIds[]
+    mapping(address => uint256[]) public stakeIds;
     /// @dev depositor => UserInfo
     mapping(address => UserInfo) public userInfos;
 
@@ -292,6 +294,9 @@ contract HexOneVault is IHexOneVault, Ownable {
         UserInfo storage userInfo = userInfos[_depositor];
         userInfo.totalAmount += realAmount;
         userInfo.totalShares += shares;
+
+        // add stake id to the sender stake ids array
+        stakeIds[_depositor].push(stakeId);
 
         // calculate the max amount borrowable
         hexOneMinted = _calculateBorrowableAmount(_depositor, stakeId);
