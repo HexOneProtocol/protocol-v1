@@ -1,41 +1,91 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
+import {AccessControl} from "../lib/openzeppelin-contracts/contracts/access/AccessControl.sol";
 
 import {IHexitToken} from "./interfaces/IHexitToken.sol";
 
-/// @title Hexit Token
-/// @dev incentive token distributed by bootstrap staking pool.
-contract HexitToken is ERC20, Ownable, IHexitToken {
-    /// @dev HEX1 bootstrap contract address.
-    address public hexOneBootstrap;
+/**
+ *  @title Hexit Token
+ *  @dev incentive token.
+ */
+contract HexitToken is ERC20, AccessControl, IHexitToken {
+    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
+    bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    /// @dev checks if the sender is the bootstrap.
-    modifier onlyHexOneBootstrap() {
-        if (msg.sender != hexOneBootstrap) revert NotHexOneBootstrap();
-        _;
+    mapping(bytes4 => bool) internal called;
+
+    constructor() ERC20("HEXIT Token", "HEXIT") {
+        _grantRole(OWNER_ROLE, msg.sender);
     }
 
-    /// @param _name name of the token.
-    /// @param _symbol ticker of the token.
-    constructor(string memory _name, string memory _symbol) ERC20(_name, _symbol) Ownable(msg.sender) {}
+    /**
+     *  @dev give `_manager` permission to add new pools.
+     *  @notice can only be called once by an account with `OWNER_ROLE`.
+     *  @param _manager address of the pool manager contract.
+     */
+    function initManager(address _manager) external onlyRole(OWNER_ROLE) {
+        if (_manager == address(0)) revert ZeroAddress();
+        if (called[msg.sig]) revert AlreadyCalled();
 
-    /// @dev set the address of the bootstrap.
-    /// @param _hexOneBootstrap address of the bootstrap.
-    function setHexOneBootstrap(address _hexOneBootstrap) external onlyOwner {
-        if (hexOneBootstrap != address(0)) revert BootstrapAlreadySet();
-        if (_hexOneBootstrap == address(0)) revert InvalidAddress();
-        hexOneBootstrap = _hexOneBootstrap;
-        emit BootstrapInitialized(_hexOneBootstrap);
+        called[msg.sig] = true;
+
+        _grantRole(MANAGER_ROLE, _manager);
+
+        emit ManagerInitialized(_manager);
     }
 
-    /// @dev mint HEXIT tokens to a specified account.
-    /// @notice only bootstrap can call this function.
-    /// @param _recipient address of the receiver.
-    /// @param _amount amount of HEX1 being minted.
-    function mint(address _recipient, uint256 _amount) external onlyHexOneBootstrap {
-        _mint(_recipient, _amount);
+    /**
+     *  @dev give `_feed` permission to mint HEXIT.
+     *  @notice can only be called once by an account with `OWNER_ROLE`.
+     *  @param _feed address of the price feed contract.
+     */
+    function initFeed(address _feed) external onlyRole(OWNER_ROLE) {
+        if (_feed == address(0)) revert ZeroAddress();
+        if (called[msg.sig]) revert AlreadyCalled();
+
+        called[msg.sig] = true;
+
+        _grantRole(MINTER_ROLE, _feed);
+
+        emit FeedInitialized(_feed);
+    }
+
+    /**
+     *  @dev give `_bootstrap` permission to mint HEXIT.
+     *  @notice can only be called once by an account with `OWNER_ROLE`.
+     *  @param _bootstrap address of the bootstrap contract.
+     */
+    function initBootstrap(address _bootstrap) external onlyRole(OWNER_ROLE) {
+        if (_bootstrap == address(0)) revert ZeroAddress();
+        if (called[msg.sig]) revert AlreadyCalled();
+
+        called[msg.sig] = true;
+
+        _grantRole(MINTER_ROLE, _bootstrap);
+
+        emit BootstrapInitialized(_bootstrap);
+    }
+
+    /**
+     *  @dev give `_pool` permission to mint HEXIT.
+     *  @notice can only be called by accounts with `MANAGER_ROLE`.
+     *  @param _pool address of the pool contract.
+     */
+    function initPool(address _pool) external onlyRole(MANAGER_ROLE) {
+        _grantRole(MINTER_ROLE, _pool);
+        emit PoolAdded(_pool);
+    }
+
+    /**
+     *  @dev mint `_amount` to `_account`.
+     *  @notice can only be called by accounts with `MINTER_ROLE`.
+     *  @param _account HEXIT tokens recipient.
+     *  @param _amount HEXIT amount to mint.
+     */
+    function mint(address _account, uint256 _amount) external onlyRole(MINTER_ROLE) {
+        _mint(_account, _amount);
     }
 }

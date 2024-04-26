@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 interface IHexitToken {
-    event BootstrapInitialized(address hexOneBootstrap);
+    event ManagerInitialized(address manager);
+    event FeedInitialized(address faucet);
+    event BootstrapInitialized(address bootstrap);
+    event PoolAdded(address pool);
 
-    error NotHexOneBootstrap();
-    error InvalidAddress();
-    error BootstrapAlreadySet();
+    error ZeroAddress();
+    error AlreadyCalled();
 
-    function setHexOneBootstrap(address _bootstrap) external;
-    function mint(address _recipient, uint256 _amount) external;
+    function initManager(address _manager) external;
+    function initFeed(address _feed) external;
+    function initBootstrap(address _bootstrap) external;
+    function initPool(address _pool) external;
+    function mint(address _account, uint256 _amount) external;
 }

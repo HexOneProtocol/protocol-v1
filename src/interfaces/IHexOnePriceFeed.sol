@@ -1,21 +1,38 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
+
+import {FixedPoint} from "../libraries/FixedPoint.sol";
 
 interface IHexOnePriceFeed {
-    event PriceUpdated(address pair);
+    struct Observation {
+        uint32 blockTimestampLast;
+        uint256 price0CumulativeLast;
+        uint256 price1CumulativeLast;
+    }
 
-    error EmptyReserveZero(address pair);
-    error EmptyReserveOne(address pair);
-    error InvalidFactory(address factory);
-    error InvalidNumberOfPairs(uint256 numberOfPairs);
-    error PeriodNotElapsed(address pair);
-    error InvalidPair(address pair);
-    error PriceTooStale();
-    error PairAlreadyAdded(address pair);
+    struct Price {
+        FixedPoint.uq112x112 price0;
+        FixedPoint.uq112x112 price1;
+    }
 
-    function update(address _tokenIn, address _tokenOut) external;
-    function consult(address _tokenIn, uint256 _amountIn, address _tokenOut)
-        external
-        view
-        returns (uint256 amountOut);
+    event PeriodChanged(uint256 period);
+    event PathAdded(address[] path);
+    event PairAdded(address pair);
+    event PricesUpdated(uint256 timestamp);
+
+    error InvalidPath();
+    error InvalidPair();
+    error EmptyReserves();
+    error PathAlreadyRegistered();
+    error InvalidPeriod();
+    error ZeroAddress();
+    error PriceStale();
+    error PricesUpToDate();
+
+    function addPath(address[] memory _path) external;
+    function changePeriod(uint256 _period) external;
+    function update() external;
+    function quote(address tokenIn, uint256 amountIn, address tokenOut) external view returns (uint256);
+    function getPath(address _tokenIn, address _tokenOut) external view returns (address[] memory);
+    function getPairs() external view returns (address[] memory);
 }

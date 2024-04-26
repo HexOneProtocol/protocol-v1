@@ -1,153 +1,191 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import {UniswapV2OracleLibrary} from "./libraries/UniswapV2OracleLibrary.sol";
 import {UniswapV2Library} from "./libraries/UniswapV2Library.sol";
-import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {FixedPoint} from "./libraries/FixedPoint.sol";
+import {EnumerableSet} from "../lib/openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
+import {AccessControl} from "../lib/openzeppelin-contracts/contracts/access/AccessControl.sol";
 
 import {IHexOnePriceFeed} from "./interfaces/IHexOnePriceFeed.sol";
+import {IHexitToken} from "./interfaces/IHexitToken.sol";
 import {IPulseXPair} from "./interfaces/pulsex/IPulseXPair.sol";
 
-/// @title HexOnePriceFeed
-/// @notice fetches the price of the PulseX pairs.
-/// @dev supported pairs: HEX/DAI, PLSX/DAI and WPLS/DAI.
-contract HexOnePriceFeed is IHexOnePriceFeed {
-    using FixedPoint for *;
+contract HexOnePriceFeed is AccessControl, IHexOnePriceFeed {
     using EnumerableSet for EnumerableSet.AddressSet;
+    using FixedPoint for *;
 
-    /// @dev stores the observed values at a specific timestamp.
-    struct Observation {
-        uint32 blockTimestampLast;
-        uint256 price0CumulativeLast;
-        uint256 price1CumulativeLast;
+    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
+    uint256 public constant MULTIPLIER = 1e18;
+    uint256 public constant MAX_PERIOD = 300;
+    uint256 public constant MIN_PERIOD = 200;
+    address public constant FACTORY_V1 = 0x1715a3E4A142d8b698131108995174F37aEBA10D;
+
+    address public immutable hexit;
+
+    uint256 public period;
+    uint256 public lastUpdate;
+
+    EnumerableSet.AddressSet internal pairs;
+    mapping(address => mapping(address => address[])) internal paths;
+    mapping(address => Observation) internal observations;
+    mapping(address => Price) internal prices;
+
+    constructor(address _hexit, uint256 _period) {
+        if (_period > MAX_PERIOD || _period < MIN_PERIOD) revert InvalidPeriod();
+
+        hexit = _hexit;
+        period = _period;
+
+        _grantRole(OWNER_ROLE, msg.sender);
     }
 
-    /// @dev represents the average price within a specific time frame.
-    struct PriceAverage {
-        FixedPoint.uq112x112 price0Average;
-        FixedPoint.uq112x112 price1Average;
-    }
+    /**
+     *  @dev adds a new path to the oracle.
+     *  @notice can only be called by the owner.
+     *  @param _path route in which quotes for a given tokenIn and tokenOut are computed.
+     */
+    function addPath(address[] memory _path) external onlyRole(OWNER_ROLE) {
+        uint256 length = _path.length;
+        if (length < 2) revert InvalidPath();
 
-    /// @dev pairs supported by the oracle.
-    EnumerableSet.AddressSet private pairTokens;
+        address tokenIn = _path[0];
+        address tokenOut = _path[length - 1];
+        if (paths[tokenIn][tokenOut].length != 0) revert PathAlreadyRegistered();
 
-    /// @dev period in which the oracle becomes stale.
-    uint256 public constant PERIOD = 2000;
-
-    /// @dev address of the pulsex factory.
-    address public immutable factory;
-    /// @dev stores the last observed cumulative prices of each token pair.
-    mapping(address => Observation) public pairLastObservation;
-    /// @dev stores the average price of each token between the last two observations.
-    mapping(address => PriceAverage) public pairPriceAverage;
-
-    /// @param _factory address of the pulsex factory.
-    /// @param _pairs address of the supported pairs in the feed.
-    constructor(address _factory, address[] memory _pairs) {
-        if (_pairs.length == 0) revert InvalidNumberOfPairs(_pairs.length);
-        if (_factory == address(0)) revert InvalidFactory(_factory);
-
-        for (uint256 i; i < _pairs.length; i++) {
-            // check if pair was already added
-            address pair = _pairs[i];
-            if (pair == address(0)) revert InvalidPair(pair);
-
-            // get the reserves of the pair and the last time the reserves were updated
-            IPulseXPair pulseXPair = IPulseXPair(pair);
-            (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) = pulseXPair.getReserves();
-
-            // check if pair has reserves
-            if (reserve0 == 0) revert EmptyReserveZero(pair);
-            if (reserve1 == 0) revert EmptyReserveOne(pair);
-
-            // add pair contract to allowed pair tokens
-            if (!pairTokens.add(pair)) revert PairAlreadyAdded(pair);
-
-            // update the last observation made for this pair
-            Observation storage observation = pairLastObservation[pair];
-            observation.blockTimestampLast = blockTimestampLast;
-            observation.price0CumulativeLast = pulseXPair.price0CumulativeLast();
-            observation.price1CumulativeLast = pulseXPair.price1CumulativeLast();
-
-            // update the initial price average of the pair
-            PriceAverage storage priceAverage = pairPriceAverage[pair];
-            priceAverage.price0Average = FixedPoint.uq112x112(FixedPoint.fraction(reserve1, reserve0)._x);
-            priceAverage.price1Average = FixedPoint.uq112x112(FixedPoint.fraction(reserve0, reserve1)._x);
+        for (uint256 i; i < _path.length - 1; ++i) {
+            _addPair(_path[i], _path[i + 1]);
         }
 
-        factory = _factory;
+        paths[tokenIn][tokenOut] = _path;
+
+        emit PathAdded(_path);
     }
 
-    /// @dev updates the average price of both tokens of the pair.
-    /// @notice the average price can not be updated if the time elapsed since the last
-    /// update is less than `PERIOD`.
-    /// @param _tokenA address of the token we want a quote from.
-    /// @param _tokenB address of the token we are receiving the price in.
-    function update(address _tokenA, address _tokenB) external {
-        // check if the tokens being passed correspond to a supported pair
-        address pair = UniswapV2Library.pairFor(factory, _tokenA, _tokenB);
-        if (!pairTokens.contains(pair)) revert InvalidPair(pair);
+    /**
+     *  @dev changes the oracle update period.
+     *  @notice can only be called by the owner.
+     *  @param _period new update period.
+     */
+    function changePeriod(uint256 _period) external onlyRole(OWNER_ROLE) {
+        if (_period > MAX_PERIOD || _period < MIN_PERIOD) revert InvalidPeriod();
+        period = _period;
+        emit PeriodChanged(_period);
+    }
 
-        // get updated information about cumulative prices and last time updated
+    /**
+     *  @dev updates the price of all supported pairs.
+     */
+    function update() external {
+        uint256 timeElapsed = block.timestamp - lastUpdate;
+        if (timeElapsed < period) revert PricesUpToDate();
+
+        uint256 length = pairs.length();
+        for (uint256 i; i < length; ++i) {
+            _update(pairs.at(i));
+        }
+
+        lastUpdate = block.timestamp;
+
+        IHexitToken(hexit).mint(msg.sender, timeElapsed * MULTIPLIER);
+
+        emit PricesUpdated(block.timestamp);
+    }
+
+    /**
+     *  @dev retrieves a quote following the configured path.
+     *  @param _tokenIn input token address.
+     *  @param _amountIn amount of input token.
+     *  @param _tokenOut output token address.
+     */
+    function quote(address _tokenIn, uint256 _amountIn, address _tokenOut) external view returns (uint256 amountOut) {
+        address[] memory path = paths[_tokenIn][_tokenOut];
+        if (path.length < 2) revert InvalidPath();
+
+        uint256 timeElapsed = block.timestamp - lastUpdate;
+        if (timeElapsed >= period) revert PriceStale();
+
+        amountOut = _amountIn;
+        for (uint256 i; i < path.length - 1; ++i) {
+            address pair = UniswapV2Library.pairFor(FACTORY_V1, path[i], path[i + 1]);
+
+            (address token0,) = UniswapV2Library.sortTokens(path[i], path[i + 1]);
+            if (token0 == path[i]) {
+                amountOut = prices[pair].price0.mul(amountOut).decode144();
+            } else {
+                amountOut = prices[pair].price1.mul(amountOut).decode144();
+            }
+        }
+    }
+
+    /**
+     *  @dev retrieves the path for a given tokenIn and tokenOut.
+     *  @param _tokenIn input token address.
+     *  @param _tokenOut output token address.
+     */
+    function getPath(address _tokenIn, address _tokenOut) external view returns (address[] memory) {
+        if (_tokenIn == address(0)) revert ZeroAddress();
+        return paths[_tokenIn][_tokenOut];
+    }
+
+    /**
+     *  @dev retrieves every pair supported.
+     */
+    function getPairs() external view returns (address[] memory) {
+        return pairs.values();
+    }
+
+    /**
+     *  @dev
+     */
+    function _addPair(address _tokenA, address _tokenB) internal {
+        address pair = UniswapV2Library.pairFor(FACTORY_V1, _tokenA, _tokenB);
+
+        if (!pairs.add(pair)) return;
+
+        (uint112 reserve0, uint112 reserve1,) = IPulseXPair(pair).getReserves();
+        if (reserve0 == 0 || reserve1 == 0) revert EmptyReserves();
+
         (uint256 price0Cumulative, uint256 price1Cumulative, uint32 blockTimestamp) =
             UniswapV2OracleLibrary.currentCumulativePrices(pair);
 
-        Observation memory lastObservation = pairLastObservation[pair];
+        Observation storage observation = observations[pair];
+        observation.blockTimestampLast = blockTimestamp;
+        observation.price0CumulativeLast = price0Cumulative;
+        observation.price1CumulativeLast = price1Cumulative;
 
-        // calculate how much time has passed since the pair was last updated
+        emit PairAdded(pair);
+    }
+
+    /**
+     *  @dev updates the price of a specific pair.
+     *  @param _pair address of the pair to update.
+     */
+    function _update(address _pair) internal {
+        (uint256 price0Cumulative, uint256 price1Cumulative, uint32 blockTimestamp) =
+            UniswapV2OracleLibrary.currentCumulativePrices(_pair);
+
+        Observation memory lastObservation = observations[_pair];
+
         uint32 timeElapsed;
         unchecked {
             timeElapsed = blockTimestamp - lastObservation.blockTimestampLast;
         }
 
-        // if the pair has already been updated revert
-        if (timeElapsed < PERIOD) revert PeriodNotElapsed(pair);
+        if (timeElapsed >= period) {
+            unchecked {
+                prices[_pair].price0 = FixedPoint.uq112x112(
+                    uint224((price0Cumulative - lastObservation.price0CumulativeLast) / timeElapsed)
+                );
+                prices[_pair].price1 = FixedPoint.uq112x112(
+                    uint224((price1Cumulative - lastObservation.price1CumulativeLast) / timeElapsed)
+                );
+            }
 
-        // compute the new price average since the price was last updated
-        PriceAverage storage priceAverage = pairPriceAverage[pair];
-        unchecked {
-            priceAverage.price0Average =
-                FixedPoint.uq112x112(uint224((price0Cumulative - lastObservation.price0CumulativeLast) / timeElapsed));
-            priceAverage.price1Average =
-                FixedPoint.uq112x112(uint224((price1Cumulative - lastObservation.price1CumulativeLast) / timeElapsed));
-        }
-
-        // update the last pair observation with the newly fetched cumulative prices and timestamp
-        Observation storage observation = pairLastObservation[pair];
-        observation.blockTimestampLast = blockTimestamp;
-        observation.price0CumulativeLast = price0Cumulative;
-        observation.price1CumulativeLast = price1Cumulative;
-
-        emit PriceUpdated(pair);
-    }
-
-    /// @dev consult the price of a token.
-    /// @notice if price has not been updated for `PERIOD` the price is considered stale.
-    /// @param _tokenIn address of the token we want a quote from.
-    /// @param _amountIn amount of tokenIn to calculate the amountOut based on price.
-    /// @param _tokenOut address of the token we are receiving the price in.
-    function consult(address _tokenIn, uint256 _amountIn, address _tokenOut)
-        external
-        view
-        returns (uint256 amountOut)
-    {
-        // check if the tokens being passed correspond to a supported pair
-        address pair = UniswapV2Library.pairFor(factory, _tokenIn, _tokenOut);
-        if (!pairTokens.contains(pair)) revert InvalidPair(pair);
-
-        // check how much time has elapsed since the price was last updated
-        uint256 timeElapsed = block.timestamp - pairLastObservation[pair].blockTimestampLast;
-
-        // if the price was not updated for PERIOD then the transaction should revert
-        if (timeElapsed >= PERIOD) revert PriceTooStale();
-
-        // compute the amount out
-        (address token0,) = UniswapV2Library.sortTokens(_tokenIn, _tokenOut);
-        if (token0 == _tokenIn) {
-            amountOut = pairPriceAverage[pair].price0Average.mul(_amountIn).decode144();
-        } else {
-            amountOut = pairPriceAverage[pair].price1Average.mul(_amountIn).decode144();
+            Observation storage observation = observations[_pair];
+            observation.blockTimestampLast = blockTimestamp;
+            observation.price0CumulativeLast = price0Cumulative;
+            observation.price1CumulativeLast = price1Cumulative;
         }
     }
 }

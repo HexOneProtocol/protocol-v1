@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 interface IHexToken {
     struct GlobalsStore {
@@ -25,7 +25,7 @@ interface IHexToken {
         bool isAutoStake;
     }
 
-    function globals() external view returns (GlobalsStore memory);
+    function globalInfo() external view returns (uint256[13] memory);
     function stakeLists(address stakerAddr, uint256 stakeIndex) external view returns (StakeStore memory);
     function currentDay() external view returns (uint256);
     function stakeStart(uint256 newStakedHearts, uint256 newStakedDays) external;
@@ -33,4 +33,10 @@ interface IHexToken {
     function transfer(address recipient, uint256 amount) external returns (bool);
     function stakeEnd(uint256 stakeIndex, uint40 stakeIdParam) external;
     function stakeCount(address stakerAddr) external view returns (uint256);
+    function dailyDataRange(uint256 beginDay, uint256 endDay) external view returns (uint256[] memory list);
+    function dailyData(uint256 day)
+        external
+        view
+        returns (uint72 dayPayoutTotal, uint72 dayStakeSharesTotal, uint56 dayUnclaimedSatoshisTotal);
+    function dailyDataUpdate(uint256 beforeDay) external;
 }

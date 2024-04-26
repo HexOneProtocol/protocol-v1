@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // fetched from https://github.com/Uniswap/uniswap-v2-periphery/blob/master/contracts/libraries/UniswapV2Library.sol
 // slightly modified to remove SafeMath and 0.8 compatible
-pragma solidity ^0.8.0;
+pragma solidity 0.8.20;
 
 import {IPulseXPair} from "../interfaces/pulsex/IPulseXPair.sol";
 
