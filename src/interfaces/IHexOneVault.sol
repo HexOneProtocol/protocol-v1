@@ -29,4 +29,15 @@ interface IHexOneVault {
     error HealthRatioTooLow();
     error RatioHealthy();
     error NotEnoughToTake();
+
+    function currentDay() external view returns (uint256);
+    function healthRatio(uint256 _id) external view returns (uint256 ratio);
+    function maxBorrowable(uint256 _id) external view returns (uint256 amount);
+    function enableBuyback() external;
+    function deposit(uint256 _amount) external returns (uint256 tokenId);
+    function withdraw(uint256 _id) external returns (uint256 hxAmount, uint256 hdrnAmount);
+    function liquidate(uint256 _id) external returns (uint256 hxAmount, uint256 hdrnAmount);
+    function repay(uint256 _id, uint256 _amount) external;
+    function borrow(uint256 _id, uint256 _amount) external;
+    function take(uint256 _id, uint256 _amount) external;
 }
