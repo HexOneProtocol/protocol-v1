@@ -7,16 +7,20 @@ import {HexitToken} from "../../src/HexitToken.sol";
 import {HexOneToken} from "../../src/HexOneToken.sol";
 import {HexOnePriceFeed} from "../../src/HexOnePriceFeed.sol";
 import {HexOneVault} from "../../src/HexOneVault.sol";
+import {HexOneBootstrap} from "../../src/HexOneBootstrap.sol";
 
 import {IHexitToken} from "../../src/interfaces/IHexitToken.sol";
 import {IHexOneToken} from "../../src/interfaces/IHexOneToken.sol";
 import {IHexOnePriceFeed} from "../../src/interfaces/IHexOnePriceFeed.sol";
+import {IHexOneVault} from "../../src/interfaces/IHexOneVault.sol";
+import {IHexOneBootstrap} from "../../src/interfaces/IHexOneBootstrap.sol";
 
 import {IPulseXFactory} from "../../src/interfaces/pulsex/IPulseXFactory.sol";
 import {IPulseXPair} from "../../src/interfaces/pulsex/IPulseXPair.sol";
 import {IPulseXRouter02 as IPulseXRouter} from "../../src/interfaces/pulsex/IPulseXRouter.sol";
 import {IHexToken} from "../../src/interfaces/IHexToken.sol";
 import {IERC20} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {IAccessControl} from "../../lib/openzeppelin-contracts/contracts/access/IAccessControl.sol";
 
 import {ERC20Mock} from "../mocks/ERC20Mock.sol";
 
@@ -24,6 +28,7 @@ contract Base is Test {
     HexitToken internal hexit;
     HexOnePriceFeed internal feed;
     HexOneVault internal vault;
+    HexOneBootstrap internal bootstrap;
 
     address internal constant PULSEX_FACTORY_V1 = 0x1715a3E4A142d8b698131108995174F37aEBA10D;
     address internal constant PULSEX_FACTORY_V2 = 0x29eA7545DEf87022BAdc76323F373EA1e707C523;
@@ -40,7 +45,6 @@ contract Base is Test {
     address internal constant USDT_TOKEN = 0x0Cb6F5a34ad42ec934882A05265A7d5F59b51A2f;
 
     address internal owner = makeAddr("owner");
-    address internal bootstrap = makeAddr("bootstrap");
 
     modifier prank(address _account) {
         vm.startPrank(_account);
@@ -60,6 +64,14 @@ contract Base is Test {
         hexit = new HexitToken();
         feed = new HexOnePriceFeed(address(hexit), 300);
         vault = new HexOneVault(address(feed));
+
+        address[] memory sacrificeTokens = new address[](4);
+        sacrificeTokens[0] = HEX_TOKEN;
+        sacrificeTokens[1] = DAI_TOKEN;
+        sacrificeTokens[2] = WPLS_TOKEN;
+        sacrificeTokens[3] = PLSX_TOKEN;
+
+        bootstrap = new HexOneBootstrap(uint64(block.timestamp), address(feed), address(hexit), sacrificeTokens);
     }
 
     function _configure() private {
@@ -84,6 +96,19 @@ contract Base is Test {
         hexUsdtPath[2] = USDT_TOKEN;
         feed.addPath(hexUsdtPath);
 
+        // WPLS/DAI path
+        address[] memory wplsDaiPath = new address[](2);
+        wplsDaiPath[0] = WPLS_TOKEN;
+        wplsDaiPath[1] = DAI_TOKEN;
+        feed.addPath(wplsDaiPath);
+
+        // PLSX/DAI path
+        address[] memory plsxDaiPath = new address[](2);
+        plsxDaiPath[0] = PLSX_TOKEN;
+        plsxDaiPath[1] = DAI_TOKEN;
+        feed.addPath(plsxDaiPath);
+
         hexit.initFeed(address(feed));
+        hexit.initBootstrap(address(bootstrap));
     }
 }

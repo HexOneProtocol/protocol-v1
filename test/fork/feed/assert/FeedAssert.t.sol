@@ -6,32 +6,33 @@ import "../../Base.t.sol";
 contract FeedAssert is Base {
     function test_addPath() external prank(owner) {
         address[] memory path = new address[](3);
-        path[0] = PLSX_TOKEN;
+        path[0] = USDT_TOKEN;
         path[1] = WPLS_TOKEN;
         path[2] = DAI_TOKEN;
 
         feed.addPath(path);
 
-        assertEq(feed.getPath(PLSX_TOKEN, DAI_TOKEN), path);
+        assertEq(feed.getPath(USDT_TOKEN, DAI_TOKEN), path);
     }
 
     function test_addPath_withAlreadyAddedPair() external prank(owner) {
         address[] memory firstPath = new address[](3);
-        firstPath[0] = PLSX_TOKEN;
+        firstPath[0] = USDT_TOKEN;
         firstPath[1] = WPLS_TOKEN;
         firstPath[2] = DAI_TOKEN;
 
         feed.addPath(firstPath);
 
-        assertEq(feed.getPath(PLSX_TOKEN, DAI_TOKEN), firstPath);
+        assertEq(feed.getPath(USDT_TOKEN, DAI_TOKEN), firstPath);
 
-        address[] memory secondPath = new address[](2);
-        secondPath[0] = WPLS_TOKEN;
-        secondPath[1] = DAI_TOKEN;
+        address[] memory secondPath = new address[](3);
+        secondPath[0] = USDC_TOKEN;
+        secondPath[1] = PLSX_TOKEN;
+        secondPath[2] = DAI_TOKEN;
 
         feed.addPath(secondPath);
 
-        assertEq(feed.getPath(WPLS_TOKEN, DAI_TOKEN), secondPath);
+        assertEq(feed.getPath(USDC_TOKEN, DAI_TOKEN), secondPath);
     }
 
     function test_changePeriod(uint256 _period) external prank(owner) {

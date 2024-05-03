@@ -92,8 +92,6 @@ contract VaultAssert is Base {
         vm.warp(block.timestamp + 5556 days);
 
         (uint256 hxAmount, uint256 hdrnAmount) = vault.withdraw(tokenId);
-        console.log(hxAmount);
-        console.log(hdrnAmount);
 
         (uint256 debt, uint72 amount, uint72 shares, uint40 param, uint16 start, uint16 end) = vault.stakes(tokenId);
         assertEq(debt, 0);
@@ -106,15 +104,87 @@ contract VaultAssert is Base {
         assertEq(vault.balanceOf(address(this)), 0);
 
         assertTrue(hxAmount > HEX_DEPOSIT);
+        assertTrue(hdrnAmount > 0);
     }
 
-    function test_withdraw_withDebt() external {}
+    function test_withdraw_withDebt() external {
+        deal(address(HEX_TOKEN), address(this), HEX_DEPOSIT);
 
-    function test_liquidate_withoutDebt() external {}
+        IERC20(HEX_TOKEN).approve(address(vault), HEX_DEPOSIT);
+        uint256 tokenId = vault.deposit(HEX_DEPOSIT);
 
-    function test_liquidate_withDebt() external {}
+        uint256 hex1Minted = vault.maxBorrowable(tokenId);
+        vault.borrow(tokenId, hex1Minted);
 
-    function test_repay() external {}
+        vm.warp(block.timestamp + 5556 days);
+
+        IERC20(hex1).approve(address(vault), hex1Minted);
+        vault.withdraw(tokenId);
+
+        // TODO assert state
+
+        // TODO assert balances
+    }
+
+    function test_liquidate_withoutDebt() external {
+        deal(address(HEX_TOKEN), address(this), HEX_DEPOSIT);
+
+        IERC20(HEX_TOKEN).approve(address(vault), HEX_DEPOSIT);
+        uint256 tokenId = vault.deposit(HEX_DEPOSIT);
+
+        address liquidator = makeAddr("liquidator");
+
+        vm.warp(block.timestamp + 5555 days + 16 days);
+
+        vm.prank(liquidator);
+        vault.liquidate(tokenId);
+
+        // TODO assert state
+
+        // TODO assert balances
+    }
+
+    function test_liquidate_withDebt() external {
+        deal(address(HEX_TOKEN), address(this), HEX_DEPOSIT);
+
+        IERC20(HEX_TOKEN).approve(address(vault), HEX_DEPOSIT);
+        uint256 tokenId = vault.deposit(HEX_DEPOSIT);
+
+        uint256 hex1Minted = vault.maxBorrowable(tokenId);
+        vault.borrow(tokenId, hex1Minted);
+
+        vm.warp(block.timestamp + 5555 days + 16 days);
+
+        address liquidator = makeAddr("liquidator");
+
+        deal(hex1, liquidator, hex1Minted);
+
+        vm.startPrank(liquidator);
+        IERC20(hex1).approve(address(vault), hex1Minted);
+        vault.liquidate(tokenId);
+        vm.stopPrank();
+
+        // TODO assert state
+
+        // TODO assert balances
+    }
+
+    function test_repay() external {
+        deal(address(HEX_TOKEN), address(this), HEX_DEPOSIT);
+
+        IERC20(HEX_TOKEN).approve(address(vault), HEX_DEPOSIT);
+        uint256 tokenId = vault.deposit(HEX_DEPOSIT);
+
+        uint256 hex1Minted = vault.maxBorrowable(tokenId);
+        vault.borrow(tokenId, hex1Minted);
+
+        IERC20(hex1).approve(address(vault), hex1Minted);
+        vault.repay(tokenId, hex1Minted);
+
+        // TODO assert state
+
+        // TODO assert balances
+    }
 
     function test_borrow_initialDay() external {
         deal(address(HEX_TOKEN), address(this), HEX_DEPOSIT);
@@ -129,8 +199,7 @@ contract VaultAssert is Base {
         assertEq(debt, hex1Minted);
         assertEq(IERC20(hex1).balanceOf(address(this)), hex1Minted);
 
-        uint256 healthRatio = vault.healthRatio(tokenId);
-        console.log("HEX health ratio  :", healthRatio);
+        vault.healthRatio(tokenId);
     }
 
     function test_borrow_afterDays() external {
@@ -152,11 +221,15 @@ contract VaultAssert is Base {
         assertEq(debt, hex1Minted);
         assertEq(IERC20(hex1).balanceOf(address(this)), hex1Minted);
 
-        uint256 healthRatio = vault.healthRatio(tokenId);
-        console.log("HEX health ratio  :", healthRatio);
+        vault.healthRatio(tokenId);
     }
 
-    function test_take_withoutDebt() external {}
+    function test_take_withoutDebt() external {
+        // TODO : swaps to influence the spot price of hex such that the position
+        // is liquidatable
+    }
 
-    function test_take_withDebt() external {}
+    function test_take_withDebt() external {
+        // TODO
+    }
 }
