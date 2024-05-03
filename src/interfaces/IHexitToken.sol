@@ -8,7 +8,7 @@ interface IHexitToken {
     event PoolAdded(address pool);
 
     error ZeroAddress();
-    error AlreadyCalled();
+    error AlreadyInitialized();
 
     function initManager(address _manager) external;
     function initFeed(address _feed) external;

@@ -11,26 +11,47 @@ import {IHexOnePriceFeed} from "./interfaces/IHexOnePriceFeed.sol";
 import {IHexitToken} from "./interfaces/IHexitToken.sol";
 import {IPulseXPair} from "./interfaces/pulsex/IPulseXPair.sol";
 
+/**
+ *  @title Hex One Price Feed
+ *  @dev TWAP oracle based on pulsex v1 pairs.
+ */
 contract HexOnePriceFeed is AccessControl, IHexOnePriceFeed {
     using EnumerableSet for EnumerableSet.AddressSet;
     using FixedPoint for *;
 
+    /// @dev access control owner role.
     bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
+    /// @dev precision scale multipler.
     uint256 public constant MULTIPLIER = 1e18;
-    uint256 public constant MAX_PERIOD = 300;
-    uint256 public constant MIN_PERIOD = 200;
+    /// @dev max update period supported.
+    uint256 public constant MAX_PERIOD = 700;
+    /// @dev min update period supported.
+    uint256 public constant MIN_PERIOD = 300;
+    /// @dev address of the pulsex v1 factory.
     address public constant FACTORY_V1 = 0x1715a3E4A142d8b698131108995174F37aEBA10D;
 
+    /// @dev address of the hexit token.
     address public immutable hexit;
 
+    /// @dev current update period.
     uint256 public period;
+    /// @dev last timestamp pair prices were updated.
     uint256 public lastUpdate;
 
+    /// @dev supported pairs by the oracle.
     EnumerableSet.AddressSet internal pairs;
+    /// @dev tokenIn => tokenOut => path.
     mapping(address => mapping(address => address[])) internal paths;
+    /// @dev pair => last observation.
     mapping(address => Observation) internal observations;
+    /// @dev pair => prices.
     mapping(address => Price) internal prices;
 
+    /**
+     *  @dev gives owner permissions to the deployer.
+     *  @param _hexit a
+     *  @param _period a
+     */
     constructor(address _hexit, uint256 _period) {
         if (_period > MAX_PERIOD || _period < MIN_PERIOD) revert InvalidPeriod();
 
@@ -136,7 +157,7 @@ contract HexOnePriceFeed is AccessControl, IHexOnePriceFeed {
     }
 
     /**
-     *  @dev
+     *  @dev adds a new pair and take the first snapshot.
      */
     function _addPair(address _tokenA, address _tokenB) internal {
         address pair = UniswapV2Library.pairFor(FACTORY_V1, _tokenA, _tokenB);

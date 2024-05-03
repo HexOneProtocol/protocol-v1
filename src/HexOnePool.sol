@@ -15,31 +15,51 @@ import {IHexitToken} from "./interfaces/IHexitToken.sol";
 contract HexOnePool is AccessControl, IHexOnePool {
     using SafeERC20 for IERC20;
 
+    /// @dev access control manager role.
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+    /// @dev precision scale multipler.
     uint256 public constant MULTIPLIER = 1e18;
 
-    address public immutable factory;
+    /// @dev address of the pool manager.
+    address public immutable manager;
+    /// @dev address of the hexit token.
     address public immutable hexit;
+    /// @dev address of the stake token.
     address public immutable token;
 
+    /// @dev amount of hexit given as reward per second.
     uint256 public rewardPerToken;
+    /// @dev total amount of `token` staked.
     uint256 public totalStaked;
+    /// @dev user => amount staked.
     mapping(address => uint256) public stakeOf;
 
+    /// @dev user => earned amount to be claimed.
     mapping(address => uint256) internal earned;
+    /// @dev user => last timestamp user interacted with contract.
     mapping(address => uint256) internal lastUpdated;
 
-    constructor(address _factory, address _hexit, address _token) {
-        factory = _factory;
+    /**
+     *  @dev gives vault permission to mint HEX1.
+     *  @param _manager address of the pool manager.
+     *  @param _hexit address of the hexit token.
+     *  @param _token address of the stake token.
+     */
+    constructor(address _manager, address _hexit, address _token) {
+        if (_manager == address(0)) revert ZeroAddress();
+        if (_hexit == address(0)) revert ZeroAddress();
+        if (_token == address(0)) revert ZeroAddress();
+
+        manager = _manager;
         hexit = _hexit;
         token = _token;
 
-        _grantRole(MANAGER_ROLE, _factory);
+        _grantRole(MANAGER_ROLE, _manager);
     }
 
     /**
      *  @dev set the `_rewardPerToken`.
-     *  @notice can only called once by the factory during deployment.
+     *  @notice can only be called once by the manager during deployment.
      *  @param _rewardPerToken of token to stake.
      */
     function initialize(uint256 _rewardPerToken) external onlyRole(MANAGER_ROLE) {
@@ -51,7 +71,7 @@ contract HexOnePool is AccessControl, IHexOnePool {
      *  @param _amount of token to stake.
      */
     function stake(uint256 _amount) external {
-        if (_amount == 0) revert ZeroAmount();
+        if (_amount == 0) revert InvalidAmount();
 
         _update(msg.sender);
 
@@ -68,7 +88,7 @@ contract HexOnePool is AccessControl, IHexOnePool {
      *  @param _amount of token to unstake.
      */
     function unstake(uint256 _amount) public {
-        if (_amount == 0) revert ZeroAmount();
+        if (_amount == 0) revert InvalidAmount();
 
         _update(msg.sender);
 
@@ -118,7 +138,7 @@ contract HexOnePool is AccessControl, IHexOnePool {
     }
 
     /**
-     *  @notice called every time an `_account` interacts with the contract.
+     *  @dev called every time an `_account` interacts with the contract.
      */
     function _update(address _account) internal {
         earned[_account] += _calculateRewards(_account);

@@ -7,9 +7,6 @@ contract PoolAssert is Base {
     uint256 internal constant MAX_STAKE = 1e36;
     uint256 internal constant MAX_TIME_STAKED = 3652 days;
 
-    /**
-     *  @dev
-     */
     function test_initialize(uint256 _rewardPerToken) external prank(address(manager)) {
         vm.assume(_rewardPerToken != 0);
 
@@ -18,9 +15,6 @@ contract PoolAssert is Base {
         assertEq(pools[0].rewardPerToken(), _rewardPerToken);
     }
 
-    /**
-     *  @dev
-     */
     function test_stake(address _account, uint256 _amount) external prank(_account) {
         vm.assume(_account != address(0) && _account != address(pools[0]));
         _amount = bound(_amount, 1, MAX_STAKE);
@@ -36,9 +30,6 @@ contract PoolAssert is Base {
         assertEq(hex1dai.balanceOf(address(pools[0])), _amount);
     }
 
-    /**
-     *  @dev
-     */
     function test_unstake(address _account, uint256 _amount) external prank(_account) {
         vm.assume(_account != address(0) && _account != address(pools[0]));
         _amount = bound(_amount, 1, MAX_STAKE);
@@ -55,9 +46,6 @@ contract PoolAssert is Base {
         assertEq(hex1dai.balanceOf(address(pools[0])), 0);
     }
 
-    /**
-     *  @dev
-     */
     function test_claim(address _account, uint256 _amount, uint256 _timeStaked) external prank(_account) {
         vm.assume(_account != address(0) && _account != address(pools[0]));
         _amount = bound(_amount, 1, MAX_STAKE);
@@ -76,9 +64,6 @@ contract PoolAssert is Base {
         assertEq(hexit.balanceOf(_account), hexitMinted);
     }
 
-    /**
-     *  @dev
-     */
     function test_claim_afterUnstake(address _account, uint256 _amount, uint256 _timeStaked) external prank(_account) {
         vm.assume(_account != address(0) && _account != address(pools[0]));
         _amount = bound(_amount, 1, MAX_STAKE);
@@ -133,9 +118,6 @@ contract PoolAssert is Base {
         assertEq(hexit.balanceOf(_user), firstEarned + secondEarned);
     }
 
-    /**
-     *  @dev
-     */
     function test_exit(address _account, uint256 _amount, uint256 _timeStaked) external prank(_account) {
         vm.assume(_account != address(0) && _account != address(pools[0]));
         _amount = bound(_amount, 1, MAX_STAKE);
@@ -159,9 +141,6 @@ contract PoolAssert is Base {
         assertEq(hexit.balanceOf(_account), hexitMinted);
     }
 
-    /**
-     *  @dev
-     */
     function test_calculateRewardsEarned(address _account, uint256 _amount, uint256 _timeStaked)
         external
         prank(_account)

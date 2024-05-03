@@ -13,12 +13,19 @@ import {IHexitToken} from "./interfaces/IHexitToken.sol";
  *  @dev manage pool deployments and access control.
  */
 contract HexOnePoolManager is AccessControl, IHexOnePoolManager {
+    /// @dev access control owner role.
     bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
 
+    /// @dev address of the hexit token.
     address public immutable hexit;
 
+    /// @dev array with protocol deployed pools.
     address[] public pools;
 
+    /**
+     *  @dev gives owner permissions to the deployer.
+     *  @param _hexit address of the hexit token.
+     */
     constructor(address _hexit) {
         if (_hexit == address(0)) revert ZeroAddress();
 
@@ -48,7 +55,7 @@ contract HexOnePoolManager is AccessControl, IHexOnePoolManager {
     }
 
     /**
-     *  @dev deploy pool.
+     *  @dev deploy pool a new pool.
      *  @param _token address of the stake token.
      *  @param _rewardPerToken HEXIT minting rate multiplier.
      */
@@ -75,9 +82,7 @@ contract HexOnePoolManager is AccessControl, IHexOnePoolManager {
      */
     function _createPool(address _token, uint256 _rewardPerToken) internal returns (address pool) {
         pool = _deployPool(_token);
-
         pools.push(pool);
-
         IHexOnePool(pool).initialize(_rewardPerToken);
         IHexitToken(hexit).initPool(pool);
     }

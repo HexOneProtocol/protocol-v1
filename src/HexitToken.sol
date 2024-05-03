@@ -8,15 +8,30 @@ import {IHexitToken} from "./interfaces/IHexitToken.sol";
 
 /**
  *  @title Hexit Token
- *  @dev incentive token.
+ *  @dev hex one protocol incentive token.
  */
 contract HexitToken is ERC20, AccessControl, IHexitToken {
+    /// @dev access control owner role.
     bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
+    /// @dev access control manager role.
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+    /// @dev access control minter role.
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    mapping(bytes4 => bool) internal called;
+    /// @dev function selector => initialized.
+    mapping(bytes4 => bool) internal initialized;
 
+    /**
+     *  @dev reverts if the `msg.sig` is already initialized.
+     */
+    modifier initializer() {
+        if (initialized[msg.sig]) revert AlreadyInitialized();
+        _;
+    }
+
+    /**
+     *  @dev gives owner permissions to the deployer.
+     */
     constructor() ERC20("HEXIT Token", "HEXIT") {
         _grantRole(OWNER_ROLE, msg.sender);
     }
@@ -26,11 +41,10 @@ contract HexitToken is ERC20, AccessControl, IHexitToken {
      *  @notice can only be called once by an account with `OWNER_ROLE`.
      *  @param _manager address of the pool manager contract.
      */
-    function initManager(address _manager) external onlyRole(OWNER_ROLE) {
+    function initManager(address _manager) external initializer onlyRole(OWNER_ROLE) {
         if (_manager == address(0)) revert ZeroAddress();
-        if (called[msg.sig]) revert AlreadyCalled();
 
-        called[msg.sig] = true;
+        initialized[msg.sig] = true;
 
         _grantRole(MANAGER_ROLE, _manager);
 
@@ -42,11 +56,10 @@ contract HexitToken is ERC20, AccessControl, IHexitToken {
      *  @notice can only be called once by an account with `OWNER_ROLE`.
      *  @param _feed address of the price feed contract.
      */
-    function initFeed(address _feed) external onlyRole(OWNER_ROLE) {
+    function initFeed(address _feed) external initializer onlyRole(OWNER_ROLE) {
         if (_feed == address(0)) revert ZeroAddress();
-        if (called[msg.sig]) revert AlreadyCalled();
 
-        called[msg.sig] = true;
+        initialized[msg.sig] = true;
 
         _grantRole(MINTER_ROLE, _feed);
 
@@ -58,11 +71,10 @@ contract HexitToken is ERC20, AccessControl, IHexitToken {
      *  @notice can only be called once by an account with `OWNER_ROLE`.
      *  @param _bootstrap address of the bootstrap contract.
      */
-    function initBootstrap(address _bootstrap) external onlyRole(OWNER_ROLE) {
+    function initBootstrap(address _bootstrap) external initializer onlyRole(OWNER_ROLE) {
         if (_bootstrap == address(0)) revert ZeroAddress();
-        if (called[msg.sig]) revert AlreadyCalled();
 
-        called[msg.sig] = true;
+        initialized[msg.sig] = true;
 
         _grantRole(MINTER_ROLE, _bootstrap);
 

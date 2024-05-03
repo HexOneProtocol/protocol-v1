@@ -25,20 +25,20 @@ contract PoolRevert is Base {
     /**
      *  @dev test that zero amount of token can not be staked.
      */
-    function test_stake_revert_ZeroAmount(address _account) external prank(_account) {
+    function test_stake_revert_InvalidAmount(address _account) external prank(_account) {
         vm.assume(_account != address(0));
 
-        vm.expectRevert(IHexOnePool.ZeroAmount.selector);
+        vm.expectRevert(IHexOnePool.InvalidAmount.selector);
         pools[0].stake(0);
     }
 
     /**
      *  @dev test that zero amount of token can not be unstaked.
      */
-    function test_unstake_revert_ZeroAmount(address _account) external prank(_account) {
+    function test_unstake_revert_InvalidAmount(address _account) external prank(_account) {
         vm.assume(_account != address(0));
 
-        vm.expectRevert(IHexOnePool.ZeroAmount.selector);
+        vm.expectRevert(IHexOnePool.InvalidAmount.selector);
         pools[0].unstake(0);
     }
 
@@ -56,10 +56,10 @@ contract PoolRevert is Base {
     /**
      *  @dev test that an `_account` can not unstake zero amount.
      */
-    function test_exit_revert_ZeroAmount(address _account) external prank(_account) {
+    function test_exit_revert_InvalidAmount(address _account) external prank(_account) {
         vm.assume(_account != address(0));
 
-        vm.expectRevert(IHexOnePool.ZeroAmount.selector);
+        vm.expectRevert(IHexOnePool.InvalidAmount.selector);
         pools[0].exit();
     }
 }

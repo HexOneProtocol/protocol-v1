@@ -6,7 +6,8 @@ interface IHexOnePool {
     event Unstaked(address indexed account, uint256 amount);
     event Claimed(address indexed account, uint256 rewards);
 
-    error ZeroAmount();
+    error InvalidAmount();
+    error ZeroAddress();
 
     function initialize(uint256 _rewardPerToken) external;
     function stake(uint256 _amount) external;
