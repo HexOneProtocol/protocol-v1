@@ -25,6 +25,7 @@ interface IHexToken {
         bool isAutoStake;
     }
 
+    function globals() external view returns (GlobalsStore memory);
     function globalInfo() external view returns (uint256[13] memory);
     function stakeLists(address stakerAddr, uint256 stakeIndex) external view returns (StakeStore memory);
     function currentDay() external view returns (uint256);
