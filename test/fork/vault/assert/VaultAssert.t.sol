@@ -119,11 +119,21 @@ contract VaultAssert is Base {
         vm.warp(block.timestamp + 5556 days);
 
         IERC20(hex1).approve(address(vault), hex1Minted);
-        vault.withdraw(tokenId);
+        (uint256 hxAmount, uint256 hdrnAmount) = vault.withdraw(tokenId);
 
-        // TODO assert state
+        assertTrue(hxAmount > HEX_DEPOSIT);
+        assertTrue(hdrnAmount > 0);
 
-        // TODO assert balances
+        (uint256 debt, uint72 amount, uint72 shares, uint40 param, uint16 start, uint16 end) = vault.stakes(tokenId);
+        assertEq(debt, 0);
+        assertEq(amount, 0);
+        assertEq(shares, 0);
+        assertEq(param, 0);
+        assertEq(start, 0);
+        assertEq(end, 0);
+
+        assertEq(IERC20(HEX_TOKEN).balanceOf(address(this)), hxAmount);
+        assertEq(IERC20(HDRN_TOKEN).balanceOf(address(this)), hdrnAmount);
     }
 
     function test_liquidate_withoutDebt() external {
@@ -137,11 +147,21 @@ contract VaultAssert is Base {
         vm.warp(block.timestamp + 5555 days + 16 days);
 
         vm.prank(liquidator);
-        vault.liquidate(tokenId);
+        (uint256 hxAmount, uint256 hdrnAmount) = vault.liquidate(tokenId);
 
-        // TODO assert state
+        assertTrue(hxAmount > HEX_DEPOSIT);
+        assertTrue(hdrnAmount > 0);
 
-        // TODO assert balances
+        (uint256 debt, uint72 amount, uint72 shares, uint40 param, uint16 start, uint16 end) = vault.stakes(tokenId);
+        assertEq(debt, 0);
+        assertEq(amount, 0);
+        assertEq(shares, 0);
+        assertEq(param, 0);
+        assertEq(start, 0);
+        assertEq(end, 0);
+
+        assertEq(IERC20(HEX_TOKEN).balanceOf(liquidator), hxAmount);
+        assertEq(IERC20(HDRN_TOKEN).balanceOf(liquidator), hdrnAmount);
     }
 
     function test_liquidate_withDebt() external {
@@ -161,12 +181,23 @@ contract VaultAssert is Base {
 
         vm.startPrank(liquidator);
         IERC20(hex1).approve(address(vault), hex1Minted);
-        vault.liquidate(tokenId);
+        (uint256 hxAmount, uint256 hdrnAmount) = vault.liquidate(tokenId);
         vm.stopPrank();
 
-        // TODO assert state
+        assertTrue(hxAmount > HEX_DEPOSIT);
+        assertTrue(hdrnAmount > 0);
 
-        // TODO assert balances
+        (uint256 debt, uint72 amount, uint72 shares, uint40 param, uint16 start, uint16 end) = vault.stakes(tokenId);
+        assertEq(debt, 0);
+        assertEq(amount, 0);
+        assertEq(shares, 0);
+        assertEq(param, 0);
+        assertEq(start, 0);
+        assertEq(end, 0);
+
+        assertEq(IERC20(hex1).balanceOf(liquidator), 0);
+        assertEq(IERC20(HEX_TOKEN).balanceOf(liquidator), hxAmount);
+        assertEq(IERC20(HDRN_TOKEN).balanceOf(liquidator), hdrnAmount);
     }
 
     function test_repay() external {
@@ -181,9 +212,10 @@ contract VaultAssert is Base {
         IERC20(hex1).approve(address(vault), hex1Minted);
         vault.repay(tokenId, hex1Minted);
 
-        // TODO assert state
+        (uint256 debt,,,,,) = vault.stakes(tokenId);
+        assertEq(debt, 0);
 
-        // TODO assert balances
+        assertEq(IERC20(hex1).balanceOf(address(this)), 0);
     }
 
     function test_borrow_initialDay() external {
@@ -224,12 +256,7 @@ contract VaultAssert is Base {
         vault.healthRatio(tokenId);
     }
 
-    function test_take_withoutDebt() external {
-        // TODO : swaps to influence the spot price of hex such that the position
-        // is liquidatable
-    }
-
-    function test_take_withDebt() external {
-        // TODO
+    function test_take() external {
+        // TODO : manipulate the pool to test this
     }
 }
