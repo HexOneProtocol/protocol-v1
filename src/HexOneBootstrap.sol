@@ -5,7 +5,6 @@ import {AccessControl} from "../lib/openzeppelin-contracts/contracts/access/Acce
 import {ReentrancyGuard} from "../lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
 import {EnumerableSet} from "../lib/openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 import {SafeERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-
 import {HexOneVault} from "./HexOneVault.sol";
 
 import {IHexOneBootstrap} from "./interfaces/IHexOneBootstrap.sol";
@@ -127,7 +126,6 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
             quote = _amount;
         }
 
-        // if the sacrifice amount is less than one dollar revert
         if (quote < MIN_SACRIFICE) revert SacrificedAmountTooLow();
 
         // update user information
@@ -135,7 +133,6 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         user.sacrificedUsd += quote;
         user.hexitShares += _hexitSacrificeShares(quote);
 
-        // transfer sacrificed amount to the contract
         IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
 
         // if the sacrifice token is not hex swap the sacrifice amount to hex
@@ -175,7 +172,6 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
 
         if (schedule.processed) revert SacrificeAlreadyProcessed();
 
-        // set sacrifice as processed and it's claiming period end
         schedule.processed = true;
         schedule.claimEnd = uint64(block.timestamp) + SACRIFICE_CLAIM_DURATION;
 
@@ -197,7 +193,6 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
             halfHxAmount, _amountOutMin, path, address(this), block.timestamp
         );
 
-        // deploy the vault
         vault = new HexOneVault(feed);
 
         // deposit 12.5% of the sacrificed hex and borrow agaisnt it
@@ -206,7 +201,6 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         uint256 hex1Amount = vault.maxBorrowable(tokenId);
         vault.borrow(tokenId, hex1Amount);
 
-        // create an HEX1/DAI pair in pulsex v2
         address hex1 = vault.hex1();
         address pair = IPulseXFactory(FACTORY_V2).createPair(hex1, DAI);
 
@@ -280,11 +274,9 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         schedule.claimEnd = _airdropStart + AIRDROP_DURATION;
         schedule.processed = true;
 
-        // mint 66.67% more hexit than the amount minted in the sacrifice phase to the team
         uint256 hexitTeamAllocation = (sacrificeInfo.hexitMinted * HEXIT_TEAM_RATE) / FIXED_POINT;
         IHexitToken(hexit).mint(msg.sender, hexitTeamAllocation);
 
-        // enable buyback fee in the vault
         vault.enableBuyback();
 
         emit AirdropStarted(_airdropStart, _airdropStart + AIRDROP_DURATION);
@@ -303,7 +295,6 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         UserInfo storage user = userInfos[msg.sender];
         if (user.airdropClaimed) revert AirdropAlreadyClaimed();
 
-        // compute user airdrop allocation
         uint256 hxStakedUsd = _quote(HX, _getHxStaked(), DAI);
         uint256 hexitMinted = _hexitAirdropShares(user.sacrificedUsd, hxStakedUsd);
         if (hexitMinted == 0) revert IneligibleForAirdrop();
@@ -364,14 +355,10 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         uint256 stakeCount = IHexToken(HX).stakeCount(msg.sender);
         if (stakeCount == 0) return 0;
 
-        uint256 shares;
         for (uint256 i; i < stakeCount; ++i) {
             IHexToken.StakeStore memory stakeStore = IHexToken(HX).stakeLists(msg.sender, i);
-            shares += stakeStore.stakeShares;
+            hexAmount += stakeStore.stakedHearts;
         }
-
-        IHexToken.GlobalsStore memory globals = IHexToken(HX).globals();
-        hexAmount = uint256((shares * uint256(globals.shareRate)) / 1e5);
     }
 
     /**

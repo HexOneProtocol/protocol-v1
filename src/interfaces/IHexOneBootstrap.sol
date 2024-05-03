@@ -52,4 +52,12 @@ interface IHexOneBootstrap {
     event SacrificeClaimed(address indexed account, uint256 tokendId, uint256 hex1Minted, uint256 hexitMinted);
     event AirdropStarted(uint64 start, uint64 end);
     event AirdropClaimed(address indexed account, uint256 hexitMinted);
+
+    function sacrificeDay() external view returns (uint256);
+    function airdropDay() external view returns (uint256);
+    function sacrifice(address _token, uint256 _amount, uint256 _amountOutMin) external;
+    function processSacrifice(uint256 _amountOutMin) external;
+    function claimSacrifice() external returns (uint256 tokenId, uint256 hex1Minted, uint256 hexitMinted);
+    function startAirdrop(uint64 _airdropStart) external;
+    function claimAirdrop() external;
 }
