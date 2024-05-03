@@ -259,10 +259,12 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
      *  @param _amount a
      */
     function take(uint256 _id, uint256 _amount) external nonReentrant {
-        if (healthRatio(_id) >= MIN_HEALTH_RATIO) revert RatioHealthy();
-
         Stake memory stake = stakes[_id];
-        if (currentDay() < stake.end + GRACE_PERIOD) revert StakeNotLiquidatable();
+        if (currentDay() >= stake.end + GRACE_PERIOD) revert StakeNotLiquidatable();
+
+        if (healthRatio(_id) == 0 || healthRatio(_id) >= MIN_HEALTH_RATIO) {
+            revert HealthRatioTooHigh();
+        }
 
         uint256 minAmount = stake.debt / 2;
         if (_amount < minAmount) revert NotEnoughToTake();

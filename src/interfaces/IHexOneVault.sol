@@ -27,7 +27,7 @@ interface IHexOneVault {
     error StakeLiquidatable();
     error MaxBorrowExceeded();
     error HealthRatioTooLow();
-    error RatioHealthy();
+    error HealthRatioTooHigh();
     error NotEnoughToTake();
 
     function currentDay() external view returns (uint256);
