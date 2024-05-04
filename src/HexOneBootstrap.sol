@@ -20,41 +20,75 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
 
+    /// @dev access control owner role.
     bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
+
+    /// @dev min amount accepted to be sacrificed.
     uint256 public constant MIN_SACRIFICE = 1e18;
+    /// @dev base hexit amount of hexit.
     uint256 public constant BASE_HEXIT = 5_555_555 * 1e18;
+
+    /// @dev duration of the sacrifice duration.
     uint64 public constant SACRIFICE_DURATION = 30 days;
+    /// @dev duration of the sacrifice claim duration.
     uint64 public constant SACRIFICE_CLAIM_DURATION = 7 days;
+    /// @dev duration of the airdrop claim duration.
     uint64 public constant AIRDROP_DURATION = 15 days;
 
+    /// @dev address of the pulsex v1 router.
     address private constant ROUTER_V1 = 0x98bf93ebf5c380C0e6Ae8e192A7e2AE08edAcc02;
+    /// @dev address of the pulsex v2 router.
     address private constant ROUTER_V2 = 0x165C3410fC91EF562C50559f7d2289fEbed552d9;
+    /// @dev address of the pulsex v2 factory.
     address private constant FACTORY_V2 = 0x29eA7545DEf87022BAdc76323F373EA1e707C523;
 
+    /// @dev address of the hex token.
     address private constant HX = 0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39;
+    /// @dev address of the dai token.
     address private constant DAI = 0xefD766cCb38EaF1dfd701853BFCe31359239F305;
 
+    /// @dev precision scale multipler, represents 100% in bps.
     uint16 private constant FIXED_POINT = 10_000;
+    /// @dev base hexit daily decrease factor of 95.24%.
     uint16 private constant DECREASE_FACTOR = 9524;
+    /// @dev hexit minted to the team over the remaining hex, 66.67%.
     uint16 private constant HEXIT_TEAM_RATE = 6667;
+    /// @dev bonus hexit multiplier multiplier used during sacrifice.
     uint16 private constant MULTIPLIER = 5555;
+    /// @dev percentage of hex sacrifice used to bootstrap liquidity.
     uint16 private constant LIQUIDITY_RATE = 2500;
 
+    /// @dev address of the price feed.
     address public immutable feed;
+    /// @dev address of the hexit token.
     address public immutable hexit;
 
+    /// @dev address of the vault.
     HexOneVault public vault;
 
+    /// @dev information relative to the sacrifice period.
     SacrificeInfo public sacrificeInfo;
+    /// @dev information relative to the airdrop period.
     AirdropInfo public airdropInfo;
 
+    /// @dev schedule of the sacrifice period.
     Schedule public sacrificeSchedule;
+    /// @dev schedule of the airdrop period.
     Schedule public airdropSchedule;
 
+    /// @dev user => UserInfo.
     mapping(address => UserInfo) public userInfos;
 
+    /// @dev tokens that can be sacrificed.
     EnumerableSet.AddressSet private sacrificeTokens;
 
+    /**
+     *  @dev
+     *  @param _sacrificeStart a
+     *  @param _feed a
+     *  @param _hexit a
+     *  @param _tokens a
+     */
     constructor(uint64 _sacrificeStart, address _feed, address _hexit, address[] memory _tokens) {
         if (_sacrificeStart < block.timestamp) revert InvalidTimestamp();
         if (_feed == address(0)) revert ZeroAddress();

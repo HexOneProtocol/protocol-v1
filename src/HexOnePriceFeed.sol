@@ -49,8 +49,8 @@ contract HexOnePriceFeed is AccessControl, IHexOnePriceFeed {
 
     /**
      *  @dev gives owner permissions to the deployer.
-     *  @param _hexit a
-     *  @param _period a
+     *  @param _hexit address of the hexit token.
+     *  @param _period feed update period.
      */
     constructor(address _hexit, uint256 _period) {
         if (_period > MAX_PERIOD || _period < MIN_PERIOD) revert InvalidPeriod();

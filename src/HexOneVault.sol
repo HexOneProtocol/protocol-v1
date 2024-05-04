@@ -21,33 +21,56 @@ import {IHedron} from "./interfaces/IHedron.sol";
 contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     using SafeERC20 for IERC20;
 
+    /// @dev
     bytes32 public constant BOOTSTRAP_ROLE = keccak256("BOOTSTRAP_ROLE");
 
-    uint16 public constant DURATION = 5555;
-    uint16 public constant GRACE_PERIOD = 7;
-    uint16 public constant MIN_HEALTH_RATIO = 25_000;
-    uint16 public constant FIXED_POINT = 10_000;
-    uint16 public constant FEE = 100;
-
+    /// @dev
     uint256 private constant HEARTS_UINT_SHIFT = 72;
+    /// @dev
     uint256 private constant HEARTS_MASK = (1 << HEARTS_UINT_SHIFT) - 1;
 
+    /// @dev
     address private constant ROUTER_V2 = 0x165C3410fC91EF562C50559f7d2289fEbed552d9;
+    /// @dev
     address private constant HX = 0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39;
+    /// @dev
     address private constant HDRN = 0x3819f64f282bf135d62168C1e513280dAF905e06;
+    /// @dev
     address private constant WPLS = 0xA1077a294dDE1B09bB078844df40758a5D0f9a27;
+    /// @dev
     address private constant DAI = 0xefD766cCb38EaF1dfd701853BFCe31359239F305;
+    /// @dev
     address private constant USDC = 0x15D38573d2feeb82e7ad5187aB8c1D52810B1f07;
+    /// @dev
     address private constant USDT = 0x0Cb6F5a34ad42ec934882A05265A7d5F59b51A2f;
 
+    /// @dev
+    uint16 public constant DURATION = 5555;
+    /// @dev
+    uint16 public constant GRACE_PERIOD = 7;
+    /// @dev
+    uint16 public constant MIN_HEALTH_RATIO = 25_000;
+    /// @dev
+    uint16 public constant FIXED_POINT = 10_000;
+    /// @dev
+    uint16 public constant FEE = 100;
+
+    /// @dev
     address public immutable feed;
+    /// @dev
     address public immutable hex1;
 
+    /// @dev
     bool public buybackEnabled;
+    /// @dev
+    uint256 internal id;
+    /// @dev
     mapping(uint256 => Stake) public stakes;
 
-    uint256 internal id;
-
+    /**
+     *  @dev
+     *  @param _feed a
+     */
     constructor(address _feed) ERC721("HEX1 Debt Title", "HDT") {
         if (_feed == address(0)) revert ZeroAddress();
 
@@ -293,8 +316,6 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
         path[1] = WPLS;
         path[2] = DAI;
         path[3] = hex1;
-
-        // TODO : think of a better way to compute a solution for slippage protection in the buyback
 
         uint256[] memory amounts =
             IPulseXRouter(ROUTER_V2).swapExactTokensForTokens(_fee, 0, path, address(this), block.timestamp);
