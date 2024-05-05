@@ -16,6 +16,10 @@ import {IERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20
 import {IPulseXFactory} from "./interfaces/pulsex/IPulseXFactory.sol";
 import {IPulseXRouter02 as IPulseXRouter} from "./interfaces/pulsex/IPulseXRouter.sol";
 
+/**
+ *  @title Hex One Bootstrap
+ *  @dev bootstraps the initial hex1/dai liquidity and distributes hexit.
+ */
 contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
@@ -51,11 +55,11 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     uint16 private constant FIXED_POINT = 10_000;
     /// @dev base hexit daily decrease factor of 95.24%.
     uint16 private constant DECREASE_FACTOR = 9524;
-    /// @dev hexit minted to the team over the remaining hex, 66.67%.
+    /// @dev hexit minted to the team over the remaining hex 66.67% in bps.
     uint16 private constant HEXIT_TEAM_RATE = 6667;
     /// @dev bonus hexit multiplier multiplier used during sacrifice.
     uint16 private constant MULTIPLIER = 5555;
-    /// @dev percentage of hex sacrifice used to bootstrap liquidity.
+    /// @dev percentage of hex sacrifice used to bootstrap liquidity 25% in bps.
     uint16 private constant LIQUIDITY_RATE = 2500;
 
     /// @dev address of the price feed.
@@ -83,11 +87,11 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     EnumerableSet.AddressSet private sacrificeTokens;
 
     /**
-     *  @dev
-     *  @param _sacrificeStart a
-     *  @param _feed a
-     *  @param _hexit a
-     *  @param _tokens a
+     *  @dev gives owner permissions to the deployer.
+     *  @param _sacrificeStart the starting timestamp of the sacrifice period.
+     *  @param _feed address of the price feed.
+     *  @param _hexit address of the hexit token.
+     *  @param _tokens addresses of the supported tokens to sacrifice.
      */
     constructor(uint64 _sacrificeStart, address _feed, address _hexit, address[] memory _tokens) {
         if (_sacrificeStart < block.timestamp) revert InvalidTimestamp();
@@ -110,8 +114,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     }
 
     /**
-     *  @dev
-     *  @notice
+     *  @dev returns the current day of the sacrifice period.
      */
     function sacrificeDay() public view returns (uint256) {
         uint256 start = sacrificeSchedule.start;
@@ -123,8 +126,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     }
 
     /**
-     *  @dev
-     *  @notice
+     *  @dev returns the current day of the airdrop period.
      */
     function airdropDay() public view returns (uint256) {
         Schedule memory schedule = airdropSchedule;
@@ -136,11 +138,11 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _token a
-     *  @param _amount a
-     *  @param _amountOutMin a
+     *  @dev function to perform a token sacrifice.
+     *  @notice the supported tokens in sacrifice are: hex, dai, wpls and plsx.
+     *  @param _token address of the token to be sacrificed.
+     *  @param _amount amount of tokens to be sacrificed.
+     *  @param _amountOutMin minimum amount of hex tokens expected to be received in exchange.
      */
     function sacrifice(address _token, uint256 _amount, uint256 _amountOutMin) external nonReentrant {
         if (!sacrificeTokens.contains(_token)) revert TokenNotSupported();
@@ -194,9 +196,10 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _amountOutMin a
+     *  @dev process the sacrifice after sacrifice period has finished.
+     *  @notice 25% of the sacrificed amount in hex during the sacrifice phase is used to bootstrap
+     *  initial liquidity. 12.5% is swapped to DAI, and the other 12.5% is used to mint hex one tokens.
+     *  @param _amountOutMin minimum amount of dai tokens expected to be received in exchange.
      */
     function processSacrifice(uint256 _amountOutMin) external nonReentrant onlyRole(OWNER_ROLE) {
         if (_amountOutMin == 0) revert InvalidAmountOutMin();
@@ -249,8 +252,8 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     }
 
     /**
-     *  @dev
-     *  @notice
+     *  @dev function to claim rewards from the sacrifie period.
+     *  @notice creates an hex stake, and max borrow against it.
      */
     function claimSacrifice()
         external
@@ -294,9 +297,9 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _airdropStart a
+     *  @dev starts the airdrop claiming period.
+     *  @notice mints hexit team allocation to the owner.
+     *  @param _airdropStart the starting timestamp of the airdrop period.
      */
     function startAirdrop(uint64 _airdropStart) external onlyRole(OWNER_ROLE) nonReentrant {
         if (_airdropStart < block.timestamp) revert InvalidTimestamp();
@@ -317,8 +320,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     }
 
     /**
-     *  @dev
-     *  @notice
+     *  @dev claim hexit the rewards from the airdrop period.
      */
     function claimAirdrop() external nonReentrant {
         Schedule storage schedule = airdropSchedule;
@@ -342,20 +344,18 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _tokenIn a
-     *  @param _amountIn a
-     *  @param _tokenOut a
+     *  @dev returns a quote based on the amount and tokens given as inputs.
+     *  @param _tokenIn address of the token the amount in is.
+     *  @param _amountIn amount we want a code quote for.
+     *  @param _tokenOut address of the token the quote is returned.
      */
     function _quote(address _tokenIn, uint256 _amountIn, address _tokenOut) private view returns (uint256 amountOut) {
         amountOut = IHexOnePriceFeed(feed).quote(_tokenIn, _amountIn, _tokenOut);
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _sacrificedUsd a
+     *  @dev returns the number os hexit shares a user receives during the sacrifice phase.
+     *  @param _sacrificedUsd the total usd value sacrificed by the user.
      */
     function _hexitSacrificeShares(uint256 _sacrificedUsd) private view returns (uint256 hexitShares) {
         hexitShares = (_sacrificedUsd * _baseDailyHexit(sacrificeDay())) / 1e18;
@@ -363,10 +363,9 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _sacrificedUsd a
-     *  @param _hxStakedUsd a
+     *  @dev returns the number of hexit shares a user receives during the airdrop phase.
+     *  @param _sacrificedUsd the total usd value sacrificed by the user.
+     *  @param _hxStakedUsd the usd value of HEX tokens staked by the user.
      */
     function _hexitAirdropShares(uint256 _sacrificedUsd, uint256 _hxStakedUsd)
         private
@@ -382,8 +381,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     }
 
     /**
-     *  @dev
-     *  @notice
+     *  @dev returns the total amount of hex tokens staked by the user.
      */
     function _getHxStaked() private view returns (uint256 hexAmount) {
         uint256 stakeCount = IHexToken(HX).stakeCount(msg.sender);
@@ -396,8 +394,8 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     }
 
     /**
-     *  @dev
-     *  @notice
+     *  @dev returns the base amount of hexit tokens minted per day during the sacrifice or airdrop phases.
+     *  @param _day represents the current day of the sacrifice or the current day of the airdrop.
      */
     function _baseDailyHexit(uint256 _day) private pure returns (uint256 baseHexit) {
         if (_day == 1) {
