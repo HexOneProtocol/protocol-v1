@@ -18,58 +18,62 @@ import {IERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20
 import {IPulseXRouter02 as IPulseXRouter} from "./interfaces/pulsex/IPulseXRouter.sol";
 import {IHedron} from "./interfaces/IHedron.sol";
 
+/**
+ *  @title Hex One Vault
+ *  @dev turns hex stakes into nfts with hex one borrowing functionality.
+ */
 contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     using SafeERC20 for IERC20;
 
-    /// @dev
+    /// @dev access control bootstrap role.
     bytes32 public constant BOOTSTRAP_ROLE = keccak256("BOOTSTRAP_ROLE");
 
-    /// @dev
+    /// @dev used to decode daily data.
     uint256 private constant HEARTS_UINT_SHIFT = 72;
-    /// @dev
+    /// @dev bitmask to retrieve the first parameter of the encoded data.
     uint256 private constant HEARTS_MASK = (1 << HEARTS_UINT_SHIFT) - 1;
 
-    /// @dev
+    /// @dev address of the pulsex v2 router.
     address private constant ROUTER_V2 = 0x165C3410fC91EF562C50559f7d2289fEbed552d9;
-    /// @dev
+    /// @dev address of the hex token.
     address private constant HX = 0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39;
-    /// @dev
+    /// @dev address of the hedron token.
     address private constant HDRN = 0x3819f64f282bf135d62168C1e513280dAF905e06;
-    /// @dev
+    /// @dev address of the wrapped pls token.
     address private constant WPLS = 0xA1077a294dDE1B09bB078844df40758a5D0f9a27;
-    /// @dev
+    /// @dev address of dai from eth token.
     address private constant DAI = 0xefD766cCb38EaF1dfd701853BFCe31359239F305;
-    /// @dev
+    /// @dev address of the usdc token.
     address private constant USDC = 0x15D38573d2feeb82e7ad5187aB8c1D52810B1f07;
-    /// @dev
+    /// @dev address of the usdt token.
     address private constant USDT = 0x0Cb6F5a34ad42ec934882A05265A7d5F59b51A2f;
 
-    /// @dev
+    /// @dev duration of the hex stakes.
     uint16 public constant DURATION = 5555;
-    /// @dev
+    /// @dev period after stake duration in which the stake becomes liquidatable.
     uint16 public constant GRACE_PERIOD = 7;
-    /// @dev
+    /// @dev minimum healh ratio, if health ratio is below 250% in bps stakes become liquidatable.
     uint16 public constant MIN_HEALTH_RATIO = 25_000;
-    /// @dev
+    /// @dev precision scale multipler, represents 100% in bps.
     uint16 public constant FIXED_POINT = 10_000;
-    /// @dev
+    /// @dev represents the buyback fee of 1% in bps.
     uint16 public constant FEE = 100;
 
-    /// @dev
+    /// @dev address of the price feed.
     address public immutable feed;
-    /// @dev
+    /// @dev address of the hex one token.
     address public immutable hex1;
 
-    /// @dev
+    /// @dev flag that stores if the buyback status.
     bool public buybackEnabled;
-    /// @dev
+    /// @dev ever incrementing token id of stakes created in the vault.
     uint256 internal id;
-    /// @dev
+    /// @dev user => Stake
     mapping(uint256 => Stake) public stakes;
 
     /**
-     *  @dev
-     *  @param _feed a
+     *  @dev gives bootstrap role to the msg.sender which is the bootstrap.
+     *  @param _feed address of the price feed.
      */
     constructor(address _feed) ERC721("HEX1 Debt Title", "HDT") {
         if (_feed == address(0)) revert ZeroAddress();
@@ -81,26 +85,22 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _interfaceId a
+     *  @dev required by openzeppelin libraries.
      */
     function supportsInterface(bytes4 _interfaceId) public view override(ERC721, AccessControl) returns (bool) {
         return super.supportsInterface(_interfaceId);
     }
 
     /**
-     *  @dev
-     *  @notice
+     *  @dev returns the current day for the hex contract.
      */
     function currentDay() public view returns (uint256) {
         return IHexToken(HX).currentDay();
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _id a
+     *  @dev returns the health ratio for a given token id.
+     *  @param _id token id of the stake.
      */
     function healthRatio(uint256 _id) public view returns (uint256 ratio) {
         Stake memory stake = stakes[_id];
@@ -118,9 +118,8 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _id a
+     *  @dev returns the max borrowable amount in hex one for a given token id.
+     *  @param _id token id of the stake.
      */
     function maxBorrowable(uint256 _id) public view returns (uint256 amount) {
         Stake memory stake = stakes[_id];
@@ -132,17 +131,17 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
+     *  @dev enables hex one buyback functionality.
+     *  @notice can only be called by the bootstrap once when the airdrop starts.
      */
     function enableBuyback() external onlyRole(BOOTSTRAP_ROLE) {
         buybackEnabled = true;
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _amount a
+     *  @dev creates an hex stake with a duration of 5555 days.
+     *  @notice if buyback is enabled the resulting fee is used to buyback hex one in the market and burn.
+     *  @param _amount amount of hex.
      */
     function deposit(uint256 _amount) external nonReentrant returns (uint256 tokenId) {
         if (_amount == 0) revert InvalidAmount();
@@ -179,9 +178,9 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _id a
+     *  @dev function to end an hex stake if stake is mature.
+     *  @notice claims hedron tokens.
+     *  @param _id token id of the stake.
      */
     function withdraw(uint256 _id) external nonReentrant returns (uint256 hxAmount, uint256 hdrnAmount) {
         if (msg.sender != ownerOf(_id)) revert InvalidOwner();
@@ -208,9 +207,9 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _id a
+     *  @dev function to liquidate stakes after stake duration + grace period has passed.
+     *  @notice if stake has debt it must be repaid.
+     *  @param _id token id of the stake.
      */
     function liquidate(uint256 _id) external nonReentrant returns (uint256 hxAmount, uint256 hdrnAmount) {
         Stake memory stake = stakes[_id];
@@ -235,10 +234,9 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _id a
-     *  @param _amount a
+     *  @dev function to repay hex one and reduce debt.
+     *  @param _id token id of the stake.
+     *  @param _amount amount of hex one to repay.
      */
     function repay(uint256 _id, uint256 _amount) external nonReentrant {
         if (msg.sender != ownerOf(_id)) revert InvalidOwner();
@@ -252,10 +250,10 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _id a
-     *  @param _amount a
+     *  @dev function to borrow agaisnt an hex stake.
+     *  @notice reverts if the new debt amount results in a liquidatable stake.
+     *  @param _id token id of the stake.
+     *  @param _amount amount of hex one to borrow.
      */
     function borrow(uint256 _id, uint256 _amount) external nonReentrant {
         if (msg.sender != ownerOf(_id)) revert InvalidOwner();
@@ -276,10 +274,9 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _id a
-     *  @param _amount a
+     *  @dev transfers stake ownership to the msg sender if stake healh ratio is below the minimium.
+     *  @param _id token id of the stake.
+     *  @param _amount amount of hex one to repay the debt.
      */
     function take(uint256 _id, uint256 _amount) external nonReentrant {
         Stake memory stake = stakes[_id];
@@ -304,9 +301,8 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _fee a
+     *  @dev buyback hex one in the market and burn it.
+     *  @param _fee amount used to buyback.
      */
     function _buyback(uint256 _fee) private {
         IERC20(HX).approve(ROUTER_V2, _fee);
@@ -324,10 +320,9 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _id a
-     *  @param _param a
+     *  @dev claim hex after stake duration has ended.
+     *  @param _id token id of the stake.
+     *  @param _param stake id param of the hex stake.
      */
     function _claimHx(uint256 _id, uint40 _param) private returns (uint256 hxAmount) {
         uint256 balanceBefore = IERC20(HX).balanceOf(address(this));
@@ -338,19 +333,17 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _id a
-     *  @param _param a
+     *  @dev claim hedron after stake duration has ended.
+     *  @param _id token id of the stake.
+     *  @param _param stake id param of the hex stake.
      */
     function _claimHdrn(uint256 _id, uint40 _param) private returns (uint256 hdrnAmount) {
         hdrnAmount = IHedron(HDRN).mintNative(_id, _param);
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _amountIn a
+     *  @dev returns an hex quote in usd based on average price of three pairs.
+     *  @param _amountIn amount of hex.
      */
     function _hxQuote(uint256 _amountIn) private view returns (uint256 hxQuote) {
         uint256 hexDaiQuote = _quote(HX, _amountIn, DAI);
@@ -360,21 +353,19 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _tokenIn a
-     *  @param _amountIn a
-     *  @param _tokenOut a
+     *  @dev returns a quote based on the amount and tokens given as inputs.
+     *  @param _tokenIn address of the token the amount in is.
+     *  @param _amountIn amount we want a code quote for.
+     *  @param _tokenOut address of the token the quote is returned.
      */
     function _quote(address _tokenIn, uint256 _amountIn, address _tokenOut) private view returns (uint256 amountOut) {
         amountOut = IHexOnePriceFeed(feed).quote(_tokenIn, _amountIn, _tokenOut);
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _token a
-     *  @param _amountIn a
+     *  @dev converts an amount for a given token to 18 decimals precision.
+     *  @param _token token being converted.
+     *  @param _amountIn amount being converted.
      */
     function _convert(address _token, uint256 _amountIn) private view returns (uint256 amountOut) {
         uint8 decimals = TokenUtils.expectDecimals(_token);
@@ -386,11 +377,10 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _id a
-     *  @param _start a
-     *  @param _end a
+     *  @dev returns the already accrued hex payout for a given stake.
+     *  @param _id token id of the stake.
+     *  @param _start initial day stake was created.
+     *  @param _end final or last day stake accrued rewards.
      */
     function _accrued(uint256 _id, uint256 _start, uint256 _end) private view returns (uint256 hxAccrued) {
         Stake memory stake = stakes[_id];
@@ -407,9 +397,9 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _id a
+     *  @dev estimates the future hex payout based on the last day hex daily data was updated.
+     *  @notice the t-shares payout rate is used for the remaining days of the hex stake.
+     *  @param _id token id of the stake.
      */
     function _payout(uint256 _id) private view returns (uint256 hxFuturePayout) {
         (uint256 payout, uint256 shares,) = IHexToken(HX).dailyData(_lastDataDay());
@@ -419,8 +409,7 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
+     *  @dev returns the last day hex daily data was updated.
      */
     function _lastDataDay() private view returns (uint256 lastDay) {
         uint256[13] memory globalInfo = IHexToken(HX).globalInfo();
@@ -428,9 +417,9 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _data a
+     *  @dev returns the the total payout and total shares of a given day.
+     *  @notice first 72 bits store the total payout, and the second 72 bits store the total shares.
+     *  @param _data encoded hex daily data.
      */
     function _decodeDailyData(uint256 _data) private pure returns (uint256 payout, uint256 shares) {
         payout = _data & HEARTS_MASK;
@@ -438,9 +427,8 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev
-     *  @notice
-     *  @param _amount a
+     *  @dev returns the resulting fee based on the deposited amount.
+     *  @param _amount amount to compute the fee over.
      */
     function _computeFee(uint256 _amount) private pure returns (uint256 fee) {
         fee = (_amount * FEE) / FIXED_POINT;
