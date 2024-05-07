@@ -417,10 +417,6 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
      *  @param _day represents the current day of the sacrifice or the current day of the airdrop.
      */
     function _baseDailyHexit(uint256 _day) private pure returns (uint256 baseHexit) {
-        if (_day == 1) {
-            baseHexit = BASE_HEXIT;
-        }
-
         baseHexit = BASE_HEXIT;
         for (uint256 i = 2; i <= _day; ++i) {
             baseHexit = (baseHexit * DECREASE_FACTOR) / FIXED_POINT;
