@@ -26,6 +26,7 @@ interface IHexOneBootstrap {
         bool airdropClaimed;
     }
 
+    error VaultAlreadyInitialized();
     error InvalidTimestamp();
     error EmptyArray();
     error ZeroAddress();

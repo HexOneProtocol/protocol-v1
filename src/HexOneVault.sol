@@ -74,14 +74,16 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     /**
      *  @dev gives bootstrap role to the msg.sender which is the bootstrap.
      *  @param _feed address of the price feed.
+     *  @param _bootstrap address of the bootstrap.
      */
-    constructor(address _feed) ERC721("HEX1 Debt Title", "HDT") {
+    constructor(address _feed, address _bootstrap) ERC721("HEX1 Debt Title", "HDT") {
         if (_feed == address(0)) revert ZeroAddress();
+        if (_bootstrap == address(0)) revert ZeroAddress();
 
         feed = _feed;
         hex1 = address(new HexOneToken());
 
-        _grantRole(BOOTSTRAP_ROLE, msg.sender);
+        _grantRole(BOOTSTRAP_ROLE, _bootstrap);
     }
 
     /**

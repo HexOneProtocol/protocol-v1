@@ -30,6 +30,7 @@ interface IHexOneVault {
     error HealthRatioTooHigh();
     error NotEnoughToTake();
 
+    function hex1() external view returns (address);
     function currentDay() external view returns (uint256);
     function healthRatio(uint256 _id) external view returns (uint256 ratio);
     function maxBorrowable(uint256 _id) external view returns (uint256 amount);

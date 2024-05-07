@@ -5,14 +5,15 @@ import {AccessControl} from "../lib/openzeppelin-contracts/contracts/access/Acce
 import {ReentrancyGuard} from "../lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
 import {EnumerableSet} from "../lib/openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 import {SafeERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-import {HexOneVault} from "./HexOneVault.sol";
 
 import {IHexOneBootstrap} from "./interfaces/IHexOneBootstrap.sol";
 import {IHexOnePriceFeed} from "./interfaces/IHexOnePriceFeed.sol";
+import {IHexOneVault} from "./interfaces/IHexOneVault.sol";
 import {IHexitToken} from "./interfaces/IHexitToken.sol";
 import {IHexToken} from "./interfaces/IHexToken.sol";
 
 import {IERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {IERC721} from "../lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 import {IPulseXFactory} from "./interfaces/pulsex/IPulseXFactory.sol";
 import {IPulseXRouter02 as IPulseXRouter} from "./interfaces/pulsex/IPulseXRouter.sol";
 
@@ -67,8 +68,11 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     /// @dev address of the hexit token.
     address public immutable hexit;
 
+    /// @dev flag to keep track of vault initialization status
+    bool public initialized;
+
     /// @dev address of the vault.
-    HexOneVault public vault;
+    address public vault;
 
     /// @dev information relative to the sacrifice period.
     SacrificeInfo public sacrificeInfo;
@@ -135,6 +139,19 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         }
 
         return ((block.timestamp - schedule.start) / 1 days) + 1;
+    }
+
+    /**
+     *  @dev initializes the vault in the contract.
+     *  @notice can only be called once by the owner.
+     *  @param _vault address of the vault.
+     */
+    function initVault(address _vault) external onlyRole(OWNER_ROLE) {
+        if (initialized) revert VaultAlreadyInitialized();
+        if (_vault == address(0)) revert ZeroAddress();
+
+        initialized = true;
+        vault = _vault;
     }
 
     /**
@@ -230,15 +247,13 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
             halfHxAmount, _amountOutMin, path, address(this), block.timestamp
         );
 
-        vault = new HexOneVault(feed);
-
         // deposit 12.5% of the sacrificed hex and borrow agaisnt it
-        IERC20(HX).approve(address(vault), halfHxAmount);
-        uint256 tokenId = vault.deposit(halfHxAmount);
-        uint256 hex1Amount = vault.maxBorrowable(tokenId);
-        vault.borrow(tokenId, hex1Amount);
+        IERC20(HX).approve(vault, halfHxAmount);
+        uint256 tokenId = IHexOneVault(vault).deposit(halfHxAmount);
+        uint256 hex1Amount = IHexOneVault(vault).maxBorrowable(tokenId);
+        IHexOneVault(vault).borrow(tokenId, hex1Amount);
 
-        address hex1 = vault.hex1();
+        address hex1 = IHexOneVault(vault).hex1();
         address pair = IPulseXFactory(FACTORY_V2).createPair(hex1, DAI);
 
         // add newly minted HEX1 and the resulting DAI from the swap as 1:1 liquidity and burn the LP
@@ -282,15 +297,15 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         uint256 hxToDeposit = (shares * info.remainingHx) / 1e18;
 
         // deposit hx in the vault and create a new stake
-        IERC20(HX).approve(address(vault), hxToDeposit);
-        tokenId = vault.deposit(hxToDeposit);
+        IERC20(HX).approve(vault, hxToDeposit);
+        tokenId = IHexOneVault(vault).deposit(hxToDeposit);
 
         // max borrow hex1 against the newly created stake
-        hex1Minted = vault.maxBorrowable(tokenId);
-        vault.borrow(tokenId, hex1Minted);
+        hex1Minted = IHexOneVault(vault).maxBorrowable(tokenId);
+        IHexOneVault(vault).borrow(tokenId, hex1Minted);
 
-        vault.transferFrom(address(this), msg.sender, tokenId);
-        IERC20(vault.hex1()).transfer(msg.sender, hex1Minted);
+        IERC721(vault).transferFrom(address(this), msg.sender, tokenId);
+        IERC20(IHexOneVault(vault).hex1()).safeTransfer(msg.sender, hex1Minted);
         IHexitToken(hexit).mint(msg.sender, hexitMinted);
 
         emit SacrificeClaimed(msg.sender, tokenId, hex1Minted, hexitMinted);
@@ -314,7 +329,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         uint256 hexitTeamAllocation = (sacrificeInfo.hexitMinted * HEXIT_TEAM_RATE) / FIXED_POINT;
         IHexitToken(hexit).mint(msg.sender, hexitTeamAllocation);
 
-        vault.enableBuyback();
+        IHexOneVault(vault).enableBuyback();
 
         emit AirdropStarted(_airdropStart, _airdropStart + AIRDROP_DURATION);
     }
