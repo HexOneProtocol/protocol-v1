@@ -41,9 +41,11 @@ contract VaultAssert is Base {
 
     function test_constructor() external {
         assertEq(vault.feed(), address(feed));
+        assertTrue(vault.hex1() != address(0));
+        assertTrue(vault.hasRole(vault.BOOTSTRAP_ROLE(), address(bootstrap)));
     }
 
-    function test_enableBuyback() external prank(owner) {
+    function test_enableBuyback() external prank(address(bootstrap)) {
         vault.enableBuyback();
         assertEq(vault.buybackEnabled(), true);
     }
@@ -67,7 +69,7 @@ contract VaultAssert is Base {
     function test_deposit_buybackEnabled() external {
         deal(address(HEX_TOKEN), address(this), HEX_DEPOSIT);
 
-        vm.prank(owner);
+        vm.prank(address(bootstrap));
         vault.enableBuyback();
 
         IERC20(HEX_TOKEN).approve(address(vault), HEX_DEPOSIT);
@@ -257,6 +259,6 @@ contract VaultAssert is Base {
     }
 
     function test_take() external {
-        // TODO : manipulate the pool to test this
+        // TODO : manipulate the oracle to test this
     }
 }

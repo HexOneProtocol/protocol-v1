@@ -11,6 +11,71 @@ contract BootstrapRevert is Base {
         feed.update();
     }
 
+    function test_constructor_revert_InvalidTimestamp() external {
+        address[] memory tokens = new address[](0);
+        vm.expectRevert(IHexOneBootstrap.InvalidTimestamp.selector);
+        new HexOneBootstrap(uint64(block.timestamp - 100), address(feed), address(hexit), tokens);
+    }
+
+    function test_constructor_revert_ZeroAddress_feed() external {
+        address[] memory tokens = new address[](0);
+        vm.expectRevert(IHexOneBootstrap.ZeroAddress.selector);
+        new HexOneBootstrap(uint64(block.timestamp), address(0), address(hexit), tokens);
+    }
+
+    function test_constructor_revert_ZeroAddress_hexit() external {
+        address[] memory tokens = new address[](0);
+        vm.expectRevert(IHexOneBootstrap.ZeroAddress.selector);
+        new HexOneBootstrap(uint64(block.timestamp), address(feed), address(0), tokens);
+    }
+
+    function test_constructor_revert_EmptyArray() external {
+        address[] memory tokens = new address[](0);
+        vm.expectRevert(IHexOneBootstrap.EmptyArray.selector);
+        new HexOneBootstrap(uint64(block.timestamp + 100), address(feed), address(hexit), tokens);
+    }
+
+    function test_constructor_revert_ZeroAddress_token() external {
+        address[] memory tokens = new address[](1);
+        tokens[0] = address(0);
+        vm.expectRevert(IHexOneBootstrap.ZeroAddress.selector);
+        new HexOneBootstrap(uint64(block.timestamp), address(feed), address(hexit), tokens);
+    }
+
+    function test_constructor_revert_TokenAlreadySupported() external {
+        address[] memory tokens = new address[](2);
+        tokens[0] = WPLS_TOKEN;
+        tokens[1] = WPLS_TOKEN;
+        vm.expectRevert(IHexOneBootstrap.TokenAlreadySupported.selector);
+        new HexOneBootstrap(uint64(block.timestamp), address(feed), address(hexit), tokens);
+    }
+
+    function test_initVault_revert_AccessControlUnauthorizedAccount() external {
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IAccessControl.AccessControlUnauthorizedAccount.selector, address(this), bootstrap.OWNER_ROLE()
+            )
+        );
+        bootstrap.initVault(address(vault));
+    }
+
+    function test_initVault_revert_VaultAlreadyInitialized() external {
+        vm.startPrank(owner);
+        vm.expectRevert(IHexOneBootstrap.VaultAlreadyInitialized.selector);
+        bootstrap.initVault(address(vault));
+        vm.stopPrank();
+    }
+
+    function test_initVault_revert_ZeroAddress() external {
+        address[] memory tokens = new address[](1);
+        tokens[0] = WPLS_TOKEN;
+        HexOneBootstrap newBootstrap =
+            new HexOneBootstrap(uint64(block.timestamp), address(feed), address(hexit), tokens);
+
+        vm.expectRevert(IHexOneVault.ZeroAddress.selector);
+        newBootstrap.initVault(address(0));
+    }
+
     function test_sacrificeDay_revert_SacrificeInactive() external {
         skip(30 days);
 
@@ -193,6 +258,50 @@ contract BootstrapRevert is Base {
 
         vm.expectRevert(IHexOneBootstrap.SacrificeAlreadyClaimed.selector);
         bootstrap.claimSacrifice();
+    }
+
+    function test_airdropDay_revert_AirdropInactive_beforeStart() external {
+        vm.expectRevert(IHexOneBootstrap.AirdropInactive.selector);
+        bootstrap.airdropDay();
+    }
+
+    function test_airdropDay_revert_AirdropInactive_afterClaimEnd() external {
+        deal(HEX_TOKEN, address(this), 10_000e8);
+
+        IERC20(HEX_TOKEN).approve(address(bootstrap), 10_000e8);
+        bootstrap.sacrifice(HEX_TOKEN, 10_000e8, 0);
+
+        skip(30 days);
+
+        feed.update();
+
+        uint256 hexToSwap = (10_000e8 * 1250) / 10_000;
+
+        address[] memory path = new address[](2);
+        path[0] = HEX_TOKEN;
+        path[1] = DAI_TOKEN;
+        uint256[] memory amountsOut = IPulseXRouter(PULSEX_ROUTER_V1).getAmountsOut(hexToSwap, path);
+
+        vm.startPrank(owner);
+
+        bootstrap.processSacrifice(amountsOut[1]);
+
+        vm.stopPrank();
+
+        bootstrap.claimSacrifice();
+
+        skip(7 days);
+
+        feed.update();
+
+        vm.startPrank(owner);
+        bootstrap.startAirdrop(uint64(block.timestamp));
+        vm.stopPrank();
+
+        skip(16 days);
+
+        vm.expectRevert(IHexOneBootstrap.AirdropInactive.selector);
+        bootstrap.airdropDay();
     }
 
     function test_startAirdrop_revert_AccessControlUnauthorizedAccount() external {

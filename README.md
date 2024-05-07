@@ -59,6 +59,12 @@ Detailed coverage report:
 forge coverage --report debug
 ```
 
+### Bytecode size
+Detailed report of bytecode size:
+```
+forge build --sizes
+```
+
 ## Audits
 - Coverage (29-01-2024 - 06-03-2024): [report](https://github.com/HexOneProtocol/hex1-contracts/files/14516700/hex1-security-review.pdf).
 - Certik (19-05-2023): [report](https://skynet.certik.com/projects/hex1#active-monitor).

@@ -11,6 +11,16 @@ contract VaultRevert is Base {
         feed.update();
     }
 
+    function test_constructor_revert_ZeroAddress_feed() external {
+        vm.expectRevert(IHexOneVault.ZeroAddress.selector);
+        new HexOneVault(address(0), address(bootstrap));
+    }
+
+    function test_constructor_revert_ZeroAddress_bootstrap() external {
+        vm.expectRevert(IHexOneVault.ZeroAddress.selector);
+        new HexOneVault(address(feed), address(0));
+    }
+
     function test_enableBuyback_revert_AccessControlUnauthorizedAccount() external {
         vm.expectRevert(
             abi.encodeWithSelector(
@@ -180,10 +190,10 @@ contract VaultRevert is Base {
     }
 
     function test_take_revert_NotEnoughToTake() external {
-        // TODO : manipulate the pool to test this
+        // TODO : manipulate the oracle to test this
     }
 
     function test_take_revert_HealthRatioTooLow() external {
-        // TODO : manipulate the pool to test this
+        // TODO : manipulate the oracle to test this
     }
 }

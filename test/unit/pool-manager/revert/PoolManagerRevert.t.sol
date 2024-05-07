@@ -4,6 +4,11 @@ pragma solidity 0.8.20;
 import "../../Base.t.sol";
 
 contract PoolManagerRevert is Base {
+    function test_constructor_revert_ZeroAddress() external {
+        vm.expectRevert(IHexOnePoolManager.ZeroAddress.selector);
+        new HexOnePoolManager(address(0));
+    }
+
     /**
      *  @dev test that an `_account` without owner permissions can call.
      */
@@ -55,6 +60,32 @@ contract PoolManagerRevert is Base {
         uint256[] memory rewardsPerToken = new uint256[](0);
 
         vm.expectRevert(IHexOnePoolManager.MismatchedArray.selector);
+        manager.createPools(tokens, rewardsPerToken);
+    }
+
+    function test_createPools_revert_ZeroAddress(uint256 _rewardPerToken) external prank(owner) {
+        vm.assume(_rewardPerToken != 0);
+
+        address[] memory tokens = new address[](1);
+        tokens[0] = address(address(0));
+
+        uint256[] memory rewardsPerToken = new uint256[](1);
+        rewardsPerToken[0] = _rewardPerToken;
+
+        vm.expectRevert(IHexOnePoolManager.ZeroAddress.selector);
+        manager.createPools(tokens, rewardsPerToken);
+    }
+
+    function test_createPools_revert_InvalidRewardPerToken() external prank(owner) {
+        ERC20Mock mock = new ERC20Mock("mock token", "MC");
+
+        address[] memory tokens = new address[](1);
+        tokens[0] = address(mock);
+
+        uint256[] memory rewardsPerToken = new uint256[](1);
+        rewardsPerToken[0] = 0;
+
+        vm.expectRevert(IHexOnePoolManager.InvalidRewardPerToken.selector);
         manager.createPools(tokens, rewardsPerToken);
     }
 

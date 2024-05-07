@@ -23,6 +23,18 @@ contract BootstrapAssert is Base {
         assertEq(bootstrap.sacrificeDay(), 30);
     }
 
+    function test_initVault() external {
+        address[] memory tokens = new address[](1);
+        tokens[0] = WPLS_TOKEN;
+        HexOneBootstrap newBootstrap =
+            new HexOneBootstrap(uint64(block.timestamp), address(feed), address(hexit), tokens);
+
+        newBootstrap.initVault(address(vault));
+
+        assertEq(newBootstrap.vault(), address(vault));
+        assertEq(newBootstrap.initialized(), true);
+    }
+
     function test_sacrifice_hex_day1() external {
         deal(HEX_TOKEN, address(this), 10_000e8);
 
@@ -467,10 +479,10 @@ contract BootstrapAssert is Base {
         (,, uint256 remainingHx,) = bootstrap.sacrificeInfo();
         assertEq(remainingHx, expectedRemainingHx);
 
-        HexOneVault vault = bootstrap.vault();
-        assertTrue(address(vault) != address(0));
+        address vault = bootstrap.vault();
+        assertTrue(vault != address(0));
 
-        address pair = IPulseXFactory(PULSEX_FACTORY_V2).getPair(vault.hex1(), DAI_TOKEN);
+        address pair = IPulseXFactory(PULSEX_FACTORY_V2).getPair(IHexOneVault(vault).hex1(), DAI_TOKEN);
         assertTrue(pair != address(0));
     }
 
@@ -505,15 +517,57 @@ contract BootstrapAssert is Base {
         (,,, uint256 totalHexitMinted) = bootstrap.sacrificeInfo();
         assertEq(totalHexitMinted, hexitMinted);
 
-        HexOneVault vault = bootstrap.vault();
-        assertEq(vault.balanceOf(address(this)), 1);
-        assertEq(vault.ownerOf(tokenId), address(this));
+        address vault = bootstrap.vault();
+        assertEq(IERC721(vault).balanceOf(address(this)), 1);
+        assertEq(IERC721(vault).ownerOf(tokenId), address(this));
 
         uint256 hexitAfter = hexit.balanceOf(address(this));
         assertEq(hexitAfter - hexitBefore, hexitMinted);
 
-        address hex1 = vault.hex1();
+        address hex1 = IHexOneVault(vault).hex1();
         assertEq(IERC20(hex1).balanceOf(address(this)), hex1Minted);
+    }
+
+    function test_airdropDay() external {
+        deal(HEX_TOKEN, address(this), 100_000e8);
+
+        IERC20(HEX_TOKEN).approve(address(bootstrap), 100_000e8);
+        bootstrap.sacrifice(HEX_TOKEN, 100_000e8, 0);
+
+        skip(30 days);
+
+        feed.update();
+
+        uint256 hexToSwap = (100_000e8 * 1250) / 10_000;
+
+        address[] memory path = new address[](2);
+        path[0] = HEX_TOKEN;
+        path[1] = DAI_TOKEN;
+        uint256[] memory amountsOut = IPulseXRouter(PULSEX_ROUTER_V1).getAmountsOut(hexToSwap, path);
+
+        vm.startPrank(owner);
+        bootstrap.processSacrifice(amountsOut[1]);
+        vm.stopPrank();
+
+        bootstrap.claimSacrifice();
+
+        skip(7 days);
+
+        IERC20(hexit).balanceOf(address(owner));
+
+        vm.startPrank(owner);
+        bootstrap.startAirdrop(uint64(block.timestamp));
+        vm.stopPrank();
+
+        assertEq(bootstrap.airdropDay(), 1);
+
+        skip(7 days);
+
+        assertEq(bootstrap.airdropDay(), 8);
+
+        skip(7 days);
+
+        assertEq(bootstrap.airdropDay(), 15);
     }
 
     function test_startAirdrop() external {
@@ -556,9 +610,6 @@ contract BootstrapAssert is Base {
 
         uint256 teamHexit = (6667 * hexitMinted) / 10_000;
         assertEq(hexitAfter - hexitBefore, teamHexit);
-
-        HexOneVault vault = bootstrap.vault();
-        assertEq(vault.buybackEnabled(), true);
     }
 
     function test_claimAirdrop_day1() external {
@@ -689,10 +740,97 @@ contract BootstrapAssert is Base {
     }
 
     function test_claimAirdrop_onlyHexStakes() external {
-        // TODO
+        deal(HEX_TOKEN, address(this), 100_000e8);
+
+        IERC20(HEX_TOKEN).approve(address(bootstrap), 100_000e8);
+        bootstrap.sacrifice(HEX_TOKEN, 100_000e8, 0);
+
+        skip(30 days);
+
+        feed.update();
+
+        uint256 hexToSwap = (100_000e8 * 1250) / 10_000;
+
+        address[] memory path = new address[](2);
+        path[0] = HEX_TOKEN;
+        path[1] = DAI_TOKEN;
+        uint256[] memory amountsOut = IPulseXRouter(PULSEX_ROUTER_V1).getAmountsOut(hexToSwap, path);
+
+        vm.startPrank(owner);
+        bootstrap.processSacrifice(amountsOut[1]);
+        vm.stopPrank();
+
+        bootstrap.claimSacrifice();
+
+        skip(7 days);
+
+        feed.update();
+
+        vm.startPrank(owner);
+        bootstrap.startAirdrop(uint64(block.timestamp));
+        vm.stopPrank();
+
+        address hexStaker = makeAddr("hexStaker");
+
+        deal(HEX_TOKEN, hexStaker, 100_000e8);
+
+        vm.startPrank(hexStaker);
+        IHexToken(HEX_TOKEN).stakeStart(100_000e8, 5555);
+        bootstrap.claimAirdrop();
+        vm.stopPrank();
+
+        uint256 expectedHexit = feed.quote(HEX_TOKEN, 100_000e8, DAI_TOKEN);
+        expectedHexit = expectedHexit + (5_555_555 * 1e18);
+
+        assertEq(hexit.balanceOf(hexStaker), expectedHexit);
     }
 
     function test_claimAirdrop_hexStakesAndSacrificeParticipant() external {
-        // TODO
+        deal(HEX_TOKEN, address(this), 100_000e8);
+
+        IERC20(HEX_TOKEN).approve(address(bootstrap), 100_000e8);
+        bootstrap.sacrifice(HEX_TOKEN, 100_000e8, 0);
+
+        skip(30 days);
+
+        feed.update();
+
+        uint256 hexToSwap = (100_000e8 * 1250) / 10_000;
+
+        address[] memory path = new address[](2);
+        path[0] = HEX_TOKEN;
+        path[1] = DAI_TOKEN;
+        uint256[] memory amountsOut = IPulseXRouter(PULSEX_ROUTER_V1).getAmountsOut(hexToSwap, path);
+
+        vm.startPrank(owner);
+        bootstrap.processSacrifice(amountsOut[1]);
+        vm.stopPrank();
+
+        bootstrap.claimSacrifice();
+
+        skip(7 days);
+
+        feed.update();
+
+        vm.startPrank(owner);
+        bootstrap.startAirdrop(uint64(block.timestamp));
+        vm.stopPrank();
+
+        deal(HEX_TOKEN, address(this), 100_000e8);
+
+        uint256 hexitBefore = hexit.balanceOf(address(this));
+
+        IHexToken(HEX_TOKEN).stakeStart(100_000e8, 5555);
+        bootstrap.claimAirdrop();
+
+        (uint256 sacrificedUsd,,,) = bootstrap.userInfos(address(this));
+
+        uint256 expectedHexit = feed.quote(HEX_TOKEN, 100_000e8, DAI_TOKEN);
+        expectedHexit = expectedHexit + (5_555_555 * 1e18);
+        expectedHexit = expectedHexit + (9 * sacrificedUsd);
+
+        uint256 hexitAfter = hexit.balanceOf(address(this));
+
+        assertEq(hexitAfter - hexitBefore, expectedHexit);
     }
 }

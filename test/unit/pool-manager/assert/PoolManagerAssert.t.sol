@@ -4,6 +4,11 @@ pragma solidity 0.8.20;
 import "../../Base.t.sol";
 
 contract PoolManagerAssert is Base {
+    function test_constructor() external {
+        assertEq(manager.hexit(), address(hexit));
+        assertEq(manager.hasRole(manager.OWNER_ROLE(), address(owner)), true);
+    }
+
     /**
      *  @dev assert that multiple pools are created, initiliazed, and given permission to mint HEXIT.
      */

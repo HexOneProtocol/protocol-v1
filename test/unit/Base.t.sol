@@ -4,6 +4,7 @@ pragma solidity 0.8.20;
 import {Test, stdError, console} from "../../lib/forge-std/src/Test.sol";
 
 import {HexitToken} from "../../src/HexitToken.sol";
+import {HexOneToken} from "../../src/HexOneToken.sol";
 import {HexOnePoolManager} from "../../src/HexOnePoolManager.sol";
 import {HexOnePool} from "../../src/HexOnePool.sol";
 
@@ -18,11 +19,12 @@ import {IERC20Errors} from "../../lib/openzeppelin-contracts/contracts/interface
 
 contract Base is Test {
     HexitToken internal hexit;
+    HexOneToken internal hex1;
     HexOnePoolManager internal manager;
     HexOnePool[] internal pools;
 
-    address internal bootstrap = makeAddr("bootstrap"); // TODO
-    address internal feed = makeAddr("feed"); // TODO
+    address internal bootstrap = makeAddr("bootstrap");
+    address internal feed = makeAddr("feed");
 
     ERC20Mock internal hex1dai;
 
@@ -43,6 +45,7 @@ contract Base is Test {
     function _deploy() private {
         hex1dai = new ERC20Mock("HEX1/DAI LP", "HEX1/DAI");
         hexit = new HexitToken();
+        hex1 = new HexOneToken();
         manager = new HexOnePoolManager(address(hexit));
     }
 
@@ -64,7 +67,7 @@ contract Base is Test {
             pools[i] = HexOnePool(manager.pools(i));
         }
 
-        hexit.initBootstrap(bootstrap); // TODO
-        hexit.initFeed(feed); // TODO
+        hexit.initBootstrap(bootstrap);
+        hexit.initFeed(feed);
     }
 }

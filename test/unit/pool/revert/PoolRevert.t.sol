@@ -4,6 +4,21 @@ pragma solidity 0.8.20;
 import "../../Base.t.sol";
 
 contract PoolRevert is Base {
+    function test_constructor_revert_ZeroAddress_manager() external {
+        vm.expectRevert(IHexOnePool.ZeroAddress.selector);
+        new HexOnePool(address(0), address(hexit), address(hex1dai));
+    }
+
+    function test_constructor_revert_ZeroAddress_hexit() external {
+        vm.expectRevert(IHexOnePool.ZeroAddress.selector);
+        new HexOnePool(address(manager), address(0), address(hex1dai));
+    }
+
+    function test_constructor_revert_ZeroAddress_token() external {
+        vm.expectRevert(IHexOnePool.ZeroAddress.selector);
+        new HexOnePool(address(manager), address(hexit), address(0));
+    }
+
     /**
      *  @dev test that the pool can only initialized by the manager.
      */

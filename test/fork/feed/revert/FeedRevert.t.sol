@@ -4,6 +4,16 @@ pragma solidity 0.8.20;
 import "../../Base.t.sol";
 
 contract FeedRevert is Base {
+    function test_constructor_revert_InvalidPeriod_lessThanMin() external {
+        vm.expectRevert(IHexOnePriceFeed.InvalidPeriod.selector);
+        new HexOnePriceFeed(address(hexit), 100);
+    }
+
+    function test_constructor_revert_InvalidPeriod_moreThanMax() external {
+        vm.expectRevert(IHexOnePriceFeed.InvalidPeriod.selector);
+        new HexOnePriceFeed(address(hexit), 800);
+    }
+
     function test_addPath_revert_InvalidPath() external prank(owner) {
         address[] memory path = new address[](1);
         path[0] = HEX_TOKEN;

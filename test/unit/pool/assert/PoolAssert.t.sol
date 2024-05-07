@@ -7,6 +7,13 @@ contract PoolAssert is Base {
     uint256 internal constant MAX_STAKE = 1e36;
     uint256 internal constant MAX_TIME_STAKED = 3652 days;
 
+    function test_constructor() external {
+        assertEq(pools[0].manager(), address(manager));
+        assertEq(pools[0].hexit(), address(hexit));
+        assertEq(pools[0].token(), address(hex1dai));
+        assertEq(pools[0].hasRole(pools[0].MANAGER_ROLE(), address(manager)), true);
+    }
+
     function test_initialize(uint256 _rewardPerToken) external prank(address(manager)) {
         vm.assume(_rewardPerToken != 0);
 
@@ -61,6 +68,47 @@ contract PoolAssert is Base {
         pools[0].claim();
 
         uint256 hexitMinted = (_amount * _timeStaked * pools[0].rewardPerToken()) / 1e18;
+        assertEq(hexit.balanceOf(_account), hexitMinted);
+    }
+
+    function test_claim_rightAfterStake(address _account, uint256 _amount) external prank(_account) {
+        vm.assume(_account != address(0) && _account != address(pools[0]));
+        _amount = bound(_amount, 1, MAX_STAKE);
+
+        deal(address(hex1dai), _account, _amount);
+
+        hex1dai.approve(address(pools[0]), _amount);
+        pools[0].stake(_amount);
+
+        pools[0].claim();
+
+        assertEq(hexit.balanceOf(_account), 0);
+    }
+
+    function test_claim_stakeTwiceBefore(
+        address _account,
+        uint256 _firstAmount,
+        uint256 _secondAmount,
+        uint256 _timeStaked
+    ) external prank(_account) {
+        vm.assume(_account != address(0) && _account != address(pools[0]));
+        _firstAmount = bound(_firstAmount, 1, MAX_STAKE);
+        _secondAmount = bound(_secondAmount, 1, MAX_STAKE);
+        _timeStaked = bound(_timeStaked, 0, MAX_TIME_STAKED);
+
+        deal(address(hex1dai), _account, _firstAmount + _secondAmount);
+
+        hex1dai.approve(address(pools[0]), _firstAmount);
+        pools[0].stake(_firstAmount);
+
+        skip(_timeStaked);
+
+        hex1dai.approve(address(pools[0]), _secondAmount);
+        pools[0].stake(_secondAmount);
+
+        pools[0].claim();
+
+        uint256 hexitMinted = (_firstAmount * _timeStaked * pools[0].rewardPerToken()) / 1e18;
         assertEq(hexit.balanceOf(_account), hexitMinted);
     }
 

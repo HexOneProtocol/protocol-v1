@@ -20,6 +20,7 @@ import {IPulseXPair} from "../../src/interfaces/pulsex/IPulseXPair.sol";
 import {IPulseXRouter02 as IPulseXRouter} from "../../src/interfaces/pulsex/IPulseXRouter.sol";
 import {IHexToken} from "../../src/interfaces/IHexToken.sol";
 import {IERC20} from "../../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {IERC721} from "../../lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 import {IAccessControl} from "../../lib/openzeppelin-contracts/contracts/access/IAccessControl.sol";
 
 import {ERC20Mock} from "../mocks/ERC20Mock.sol";
@@ -63,7 +64,6 @@ contract Base is Test {
     function _deploy() private {
         hexit = new HexitToken();
         feed = new HexOnePriceFeed(address(hexit), 300);
-        vault = new HexOneVault(address(feed));
 
         address[] memory sacrificeTokens = new address[](4);
         sacrificeTokens[0] = HEX_TOKEN;
@@ -72,9 +72,15 @@ contract Base is Test {
         sacrificeTokens[3] = PLSX_TOKEN;
 
         bootstrap = new HexOneBootstrap(uint64(block.timestamp), address(feed), address(hexit), sacrificeTokens);
+
+        vault = new HexOneVault(address(feed), address(bootstrap));
     }
 
     function _configure() private {
+        // configure hexit token
+        hexit.initFeed(address(feed));
+        hexit.initBootstrap(address(bootstrap));
+
         // HEX/DAI path
         address[] memory hexDaiPath = new address[](3);
         hexDaiPath[0] = HEX_TOKEN;
@@ -108,7 +114,7 @@ contract Base is Test {
         plsxDaiPath[1] = DAI_TOKEN;
         feed.addPath(plsxDaiPath);
 
-        hexit.initFeed(address(feed));
-        hexit.initBootstrap(address(bootstrap));
+        // configure bootstrap
+        bootstrap.initVault(address(vault));
     }
 }
