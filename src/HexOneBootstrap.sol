@@ -254,7 +254,11 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         IHexOneVault(vault).borrow(tokenId, hex1Amount);
 
         address hex1 = IHexOneVault(vault).hex1();
-        address pair = IPulseXFactory(FACTORY_V2).createPair(hex1, DAI);
+
+        address pair = IPulseXFactory(FACTORY_V2).getPair(hex1, DAI);
+        if (pair == address(0)) {
+            pair = IPulseXFactory(FACTORY_V2).createPair(hex1, DAI);
+        }
 
         // add newly minted HEX1 and the resulting DAI from the swap as 1:1 liquidity and burn the LP
         IERC20(hex1).approve(ROUTER_V2, hex1Amount);
