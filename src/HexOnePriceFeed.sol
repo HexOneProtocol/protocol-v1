@@ -53,6 +53,7 @@ contract HexOnePriceFeed is AccessControl, IHexOnePriceFeed {
      *  @param _period feed update period.
      */
     constructor(address _hexit, uint256 _period) {
+        if (_hexit == address(0)) revert ZeroAddress();
         if (_period > MAX_PERIOD || _period < MIN_PERIOD) revert InvalidPeriod();
 
         hexit = _hexit;
