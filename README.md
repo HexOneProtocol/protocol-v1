@@ -1,4 +1,3 @@
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 ```
   _  _      ___    __  __      _    
  | || |    | __|   \ \/ /     / |   
@@ -62,3 +61,4 @@ forge coverage --report debug
 
 ## Audits
 - Coverage (29-01-2024 - 06-03-2024): [report](https://github.com/HexOneProtocol/hex1-contracts/files/14516700/hex1-security-review.pdf).
+- Certik (19-05-2023): [report](https://skynet.certik.com/projects/hex1#active-monitor).
