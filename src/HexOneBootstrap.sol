@@ -320,7 +320,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
      *  @notice mints hexit team allocation to the owner.
      *  @param _airdropStart the starting timestamp of the airdrop period.
      */
-    function startAirdrop(uint64 _airdropStart) external onlyRole(OWNER_ROLE) nonReentrant {
+    function startAirdrop(uint64 _airdropStart) external nonReentrant onlyRole(OWNER_ROLE) {
         if (_airdropStart < block.timestamp) revert InvalidTimestamp();
 
         Schedule storage schedule = airdropSchedule;
