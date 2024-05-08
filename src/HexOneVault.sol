@@ -52,7 +52,7 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     uint16 public constant DURATION = 5555;
     /// @dev period after stake duration in which the stake becomes liquidatable.
     uint16 public constant GRACE_PERIOD = 7;
-    /// @dev minimum healh ratio, if health ratio is below 250% in bps stakes become liquidatable.
+    /// @dev dev minimum health ratio, if health ratio is below 250% in bps stakes become liquidatable.
     uint16 public constant MIN_HEALTH_RATIO = 25_000;
     /// @dev precision scale multipler, represents 100% in bps.
     uint16 public constant FIXED_POINT = 10_000;
@@ -180,7 +180,7 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev function to end an hex stake if stake is mature.
+     *  @dev function to end a hex stake if stake is mature
      *  @notice claims hedron tokens.
      *  @param _id token id of the stake.
      */
@@ -252,7 +252,7 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev function to borrow agaisnt an hex stake.
+     *  @dev function to borrow hex one against a hex stake.
      *  @notice reverts if the new debt amount results in a liquidatable stake.
      *  @param _id token id of the stake.
      *  @param _amount amount of hex one to borrow.
@@ -276,7 +276,7 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev transfers stake ownership to the msg sender if stake healh ratio is below the minimium.
+     *  @dev transfers stake ownership to the msg sender if stake health ratio is below the minimum.
      *  @param _id token id of the stake.
      *  @param _amount amount of hex one to repay the debt.
      */
@@ -344,7 +344,7 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
-     *  @dev returns an hex quote in usd based on average price of three pairs.
+     *  @dev returns a hex quote in usd based on average price of three pairs.
      *  @param _amountIn amount of hex.
      */
     function _hxQuote(uint256 _amountIn) private view returns (uint256 hxQuote) {
