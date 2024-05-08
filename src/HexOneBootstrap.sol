@@ -271,8 +271,8 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     }
 
     /**
-     *  @dev function to claim rewards from the sacrifie period.
-     *  @notice creates an hex stake, and max borrow against it.
+     *  @dev function to claim rewards from the sacrifice period.
+     *  @notice creates a hex stake, and max borrow against it.
      */
     function claimSacrifice()
         external
@@ -339,7 +339,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     }
 
     /**
-     *  @dev claim hexit the rewards from the airdrop period.
+     *  @dev claim hexit rewards from the airdrop period.
      */
     function claimAirdrop() external nonReentrant {
         Schedule storage schedule = airdropSchedule;
@@ -373,7 +373,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     }
 
     /**
-     *  @dev returns the number os hexit shares a user receives during the sacrifice phase.
+     *  @dev returns the number of hexit shares a user receives during the sacrifice phase.
      *  @param _sacrificedUsd the total usd value sacrificed by the user.
      */
     function _hexitSacrificeShares(uint256 _sacrificedUsd) private view returns (uint256 hexitShares) {
