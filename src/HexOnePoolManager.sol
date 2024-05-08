@@ -55,7 +55,7 @@ contract HexOnePoolManager is AccessControl, IHexOnePoolManager {
     }
 
     /**
-     *  @dev deploy pool a new pool.
+     *  @dev deploys a new pool.
      *  @param _token address of the stake token.
      *  @param _rewardPerToken HEXIT minting rate multiplier.
      */
