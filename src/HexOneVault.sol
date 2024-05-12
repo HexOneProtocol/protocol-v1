@@ -284,7 +284,8 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
         Stake memory stake = stakes[_id];
         if (currentDay() >= stake.end + GRACE_PERIOD) revert StakeNotLiquidatable();
 
-        if (healthRatio(_id) == 0 || healthRatio(_id) >= MIN_HEALTH_RATIO) {
+        uint256 ratio = healthRatio(_id);
+        if (ratio == 0 || ratio >= MIN_HEALTH_RATIO) {
             revert HealthRatioTooHigh();
         }
 
