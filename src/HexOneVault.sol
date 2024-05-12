@@ -291,7 +291,7 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
             revert HealthRatioTooHigh();
         }
 
-        uint256 minAmount = stake.debt / 2;
+        uint256 minAmount = stake.debt >> 1;
         if (_amount < minAmount) revert NotEnoughToTake();
 
         stakes[_id].debt -= _amount;

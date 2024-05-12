@@ -234,7 +234,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         sacrificeInfo.remainingHx = info.sacrificedHx - hxAmount;
 
         // swap 12.5% of the sacrificed hex to dai
-        uint256 halfHxAmount = hxAmount / 2;
+        uint256 halfHxAmount = hxAmount >> 1;
         IERC20(HX).approve(ROUTER_V1, halfHxAmount);
 
         address[] memory path = new address[](2);
