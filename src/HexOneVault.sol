@@ -128,7 +128,9 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
 
         uint256 hxQuote = _hxQuote(stake.amount);
         if (hxQuote > stake.debt) {
-            amount = hxQuote - stake.debt;
+            unchecked {
+                amount = hxQuote - stake.debt;
+            }
         }
     }
 
