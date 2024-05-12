@@ -40,11 +40,13 @@ contract HexOnePoolManager is AccessControl, IHexOnePoolManager {
      *  @param _rewardsPerToken HEXIT minting rate multiplier for each stake token.
      */
     function createPools(address[] memory _tokens, uint256[] memory _rewardsPerToken) external onlyRole(OWNER_ROLE) {
-        if (_tokens.length == 0) revert EmptyArray();
-        if (_tokens.length != _rewardsPerToken.length) revert MismatchedArray();
+        uint256 length = _tokens.length;
 
-        address[] memory createdPools = new address[](_tokens.length);
-        for (uint256 i; i < _tokens.length; ++i) {
+        if (length == 0) revert EmptyArray();
+        if (length != _rewardsPerToken.length) revert MismatchedArray();
+
+        address[] memory createdPools = new address[](length);
+        for (uint256 i; i < length; ++i) {
             if (_tokens[i] == address(0)) revert ZeroAddress();
             if (_rewardsPerToken[i] == 0) revert InvalidRewardPerToken();
 

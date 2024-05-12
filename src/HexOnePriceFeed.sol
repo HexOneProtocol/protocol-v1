@@ -75,7 +75,7 @@ contract HexOnePriceFeed is AccessControl, IHexOnePriceFeed {
         address tokenOut = _path[length - 1];
         if (paths[tokenIn][tokenOut].length != 0) revert PathAlreadyRegistered();
 
-        for (uint256 i; i < _path.length - 1; ++i) {
+        for (uint256 i; i < length - 1; ++i) {
             _addPair(_path[i], _path[i + 1]);
         }
 
@@ -122,13 +122,15 @@ contract HexOnePriceFeed is AccessControl, IHexOnePriceFeed {
      */
     function quote(address _tokenIn, uint256 _amountIn, address _tokenOut) external view returns (uint256 amountOut) {
         address[] memory path = paths[_tokenIn][_tokenOut];
-        if (path.length < 2) revert InvalidPath();
+
+        uint256 length = path.length;
+        if (length < 2) revert InvalidPath();
 
         uint256 timeElapsed = block.timestamp - lastUpdate;
         if (timeElapsed >= period) revert PriceStale();
 
         amountOut = _amountIn;
-        for (uint256 i; i < path.length - 1; ++i) {
+        for (uint256 i; i < length - 1; ++i) {
             address pair = UniswapV2Library.pairFor(FACTORY_V1, path[i], path[i + 1]);
 
             (address token0,) = UniswapV2Library.sortTokens(path[i], path[i + 1]);
