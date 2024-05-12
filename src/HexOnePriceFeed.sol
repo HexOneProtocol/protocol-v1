@@ -19,14 +19,17 @@ contract HexOnePriceFeed is AccessControl, IHexOnePriceFeed {
     using EnumerableSet for EnumerableSet.AddressSet;
     using FixedPoint for *;
 
-    /// @dev access control owner role.
-    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
+    /// @dev access control owner role, resulting hash of keccak256("OWNER_ROLE").
+    bytes32 public constant OWNER_ROLE = 0xb19546dff01e856fb3f010c267a7b1c60363cf8a4664e21cc89c26224620214e;
+
     /// @dev precision scale multipler.
     uint256 public constant MULTIPLIER = 1e18;
+
     /// @dev max update period supported.
     uint256 public constant MAX_PERIOD = 700;
     /// @dev min update period supported.
     uint256 public constant MIN_PERIOD = 300;
+
     /// @dev address of the pulsex v1 factory.
     address public constant FACTORY_V1 = 0x1715a3E4A142d8b698131108995174F37aEBA10D;
 

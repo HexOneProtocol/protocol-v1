@@ -25,8 +25,8 @@ import {IHedron} from "./interfaces/IHedron.sol";
 contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     using SafeERC20 for IERC20;
 
-    /// @dev access control bootstrap role.
-    bytes32 public constant BOOTSTRAP_ROLE = keccak256("BOOTSTRAP_ROLE");
+    /// @dev access control bootstrap role, resulting hash of keccak256("BOOTSTRAP_ROLE").
+    bytes32 public constant BOOTSTRAP_ROLE = 0x754e3cb7a890b8b46aaf55b2c9ce049ab5af00b619b3868c4f23dce1434fce06;
 
     /// @dev used to decode daily data.
     uint256 private constant HEARTS_UINT_SHIFT = 72;

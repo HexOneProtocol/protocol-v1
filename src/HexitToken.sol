@@ -11,12 +11,12 @@ import {IHexitToken} from "./interfaces/IHexitToken.sol";
  *  @dev hex one protocol incentive token.
  */
 contract HexitToken is ERC20, AccessControl, IHexitToken {
-    /// @dev access control owner role.
-    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
-    /// @dev access control manager role.
-    bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
-    /// @dev access control minter role.
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    /// @dev access control owner role, resulting hash of keccak256("OWNER_ROLE").
+    bytes32 public constant OWNER_ROLE = 0xb19546dff01e856fb3f010c267a7b1c60363cf8a4664e21cc89c26224620214e;
+    /// @dev access control manager role, resulting hash of keccak256("MANAGER_ROLE").
+    bytes32 public constant MANAGER_ROLE = 0x241ecf16d79d0f8dbfb92cbc07fe17840425976cf0667f022fe9877caa831b08;
+    /// @dev access control minter role, resulting hash of keccak256("MINTER_ROLE").
+    bytes32 public constant MINTER_ROLE = 0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6;
 
     /// @dev function selector => initialized.
     mapping(bytes4 => bool) internal initialized;

@@ -11,8 +11,8 @@ import {IHexOneToken} from "./interfaces/IHexOneToken.sol";
  *  @dev yield bearing stablecoin.
  */
 contract HexOneToken is ERC20, AccessControl, IHexOneToken {
-    /// @dev access control vault role,
-    bytes32 public constant VAULT_ROLE = keccak256("VAULT_ROLE");
+    /// @dev access control vault role, resulting hash of keccak256("VAULT_ROLE").
+    bytes32 public constant VAULT_ROLE = 0x31e0210044b4f6757ce6aa31f9c6e8d4896d24a755014887391a926c5224d959;
 
     /**
      *  @dev gives vault permission to mint HEX1.

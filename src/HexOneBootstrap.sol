@@ -25,8 +25,8 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
 
-    /// @dev access control owner role.
-    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
+    /// @dev access control owner role, resulting hash of keccak256("OWNER_ROLE").
+    bytes32 public constant OWNER_ROLE = 0xb19546dff01e856fb3f010c267a7b1c60363cf8a4664e21cc89c26224620214e;
 
     /// @dev min amount accepted to be sacrificed.
     uint256 public constant MIN_SACRIFICE = 1e18;

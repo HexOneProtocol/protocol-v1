@@ -13,8 +13,8 @@ import {IHexitToken} from "./interfaces/IHexitToken.sol";
  *  @dev manage pool deployments and access control.
  */
 contract HexOnePoolManager is AccessControl, IHexOnePoolManager {
-    /// @dev access control owner role.
-    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
+    /// @dev access control owner role, resulting hash of keccak256("OWNER_ROLE").
+    bytes32 public constant OWNER_ROLE = 0xb19546dff01e856fb3f010c267a7b1c60363cf8a4664e21cc89c26224620214e;
 
     /// @dev address of the hexit token.
     address public immutable hexit;
