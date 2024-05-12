@@ -70,7 +70,7 @@ contract HexOnePriceFeed is AccessControl, IHexOnePriceFeed {
      *  @notice can only be called by the owner.
      *  @param _path route in which quotes for a given tokenIn and tokenOut are computed.
      */
-    function addPath(address[] memory _path) external onlyRole(OWNER_ROLE) {
+    function addPath(address[] calldata _path) external onlyRole(OWNER_ROLE) {
         uint256 length = _path.length;
         if (length < 2) revert InvalidPath();
 
