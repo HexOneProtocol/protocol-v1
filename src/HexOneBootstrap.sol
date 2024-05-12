@@ -163,8 +163,8 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
      */
     function sacrifice(address _token, uint256 _amount, uint256 _amountOutMin) external nonReentrant {
         if (!sacrificeTokens.contains(_token)) revert TokenNotSupported();
-
         if (_amount == 0) revert InvalidAmount();
+        if (_token != HX && _amountOutMin == 0) revert InvalidAmountOutMin();
 
         uint256 start = sacrificeSchedule.start;
         if (block.timestamp < start || block.timestamp >= start + SACRIFICE_DURATION) {
@@ -190,8 +190,6 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
 
         // if the sacrifice token is not hex swap the sacrifice amount to hex
         if (_token != HX) {
-            if (_amountOutMin == 0) revert InvalidAmountOutMin();
-
             IERC20(_token).approve(ROUTER_V1, _amount);
 
             address[] memory path = new address[](2);
