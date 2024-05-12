@@ -283,8 +283,8 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         if (block.timestamp >= schedule.claimEnd) revert SacrificeClaimInactive();
 
         UserInfo storage user = userInfos[msg.sender];
-        if (user.sacrificedUsd == 0) revert DidNotParticipateInSacrifice();
-
+        uint256 sacrificedUsd = user.sacrificedUsd;
+        if (sacrificedUsd == 0) revert DidNotParticipateInSacrifice();
         if (user.sacrificeClaimed) revert SacrificeAlreadyClaimed();
 
         user.sacrificeClaimed = true;
@@ -295,7 +295,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         info.hexitMinted += hexitMinted;
 
         // compute the amount of hex to deposit based on the amount sacrificed by the user
-        uint256 shares = (user.sacrificedUsd * 1e18) / info.sacrificedUsd;
+        uint256 shares = (sacrificedUsd * 1e18) / info.sacrificedUsd;
         uint256 hxToDeposit = (shares * info.remainingHx) / 1e18;
 
         // deposit hx in the vault and create a new stake
