@@ -11,7 +11,7 @@ import {HexOnePoolManager} from "../../src/HexOnePoolManager.sol";
 
 import {IPulseXFactory} from "../../src/interfaces/pulsex/IPulseXFactory.sol";
 
-contract Deploy is Base {
+contract DeployScript is Base {
     HexitToken internal hexit;
     HexOnePriceFeed internal feed;
     HexOneBootstrap internal bootstrap;

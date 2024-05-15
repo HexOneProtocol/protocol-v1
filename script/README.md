@@ -25,3 +25,7 @@ Used to deploy and configure the protocol.
 ```
 forge script script/deployment/Deploy.s.sol:Deploy --fork-url http://localhost:8545 --broadcast -vvvv
 ```
+
+```
+forge script script/keeper-test/Keeper.s.sol:KeeperScript --fork-url https://rpc.pulsechain.com --broadcast -vvvv
+```
