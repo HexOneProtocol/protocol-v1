@@ -7,6 +7,7 @@ import {ERC721} from "../lib/openzeppelin-contracts/contracts/token/ERC721/ERC72
 import {AccessControl} from "../lib/openzeppelin-contracts/contracts/access/AccessControl.sol";
 import {ReentrancyGuard} from "../lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
 import {SafeERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import {UniswapV2Library} from "./libraries/UniswapV2Library.sol";
 import {TokenUtils} from "./utils/TokenUtils.sol";
 
 import {IHexOneVault} from "./interfaces/IHexOneVault.sol";
@@ -35,6 +36,8 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
 
     /// @dev address of the pulsex v2 router.
     address private constant ROUTER_V2 = 0x165C3410fC91EF562C50559f7d2289fEbed552d9;
+    /// @dev address of the pulsex v2 factory.
+    address private constant FACTORY_V2 = 0x29eA7545DEf87022BAdc76323F373EA1e707C523;
     /// @dev address of the hex token.
     address private constant HX = 0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39;
     /// @dev address of the hedron token.
@@ -318,8 +321,12 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
         path[2] = DAI;
         path[3] = hex1;
 
+        (uint256 reserveA, uint256 reserveB) = UniswapV2Library.getReserves(FACTORY_V2, DAI, hex1);
+
+        uint256 amountOutMin = UniswapV2Library.getAmountOut(_fee, reserveA, reserveB);
+
         uint256[] memory amounts =
-            IPulseXRouter(ROUTER_V2).swapExactTokensForTokens(_fee, 0, path, address(this), block.timestamp);
+            IPulseXRouter(ROUTER_V2).swapExactTokensForTokens(_fee, amountOutMin, path, address(this), block.timestamp);
 
         IHexOneToken(hex1).burn(address(this), amounts[amounts.length - 1]);
     }

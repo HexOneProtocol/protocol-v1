@@ -112,7 +112,9 @@ contract HexOnePriceFeed is AccessControl, IHexOnePriceFeed {
 
         lastUpdate = block.timestamp;
 
-        IHexitToken(hexit).mint(msg.sender, timeElapsed * MULTIPLIER);
+        if (lastUpdate != 0) {
+            IHexitToken(hexit).mint(msg.sender, timeElapsed * MULTIPLIER);
+        }
 
         emit PricesUpdated(block.timestamp);
     }
