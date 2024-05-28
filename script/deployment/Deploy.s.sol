@@ -96,11 +96,11 @@ contract DeployScript is Base {
         // deploy HEX1/DAI and HEXIT pools
         address[] memory tokens = new address[](2);
         tokens[0] = address(hex1Dai);
-        tokens[1] = address(hexit);
+        tokens[1] = address(hexitHex1);
 
         uint256[] memory rewardsPerToken = new uint256[](2);
-        rewardsPerToken[0] = 420e18;
-        rewardsPerToken[1] = 69e18;
+        rewardsPerToken[0] = 420e13;
+        rewardsPerToken[1] = 69e13;
 
         manager.createPools(tokens, rewardsPerToken);
     }
