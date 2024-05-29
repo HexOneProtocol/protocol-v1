@@ -26,6 +26,7 @@ interface IHexOneVault {
     error StakeNotLiquidatable();
     error StakeLiquidatable();
     error MaxBorrowExceeded();
+    error AmountExceedsDebt();
     error HealthRatioTooLow();
     error HealthRatioTooHigh();
     error NotEnoughToTake();

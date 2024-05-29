@@ -90,6 +90,7 @@ contract HexOnePool is AccessControl, IHexOnePool {
      */
     function unstake(uint256 _amount) public {
         if (_amount == 0) revert InvalidAmount();
+        if (_amount > stakeOf[msg.sender]) revert AmountExceedsStake();
 
         _update(msg.sender);
 

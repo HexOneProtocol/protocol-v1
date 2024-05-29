@@ -8,6 +8,7 @@ interface IHexOnePool {
 
     error InvalidAmount();
     error ZeroAddress();
+    error AmountExceedsStake();
 
     function initialize(uint256 _rewardPerToken) external;
     function stake(uint256 _amount) external;

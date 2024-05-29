@@ -251,7 +251,10 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
         if (msg.sender != ownerOf(_id)) revert InvalidOwner();
         if (_amount == 0) revert InvalidAmount();
 
-        stakes[_id].debt -= _amount;
+        Stake storage stake = stakes[_id];
+        if (_amount > stake.debt) revert AmountExceedsDebt();
+
+        stake.debt -= _amount;
 
         IHexOneToken(hex1).burn(msg.sender, _amount);
 
@@ -295,6 +298,8 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
         if (currentRatio == 0 || currentRatio >= MIN_HEALTH_RATIO) {
             revert HealthRatioTooHigh();
         }
+
+        if (_amount > stake.debt) revert AmountExceedsDebt();
 
         uint256 minAmount = stake.debt >> 1;
         if (_amount < minAmount) revert NotEnoughToTake();
