@@ -246,8 +246,9 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         );
 
         // deposit 12.5% of the sacrificed hex and borrow agaisnt it
-        IERC20(HX).approve(vault, halfHxAmount);
-        uint256 tokenId = IHexOneVault(vault).deposit(halfHxAmount);
+        uint256 secondHalfHxAmount = hxAmount - halfHxAmount;
+        IERC20(HX).approve(vault, secondHalfHxAmount);
+        uint256 tokenId = IHexOneVault(vault).deposit(secondHalfHxAmount);
         uint256 hex1Amount = IHexOneVault(vault).maxBorrowable(tokenId);
         IHexOneVault(vault).borrow(tokenId, hex1Amount);
 
