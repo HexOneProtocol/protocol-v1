@@ -409,10 +409,15 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
             uint256[] memory data = IHexToken(HX).dailyDataRange(_start, _end);
 
             uint256 length = data.length;
-            for (uint256 i; i < length; ++i) {
+            uint256 i;
+            do {
                 (uint256 payout, uint256 shares) = _decodeDailyData(data[i]);
                 hxAccrued += (stake.shares * payout) / shares;
-            }
+
+                unchecked {
+                    i++;
+                }
+            } while (i < length);
         }
     }
 

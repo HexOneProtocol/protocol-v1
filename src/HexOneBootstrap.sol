@@ -404,10 +404,15 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         uint256 stakeCount = IHexToken(HX).stakeCount(msg.sender);
         if (stakeCount == 0) return 0;
 
-        for (uint256 i; i < stakeCount; ++i) {
+        uint256 i;
+        do {
             IHexToken.StakeStore memory stakeStore = IHexToken(HX).stakeLists(msg.sender, i);
             hexAmount += stakeStore.stakedHearts;
-        }
+
+            unchecked {
+                i++;
+            }
+        } while (i < stakeCount);
     }
 
     /**
