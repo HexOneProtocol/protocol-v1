@@ -28,6 +28,8 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
 
     /// @dev access control bootstrap role, resulting hash of keccak256("BOOTSTRAP_ROLE").
     bytes32 public constant BOOTSTRAP_ROLE = 0x754e3cb7a890b8b46aaf55b2c9ce049ab5af00b619b3868c4f23dce1434fce06;
+    /// @dev minimum amount of hex that can be deposited.
+    uint256 public constant MIN_DEPOSIT = 1e8;
 
     /// @dev used to decode daily data.
     uint256 private constant HEARTS_UINT_SHIFT = 72;
@@ -151,7 +153,7 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
      *  @param _amount amount of hex.
      */
     function deposit(uint256 _amount) external nonReentrant returns (uint256 tokenId) {
-        if (_amount == 0) revert InvalidAmount();
+        if (_amount < MIN_DEPOSIT) revert InvalidAmount();
 
         IERC20(HX).safeTransferFrom(msg.sender, address(this), _amount);
 
