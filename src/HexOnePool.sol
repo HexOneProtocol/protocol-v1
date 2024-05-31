@@ -29,7 +29,7 @@ contract HexOnePool is AccessControl, IHexOnePool {
     address public immutable token;
 
     /// @dev amount of hexit given as reward per second.
-    uint256 public rewardPerToken;
+    uint256 public rewardPerShare;
     /// @dev total amount of `token` staked.
     uint256 public totalStaked;
     /// @dev user => amount staked.
@@ -61,10 +61,10 @@ contract HexOnePool is AccessControl, IHexOnePool {
     /**
      *  @dev set the `_rewardPerToken`.
      *  @notice can only be called once by the manager during deployment.
-     *  @param _rewardPerToken of token to stake.
+     *  @param _rewardPerShare of token to stake.
      */
-    function initialize(uint256 _rewardPerToken) external onlyRole(MANAGER_ROLE) {
-        rewardPerToken = _rewardPerToken;
+    function initialize(uint256 _rewardPerShare) external onlyRole(MANAGER_ROLE) {
+        rewardPerShare = _rewardPerShare;
     }
 
     /**
@@ -136,7 +136,8 @@ contract HexOnePool is AccessControl, IHexOnePool {
      *  @dev computes rewards accrued by `_account` since the last interaction.
      */
     function _calculateRewards(address _account) internal view returns (uint256 rewards) {
-        rewards = (stakeOf[_account] * (block.timestamp - lastUpdated[_account]) * rewardPerToken) / MULTIPLIER;
+        uint256 shares = (totalStaked * MULTIPLIER) / stakeOf[_account];
+        rewards = (shares * (block.timestamp - lastUpdated[_account]) * rewardPerShare) / MULTIPLIER;
     }
 
     /**
