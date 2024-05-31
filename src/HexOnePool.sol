@@ -136,7 +136,7 @@ contract HexOnePool is AccessControl, IHexOnePool {
      *  @dev computes rewards accrued by `_account` since the last interaction.
      */
     function _calculateRewards(address _account) internal view returns (uint256 rewards) {
-        uint256 shares = (totalStaked * MULTIPLIER) / stakeOf[_account];
+        uint256 shares = (stakeOf[_account] * MULTIPLIER) / totalStaked;
         rewards = (shares * (block.timestamp - lastUpdated[_account]) * rewardPerShare) / MULTIPLIER;
     }
 
