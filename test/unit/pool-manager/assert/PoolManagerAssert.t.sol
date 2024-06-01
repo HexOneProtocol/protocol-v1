@@ -12,8 +12,8 @@ contract PoolManagerAssert is Base {
     /**
      *  @dev assert that multiple pools are created, initiliazed, and given permission to mint HEXIT.
      */
-    function test_createPools(uint256 _rewardPerToken1, uint256 _rewardPerToken2) external prank(owner) {
-        vm.assume(_rewardPerToken1 != 0 && _rewardPerToken2 != 0);
+    function test_createPools(uint256 _rewardPerShare1, uint256 _rewardPerShare2) external prank(owner) {
+        vm.assume(_rewardPerShare1 != 0 && _rewardPerShare2 != 0);
 
         ERC20Mock mock1 = new ERC20Mock("mock token 1", "MC1");
         ERC20Mock mock2 = new ERC20Mock("mock token 2", "MC2");
@@ -24,11 +24,11 @@ contract PoolManagerAssert is Base {
         tokens[0] = address(mock1);
         tokens[1] = address(mock2);
 
-        uint256[] memory rewardsPerToken = new uint256[](2);
-        rewardsPerToken[0] = _rewardPerToken1;
-        rewardsPerToken[1] = _rewardPerToken2;
+        uint256[] memory rewardsPerShare = new uint256[](2);
+        rewardsPerShare[0] = _rewardPerShare1;
+        rewardsPerShare[1] = _rewardPerShare2;
 
-        manager.createPools(tokens, rewardsPerToken);
+        manager.createPools(tokens, rewardsPerShare);
 
         uint256 poolsLengthAfter = manager.getPoolsLength();
         assertEq(poolsLengthAfter, poolsLengthBefore + 2);
@@ -39,7 +39,7 @@ contract PoolManagerAssert is Base {
 
         for (uint256 i; i < poolsLengthAfter; ++i) {
             address pool = manager.pools(i);
-            uint256 rewardPerToken = HexOnePool(pool).rewardPerToken();
+            uint256 rewardPerToken = HexOnePool(pool).rewardPerShare();
             assertTrue(rewardPerToken > 0);
         }
     }
@@ -47,14 +47,14 @@ contract PoolManagerAssert is Base {
     /**
      *  @dev assert that a pool can be created, initialized and given permission to mint HEXIT.
      */
-    function test_createPool(uint256 _rewardPerToken) external prank(owner) {
-        vm.assume(_rewardPerToken != 0);
+    function test_createPool(uint256 _rewardPerShare) external prank(owner) {
+        vm.assume(_rewardPerShare != 0);
 
         ERC20Mock mock = new ERC20Mock("mock token", "MC");
 
         uint256 poolsLengthBefore = manager.getPoolsLength();
 
-        manager.createPool(address(mock), _rewardPerToken);
+        manager.createPool(address(mock), _rewardPerShare);
 
         uint256 poolsLengthAfter = manager.getPoolsLength();
         assertEq(poolsLengthAfter, poolsLengthBefore + 1);
@@ -65,7 +65,7 @@ contract PoolManagerAssert is Base {
 
         for (uint256 i; i < poolsLengthAfter; ++i) {
             address pool = manager.pools(i);
-            uint256 rewardPerToken = HexOnePool(pool).rewardPerToken();
+            uint256 rewardPerToken = HexOnePool(pool).rewardPerShare();
             assertTrue(rewardPerToken > 0);
         }
     }

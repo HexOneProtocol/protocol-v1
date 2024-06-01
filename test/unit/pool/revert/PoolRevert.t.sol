@@ -60,11 +60,11 @@ contract PoolRevert is Base {
     /**
      *  @dev test that an `_account` can not unstake more than what it has deposited.
      */
-    function test_unstake_revert_ArithmeticError(address _account, uint256 _amount) external {
+    function test_unstake_revert_AmountExceedsStake(address _account, uint256 _amount) external {
         vm.assume(_account != address(0));
         vm.assume(_amount != 0);
 
-        vm.expectRevert(stdError.arithmeticError);
+        vm.expectRevert(IHexOnePool.AmountExceedsStake.selector);
         pools[0].unstake(_amount);
     }
 

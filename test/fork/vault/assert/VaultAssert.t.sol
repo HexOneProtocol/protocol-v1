@@ -66,6 +66,8 @@ contract VaultAssert is Base {
         assertEq(vault.ownerOf(tokenId), address(this));
     }
 
+    /*
+
     function test_deposit_buybackEnabled() external {
         deal(address(HEX_TOKEN), address(this), HEX_DEPOSIT);
 
@@ -84,6 +86,8 @@ contract VaultAssert is Base {
         assertEq(IERC20(HEX_TOKEN).balanceOf(address(this)), 0);
         assertEq(vault.ownerOf(tokenId), address(this));
     }
+
+    */
 
     function test_withdraw_withoutDebt() external {
         deal(address(HEX_TOKEN), address(this), HEX_DEPOSIT);

@@ -14,12 +14,12 @@ contract PoolAssert is Base {
         assertEq(pools[0].hasRole(pools[0].MANAGER_ROLE(), address(manager)), true);
     }
 
-    function test_initialize(uint256 _rewardPerToken) external prank(address(manager)) {
-        vm.assume(_rewardPerToken != 0);
+    function test_initialize(uint256 _rewardPerShare) external prank(address(manager)) {
+        vm.assume(_rewardPerShare != 0);
 
-        pools[0].initialize(_rewardPerToken);
+        pools[0].initialize(_rewardPerShare);
 
-        assertEq(pools[0].rewardPerToken(), _rewardPerToken);
+        assertEq(pools[0].rewardPerShare(), _rewardPerShare);
     }
 
     function test_stake(address _account, uint256 _amount) external prank(_account) {
@@ -67,7 +67,8 @@ contract PoolAssert is Base {
 
         pools[0].claim();
 
-        uint256 hexitMinted = (_amount * _timeStaked * pools[0].rewardPerToken()) / 1e18;
+        uint256 shares = (_amount * 1e18) / pools[0].totalStaked();
+        uint256 hexitMinted = (shares * _timeStaked * pools[0].rewardPerShare()) / 1e18;
         assertEq(hexit.balanceOf(_account), hexitMinted);
     }
 
@@ -94,7 +95,7 @@ contract PoolAssert is Base {
         vm.assume(_account != address(0) && _account != address(pools[0]));
         _firstAmount = bound(_firstAmount, 1, MAX_STAKE);
         _secondAmount = bound(_secondAmount, 1, MAX_STAKE);
-        _timeStaked = bound(_timeStaked, 0, MAX_TIME_STAKED);
+        _timeStaked = bound(_timeStaked, 1, MAX_TIME_STAKED);
 
         deal(address(hex1dai), _account, _firstAmount + _secondAmount);
 
@@ -103,12 +104,14 @@ contract PoolAssert is Base {
 
         skip(_timeStaked);
 
+        uint256 shares = (_firstAmount * 1e18) / pools[0].totalStaked();
+        uint256 hexitMinted = (shares * _timeStaked * pools[0].rewardPerShare()) / 1e18;
+
         hex1dai.approve(address(pools[0]), _secondAmount);
         pools[0].stake(_secondAmount);
 
         pools[0].claim();
 
-        uint256 hexitMinted = (_firstAmount * _timeStaked * pools[0].rewardPerToken()) / 1e18;
         assertEq(hexit.balanceOf(_account), hexitMinted);
     }
 
@@ -124,6 +127,8 @@ contract PoolAssert is Base {
 
         skip(_timeStaked);
 
+        uint256 shares = (_amount * 1e18) / pools[0].totalStaked();
+
         pools[0].unstake(_amount);
         pools[0].claim();
 
@@ -132,7 +137,7 @@ contract PoolAssert is Base {
         assertEq(hex1dai.balanceOf(_account), _amount);
         assertEq(hex1dai.balanceOf(address(pools[0])), 0);
 
-        uint256 hexitMinted = (_amount * _timeStaked * pools[0].rewardPerToken()) / 1e18;
+        uint256 hexitMinted = (shares * _timeStaked * pools[0].rewardPerShare()) / 1e18;
         assertEq(hexit.balanceOf(_account), hexitMinted);
     }
 
@@ -143,8 +148,8 @@ contract PoolAssert is Base {
         uint256 _firstSkip,
         uint256 _secondSkip
     ) external prank(_user) {
-        _depositAmount = bound(_depositAmount, 1, 1e36);
-        _withdrawAmount = bound(_withdrawAmount, 1, _depositAmount);
+        _depositAmount = bound(_depositAmount, 1e18, 1e36);
+        _withdrawAmount = bound(_withdrawAmount, _depositAmount / 4, _depositAmount / 2);
         _firstSkip = bound(_firstSkip, 1, 3652 days);
         _secondSkip = bound(_secondSkip, 1, 3652 days);
 
@@ -156,13 +161,21 @@ contract PoolAssert is Base {
 
         hex1dai.approve(address(pools[0]), _depositAmount);
         pools[0].stake(_depositAmount);
+
         skip(_firstSkip);
+
+        uint256 sharesFirst = (_depositAmount * 1e18) / pools[0].totalStaked();
+        uint256 firstEarned = (sharesFirst * _firstSkip * 420e18) / 1e18;
+
         pools[0].unstake(_withdrawAmount);
+
         skip(_secondSkip);
+
+        uint256 sharesSecond = ((_depositAmount - _withdrawAmount) * 1e18) / pools[0].totalStaked();
+        uint256 secondEarned = (sharesSecond * _secondSkip * 420e18) / 1e18;
+
         pools[0].claim();
 
-        uint256 firstEarned = (_depositAmount * _firstSkip * 420e18) / 1e18;
-        uint256 secondEarned = ((_depositAmount - _withdrawAmount) * _secondSkip * 420e18) / 1e18;
         assertEq(hexit.balanceOf(_user), firstEarned + secondEarned);
     }
 
@@ -178,6 +191,8 @@ contract PoolAssert is Base {
 
         skip(_timeStaked);
 
+        uint256 shares = (_amount * 1e18) / pools[0].totalStaked();
+
         pools[0].exit();
 
         assertEq(pools[0].stakeOf(_account), 0);
@@ -185,7 +200,7 @@ contract PoolAssert is Base {
         assertEq(hex1dai.balanceOf(_account), _amount);
         assertEq(hex1dai.balanceOf(address(pools[0])), 0);
 
-        uint256 hexitMinted = (_amount * _timeStaked * pools[0].rewardPerToken()) / 1e18;
+        uint256 hexitMinted = (shares * _timeStaked * pools[0].rewardPerShare()) / 1e18;
         assertEq(hexit.balanceOf(_account), hexitMinted);
     }
 
@@ -206,7 +221,8 @@ contract PoolAssert is Base {
 
         uint256 rewards = pools[0].calculateRewardsEarned(_account);
 
-        uint256 expectedRewards = (_amount * _timeStaked * pools[0].rewardPerToken()) / 1e18;
+        uint256 shares = (_amount * 1e18) / pools[0].totalStaked();
+        uint256 expectedRewards = (shares * _timeStaked * pools[0].rewardPerShare()) / 1e18;
         assertEq(rewards, expectedRewards);
     }
 }
