@@ -48,7 +48,9 @@ interface IHexOneBootstrap {
     error AirdropAlreadyClaimed();
     error IneligibleForAirdrop();
 
-    event Sacrificed(address indexed account, address token, uint256 amount);
+    event Sacrificed(
+        address indexed account, address token, uint256 amount, uint256 sacrificedUsd, uint256 hexitShares
+    );
     event SacrificeProcessed(address pair, uint256 amountA, uint256 amountB, uint256 liquidity);
     event SacrificeClaimed(address indexed account, uint256 tokendId, uint256 hex1Minted, uint256 hexitMinted);
     event AirdropStarted(uint64 start, uint64 end);

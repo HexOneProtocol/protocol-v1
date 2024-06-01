@@ -182,9 +182,11 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         if (quote < MIN_SACRIFICE) revert SacrificedAmountTooLow();
 
         // update user information
+        uint256 shares = _hexitSacrificeShares(quote);
+
         UserInfo storage user = userInfos[msg.sender];
         user.sacrificedUsd += quote;
-        user.hexitShares += _hexitSacrificeShares(quote);
+        user.hexitShares += shares;
 
         IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
 
@@ -207,7 +209,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
 
         sacrificeInfo.sacrificedUsd += quote;
 
-        emit Sacrificed(msg.sender, _token, _amount);
+        emit Sacrificed(msg.sender, _token, _amount, quote, shares);
     }
 
     /**

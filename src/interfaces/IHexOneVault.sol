@@ -11,7 +11,9 @@ interface IHexOneVault {
         uint16 end;
     }
 
-    event Deposited(address indexed account, uint256 indexed id, uint256 hxAmount);
+    event Deposited(
+        address indexed account, uint256 indexed id, uint40 param, uint256 hxAmount, uint16 start, uint16 end
+    );
     event Withdrawn(address indexed account, uint256 indexed id, uint256 hxAmount, uint256 hdrnAmount);
     event Repaid(address indexed account, uint256 indexed id, uint256 hex1Amount);
     event Liquidated(address indexed account, uint256 indexed id, uint256 hxAmount, uint256 hdrnAmount);
