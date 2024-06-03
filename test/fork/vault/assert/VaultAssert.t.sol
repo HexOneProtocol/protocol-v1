@@ -97,7 +97,7 @@ contract VaultAssert is Base {
 
         vm.warp(block.timestamp + 5556 days);
 
-        (uint256 hxAmount, uint256 hdrnAmount) = vault.withdraw(tokenId);
+        (uint256 hxAmount, uint256 hdrnAmount, uint256 commAmount) = vault.withdraw(tokenId);
 
         (uint256 debt, uint72 amount, uint72 shares, uint40 param, uint16 start, uint16 end) = vault.stakes(tokenId);
         assertEq(debt, 0);
@@ -111,6 +111,7 @@ contract VaultAssert is Base {
 
         assertTrue(hxAmount > HEX_DEPOSIT);
         assertTrue(hdrnAmount > 0);
+        assertTrue(commAmount > 0);
     }
 
     function test_withdraw_withDebt() external {
@@ -125,10 +126,11 @@ contract VaultAssert is Base {
         vm.warp(block.timestamp + 5556 days);
 
         IERC20(hex1).approve(address(vault), hex1Minted);
-        (uint256 hxAmount, uint256 hdrnAmount) = vault.withdraw(tokenId);
+        (uint256 hxAmount, uint256 hdrnAmount, uint256 commAmount) = vault.withdraw(tokenId);
 
         assertTrue(hxAmount > HEX_DEPOSIT);
         assertTrue(hdrnAmount > 0);
+        assertTrue(commAmount > 0);
 
         (uint256 debt, uint72 amount, uint72 shares, uint40 param, uint16 start, uint16 end) = vault.stakes(tokenId);
         assertEq(debt, 0);
@@ -153,10 +155,11 @@ contract VaultAssert is Base {
         vm.warp(block.timestamp + 5555 days + 16 days);
 
         vm.prank(liquidator);
-        (uint256 hxAmount, uint256 hdrnAmount) = vault.liquidate(tokenId);
+        (uint256 hxAmount, uint256 hdrnAmount, uint256 commAmount) = vault.liquidate(tokenId);
 
         assertTrue(hxAmount > HEX_DEPOSIT);
         assertTrue(hdrnAmount > 0);
+        assertTrue(commAmount > 0);
 
         (uint256 debt, uint72 amount, uint72 shares, uint40 param, uint16 start, uint16 end) = vault.stakes(tokenId);
         assertEq(debt, 0);
@@ -187,11 +190,12 @@ contract VaultAssert is Base {
 
         vm.startPrank(liquidator);
         IERC20(hex1).approve(address(vault), hex1Minted);
-        (uint256 hxAmount, uint256 hdrnAmount) = vault.liquidate(tokenId);
+        (uint256 hxAmount, uint256 hdrnAmount, uint256 commAmount) = vault.liquidate(tokenId);
         vm.stopPrank();
 
         assertTrue(hxAmount > HEX_DEPOSIT);
         assertTrue(hdrnAmount > 0);
+        assertTrue(commAmount > 0);
 
         (uint256 debt, uint72 amount, uint72 shares, uint40 param, uint16 start, uint16 end) = vault.stakes(tokenId);
         assertEq(debt, 0);
