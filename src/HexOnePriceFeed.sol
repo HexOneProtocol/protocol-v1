@@ -132,7 +132,7 @@ contract HexOnePriceFeed is AccessControl, IHexOnePriceFeed {
         if (length < 2) revert InvalidPath();
 
         uint256 timeElapsed = block.timestamp - lastUpdate;
-        if (timeElapsed >= period) revert PriceStale();
+        if (timeElapsed >= period * 2) revert PriceStale();
 
         amountOut = _amountIn;
         for (uint256 i; i < length - 1; ++i) {
