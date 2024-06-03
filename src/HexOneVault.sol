@@ -215,7 +215,7 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
             emit Repaid(msg.sender, _id, stake.debt);
         }
 
-        commAmount = _claimComm(_id, stake.param, stake.amount);
+        commAmount = _claimComm(_id, stake.param);
         hdrnAmount = _claimHdrn(_id, stake.param);
         hxAmount = _claimHx(_id, stake.param);
 
@@ -248,7 +248,7 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
             emit Repaid(msg.sender, _id, stake.debt);
         }
 
-        commAmount = _claimComm(_id, stake.param, stake.amount);
+        commAmount = _claimComm(_id, stake.param);
         hdrnAmount = _claimHdrn(_id, stake.param);
         hxAmount = _claimHx(_id, stake.param);
 
@@ -378,9 +378,14 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
         hdrnAmount = IHedron(HDRN).mintNative(_id, _param);
     }
 
-    function _claimComm(uint256 _id, uint40 _param, uint72 _amount) private returns (uint256 commAmount) {
+    /**
+     *  @dev claim comm after stake duration has ended.
+     *  @param _id token id of the stake.
+     *  @param _param stake id param of the hex stake.
+     */
+    function _claimComm(uint256 _id, uint40 _param) private returns (uint256 commAmount) {
         uint256 balanceBefore = IERC20(COMM).balanceOf(address(this));
-        IComm(COMM).mintEndBonus(_id, _param, address(this), _amount);
+        IComm(COMM).mintEndBonus(_id, _param, address(this), 0);
         uint256 balanceAfter = IERC20(COMM).balanceOf(address(this));
 
         commAmount = balanceAfter - balanceBefore;
