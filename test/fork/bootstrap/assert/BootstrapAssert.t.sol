@@ -4,6 +4,8 @@ pragma solidity 0.8.20;
 import "../../Base.t.sol";
 
 contract BootstrapAssert is Base {
+    address private constant TEAM_WALLET = 0x9f4b45c40A64E345A7222F0CE595503EcB6030A6;
+
     function setUp() public virtual override {
         super.setUp();
 
@@ -79,7 +81,7 @@ contract BootstrapAssert is Base {
         uint256 expectedSacrificedUsd = feed.quote(HEX_TOKEN, 10_000e8, DAI_TOKEN);
         assertEq(expectedSacrificedUsd, sacrificedUsd);
 
-        uint256 expectedHexitShares = (expectedSacrificedUsd * 2_806_718 * 1e18) / 1e18;
+        uint256 expectedHexitShares = (expectedSacrificedUsd * 4_826_360 * 1e18) / 1e18;
         expectedHexitShares = (expectedHexitShares * 5555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
@@ -111,7 +113,7 @@ contract BootstrapAssert is Base {
         uint256 expectedSacrificedUsd = feed.quote(HEX_TOKEN, 10_000e8, DAI_TOKEN);
         assertEq(expectedSacrificedUsd, sacrificedUsd);
 
-        uint256 expectedHexitShares = (expectedSacrificedUsd * 1_350_484 * 1e18) / 1e18;
+        uint256 expectedHexitShares = (expectedSacrificedUsd * 4_150_944 * 1e18) / 1e18;
         expectedHexitShares = (expectedHexitShares * 5555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
@@ -179,7 +181,7 @@ contract BootstrapAssert is Base {
 
         assertEq(100e18, sacrificedUsd);
 
-        uint256 expectedHexitShares = (100e18 * 2_806_718 * 1e18) / 1e18;
+        uint256 expectedHexitShares = (100e18 * 4_826_360 * 1e18) / 1e18;
         expectedHexitShares = (expectedHexitShares * 5555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
@@ -215,7 +217,7 @@ contract BootstrapAssert is Base {
 
         assertEq(100e18, sacrificedUsd);
 
-        uint256 expectedHexitShares = (100e18 * 1_350_484 * 1e18) / 1e18;
+        uint256 expectedHexitShares = (100e18 * 4_150_944 * 1e18) / 1e18;
         expectedHexitShares = (expectedHexitShares * 5555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
@@ -285,7 +287,7 @@ contract BootstrapAssert is Base {
         uint256 expectedSacrificedUsd = feed.quote(WPLS_TOKEN, 100_000e18, DAI_TOKEN);
         assertEq(expectedSacrificedUsd, sacrificedUsd);
 
-        uint256 expectedHexitShares = (expectedSacrificedUsd * 2_806_718 * 1e18) / 1e18;
+        uint256 expectedHexitShares = (expectedSacrificedUsd * 4_826_360 * 1e18) / 1e18;
         expectedHexitShares = (expectedHexitShares * 5555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
@@ -322,7 +324,7 @@ contract BootstrapAssert is Base {
         uint256 expectedSacrificedUsd = feed.quote(WPLS_TOKEN, 100_000e18, DAI_TOKEN);
         assertEq(expectedSacrificedUsd, sacrificedUsd);
 
-        uint256 expectedHexitShares = (expectedSacrificedUsd * 1_350_484 * 1e18) / 1e18;
+        uint256 expectedHexitShares = (expectedSacrificedUsd * 4_150_944 * 1e18) / 1e18;
         expectedHexitShares = (expectedHexitShares * 5555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
@@ -394,7 +396,7 @@ contract BootstrapAssert is Base {
         uint256 expectedSacrificedUsd = feed.quote(PLSX_TOKEN, 1_000_000e18, DAI_TOKEN);
         assertEq(expectedSacrificedUsd, sacrificedUsd);
 
-        uint256 expectedHexitShares = (expectedSacrificedUsd * 2_806_718 * 1e18) / 1e18;
+        uint256 expectedHexitShares = (expectedSacrificedUsd * 4_826_360 * 1e18) / 1e18;
         expectedHexitShares = (expectedHexitShares * 5555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
@@ -432,7 +434,7 @@ contract BootstrapAssert is Base {
         uint256 expectedSacrificedUsd = feed.quote(PLSX_TOKEN, 1_000_000e18, DAI_TOKEN);
         assertEq(expectedSacrificedUsd, sacrificedUsd);
 
-        uint256 expectedHexitShares = (expectedSacrificedUsd * 1_350_484 * 1e18) / 1e18;
+        uint256 expectedHexitShares = (expectedSacrificedUsd * 4_150_944 * 1e18) / 1e18;
         expectedHexitShares = (expectedHexitShares * 5555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
@@ -606,7 +608,7 @@ contract BootstrapAssert is Base {
         assertEq(claimEnd, block.timestamp + 15 days);
         assertEq(processed, true);
 
-        uint256 hexitAfter = IERC20(hexit).balanceOf(address(owner));
+        uint256 hexitAfter = IERC20(hexit).balanceOf(TEAM_WALLET);
 
         uint256 teamHexit = (6667 * hexitMinted) / 10_000;
         assertEq(hexitAfter - hexitBefore, teamHexit);
@@ -692,7 +694,7 @@ contract BootstrapAssert is Base {
         assertEq(airdropClaimed, true);
 
         (uint256 hexitMinted) = bootstrap.airdropInfo();
-        uint256 expectedHexitMinted = (sacrificedUsd * 9) + 3_948_782 * 1e18;
+        uint256 expectedHexitMinted = (sacrificedUsd * 9) + 5_178_138 * 1e18;
         assertApproxEqRel(expectedHexitMinted, hexitMinted, 1e15);
     }
 
@@ -735,7 +737,7 @@ contract BootstrapAssert is Base {
         assertEq(airdropClaimed, true);
 
         (uint256 hexitMinted) = bootstrap.airdropInfo();
-        uint256 expectedHexitMinted = (sacrificedUsd * 9) + 2_806_718 * 1e18;
+        uint256 expectedHexitMinted = (sacrificedUsd * 9) + 4_826_360 * 1e18;
         assertApproxEqRel(expectedHexitMinted, hexitMinted, 1e15);
     }
 

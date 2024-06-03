@@ -60,8 +60,8 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     uint16 public constant DURATION = 5555;
     /// @dev period after stake duration in which the stake becomes liquidatable.
     uint16 public constant GRACE_PERIOD = 7;
-    /// @dev minimum health ratio, if health ratio is below 250% in bps stakes become liquidatable.
-    uint16 public constant MIN_HEALTH_RATIO = 25_000;
+    /// @dev minimum health ratio, if health ratio is below 200% in bps stakes become liquidatable.
+    uint16 public constant MIN_HEALTH_RATIO = 20_000;
     /// @dev precision scale multipler, represents 100% in bps.
     uint16 public constant FIXED_POINT = 10_000;
     /// @dev represents the buyback fee of 1% in bps.

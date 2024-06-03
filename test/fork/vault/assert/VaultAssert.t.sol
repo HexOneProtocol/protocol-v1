@@ -66,29 +66,6 @@ contract VaultAssert is Base {
         assertEq(vault.ownerOf(tokenId), address(this));
     }
 
-    /*
-
-    function test_deposit_buybackEnabled() external {
-        deal(address(HEX_TOKEN), address(this), HEX_DEPOSIT);
-
-        vm.prank(address(bootstrap));
-        vault.enableBuyback();
-
-        IERC20(HEX_TOKEN).approve(address(vault), HEX_DEPOSIT);
-        uint256 tokenId = vault.deposit(HEX_DEPOSIT);
-
-        assertEq(tokenId, 0);
-
-        (uint256 debt, uint72 amount,,,,) = vault.stakes(tokenId);
-        assertEq(debt, 0);
-        assertEq(uint256(amount), HEX_DEPOSIT - ((HEX_DEPOSIT * 100) / 10_000));
-
-        assertEq(IERC20(HEX_TOKEN).balanceOf(address(this)), 0);
-        assertEq(vault.ownerOf(tokenId), address(this));
-    }
-
-    */
-
     function test_withdraw_withoutDebt() external {
         deal(address(HEX_TOKEN), address(this), HEX_DEPOSIT);
 
@@ -161,6 +138,11 @@ contract VaultAssert is Base {
         assertTrue(hdrnAmount > 0);
         assertTrue(commAmount > 0);
 
+        // console.log("HEX deposited: ", HEX_DEPOSIT / 1e8);
+        // console.log("COMM claimed:  ", commAmount / 1e18);
+        // console.log("HDRN claimed:  ", hdrnAmount / 1e9);
+        // console.log("HEX claimed:   ", hxAmount / 1e8);
+
         (uint256 debt, uint72 amount, uint72 shares, uint40 param, uint16 start, uint16 end) = vault.stakes(tokenId);
         assertEq(debt, 0);
         assertEq(amount, 0);
@@ -196,6 +178,11 @@ contract VaultAssert is Base {
         assertTrue(hxAmount > HEX_DEPOSIT);
         assertTrue(hdrnAmount > 0);
         assertTrue(commAmount > 0);
+
+        // console.log("HEX deposited: ", HEX_DEPOSIT / 1e8);
+        // console.log("COMM claimed:  ", commAmount / 1e18);
+        // console.log("HDRN claimed:  ", hdrnAmount / 1e9);
+        // console.log("HEX claimed:   ", hxAmount / 1e8);
 
         (uint256 debt, uint72 amount, uint72 shares, uint40 param, uint16 start, uint16 end) = vault.stakes(tokenId);
         assertEq(debt, 0);

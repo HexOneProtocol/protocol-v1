@@ -40,6 +40,9 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     /// @dev duration of the airdrop claim duration.
     uint64 public constant AIRDROP_DURATION = 15 days;
 
+    /// @dev address of the team wallet.
+    address public constant TEAM_WALLET = 0x9f4b45c40A64E345A7222F0CE595503EcB6030A6;
+
     /// @dev address of the pulsex v1 router.
     address private constant ROUTER_V1 = 0x98bf93ebf5c380C0e6Ae8e192A7e2AE08edAcc02;
     /// @dev address of the pulsex v2 router.
@@ -54,8 +57,8 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
 
     /// @dev precision scale multipler, represents 100% in bps.
     uint16 private constant FIXED_POINT = 10_000;
-    /// @dev base hexit daily decrease factor of 95.24%.
-    uint16 private constant DECREASE_FACTOR = 9524;
+    /// @dev base hexit daily decrease factor of 1% (10_000 - 9900 = 100).
+    uint16 private constant DECREASE_FACTOR = 9900;
     /// @dev hexit minted to the team over the remaining hex 66.67% in bps.
     uint16 private constant HEXIT_TEAM_RATE = 6667;
     /// @dev bonus hexit multiplier multiplier used during sacrifice.
@@ -332,7 +335,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         schedule.processed = true;
 
         uint256 hexitTeamAllocation = (sacrificeInfo.hexitMinted * HEXIT_TEAM_RATE) / FIXED_POINT;
-        IHexitToken(hexit).mint(msg.sender, hexitTeamAllocation);
+        IHexitToken(hexit).mint(TEAM_WALLET, hexitTeamAllocation);
 
         IHexOneVault(vault).enableBuyback();
 
