@@ -55,14 +55,15 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     /// @dev address of the dai token.
     address private constant DAI = 0xefD766cCb38EaF1dfd701853BFCe31359239F305;
 
+    /// @dev bonus hexit multiplier used during sacrifice.
+    uint32 private constant MULTIPLIER = 555_555;
+
     /// @dev precision scale multipler, represents 100% in bps.
     uint16 private constant FIXED_POINT = 10_000;
     /// @dev base hexit daily decrease factor of 1% (10_000 - 9900 = 100).
     uint16 private constant DECREASE_FACTOR = 9900;
     /// @dev hexit minted to the team over the remaining hex 66.67% in bps.
     uint16 private constant HEXIT_TEAM_RATE = 6667;
-    /// @dev bonus hexit multiplier used during sacrifice.
-    uint16 private constant MULTIPLIER = 5555;
     /// @dev percentage of hex sacrifice used to bootstrap liquidity 25% in bps.
     uint16 private constant LIQUIDITY_RATE = 2500;
 
