@@ -50,7 +50,7 @@ contract BootstrapAssert is Base {
         assertEq(expectedSacrificedUsd, sacrificedUsd);
 
         uint256 expectedHexitShares = (expectedSacrificedUsd * 5_555_555 * 1e18) / 1e18;
-        expectedHexitShares = (expectedHexitShares * 555_555) / 10_000;
+        expectedHexitShares = (expectedHexitShares * 555) / 10_000;
         assertEq(expectedHexitShares, hexitShares);
 
         assertEq(sacrificeClaimed, false);
@@ -82,7 +82,7 @@ contract BootstrapAssert is Base {
         assertEq(expectedSacrificedUsd, sacrificedUsd);
 
         uint256 expectedHexitShares = (expectedSacrificedUsd * 4_826_360 * 1e18) / 1e18;
-        expectedHexitShares = (expectedHexitShares * 555_555) / 10_000;
+        expectedHexitShares = (expectedHexitShares * 555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
         assertEq(sacrificeClaimed, false);
@@ -114,7 +114,7 @@ contract BootstrapAssert is Base {
         assertEq(expectedSacrificedUsd, sacrificedUsd);
 
         uint256 expectedHexitShares = (expectedSacrificedUsd * 4_150_944 * 1e18) / 1e18;
-        expectedHexitShares = (expectedHexitShares * 555_555) / 10_000;
+        expectedHexitShares = (expectedHexitShares * 555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
         assertEq(sacrificeClaimed, false);
@@ -146,7 +146,7 @@ contract BootstrapAssert is Base {
         assertEq(100e18, sacrificedUsd);
 
         uint256 expectedHexitShares = (100e18 * 5_555_555 * 1e18) / 1e18;
-        expectedHexitShares = (expectedHexitShares * 555_555) / 10_000;
+        expectedHexitShares = (expectedHexitShares * 555) / 10_000;
         assertEq(expectedHexitShares, hexitShares);
 
         assertEq(sacrificeClaimed, false);
@@ -182,7 +182,7 @@ contract BootstrapAssert is Base {
         assertEq(100e18, sacrificedUsd);
 
         uint256 expectedHexitShares = (100e18 * 4_826_360 * 1e18) / 1e18;
-        expectedHexitShares = (expectedHexitShares * 555_555) / 10_000;
+        expectedHexitShares = (expectedHexitShares * 555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
         assertEq(sacrificeClaimed, false);
@@ -218,7 +218,7 @@ contract BootstrapAssert is Base {
         assertEq(100e18, sacrificedUsd);
 
         uint256 expectedHexitShares = (100e18 * 4_150_944 * 1e18) / 1e18;
-        expectedHexitShares = (expectedHexitShares * 555_555) / 10_000;
+        expectedHexitShares = (expectedHexitShares * 555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
         assertEq(sacrificeClaimed, false);
@@ -251,7 +251,7 @@ contract BootstrapAssert is Base {
         assertEq(expectedSacrificedUsd, sacrificedUsd);
 
         uint256 expectedHexitShares = (expectedSacrificedUsd * 5_555_555 * 1e18) / 1e18;
-        expectedHexitShares = (expectedHexitShares * 555_555) / 10_000;
+        expectedHexitShares = (expectedHexitShares * 555) / 10_000;
         assertEq(expectedHexitShares, hexitShares);
 
         assertEq(sacrificeClaimed, false);
@@ -288,7 +288,7 @@ contract BootstrapAssert is Base {
         assertEq(expectedSacrificedUsd, sacrificedUsd);
 
         uint256 expectedHexitShares = (expectedSacrificedUsd * 4_826_360 * 1e18) / 1e18;
-        expectedHexitShares = (expectedHexitShares * 555_555) / 10_000;
+        expectedHexitShares = (expectedHexitShares * 555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
         assertEq(sacrificeClaimed, false);
@@ -325,7 +325,7 @@ contract BootstrapAssert is Base {
         assertEq(expectedSacrificedUsd, sacrificedUsd);
 
         uint256 expectedHexitShares = (expectedSacrificedUsd * 4_150_944 * 1e18) / 1e18;
-        expectedHexitShares = (expectedHexitShares * 555_555) / 10_000;
+        expectedHexitShares = (expectedHexitShares * 555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
         assertEq(sacrificeClaimed, false);
@@ -359,7 +359,7 @@ contract BootstrapAssert is Base {
         assertEq(expectedSacrificedUsd, sacrificedUsd);
 
         uint256 expectedHexitShares = (expectedSacrificedUsd * 5_555_555 * 1e18) / 1e18;
-        expectedHexitShares = (expectedHexitShares * 555_555) / 10_000;
+        expectedHexitShares = (expectedHexitShares * 555) / 10_000;
         assertEq(expectedHexitShares, hexitShares);
 
         assertEq(sacrificeClaimed, false);
@@ -397,7 +397,7 @@ contract BootstrapAssert is Base {
         assertEq(expectedSacrificedUsd, sacrificedUsd);
 
         uint256 expectedHexitShares = (expectedSacrificedUsd * 4_826_360 * 1e18) / 1e18;
-        expectedHexitShares = (expectedHexitShares * 555_555) / 10_000;
+        expectedHexitShares = (expectedHexitShares * 555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
         assertEq(sacrificeClaimed, false);
@@ -435,7 +435,7 @@ contract BootstrapAssert is Base {
         assertEq(expectedSacrificedUsd, sacrificedUsd);
 
         uint256 expectedHexitShares = (expectedSacrificedUsd * 4_150_944 * 1e18) / 1e18;
-        expectedHexitShares = (expectedHexitShares * 555_555) / 10_000;
+        expectedHexitShares = (expectedHexitShares * 555) / 10_000;
         assertApproxEqRel(expectedHexitShares, hexitShares, 1e15);
 
         assertEq(sacrificeClaimed, false);

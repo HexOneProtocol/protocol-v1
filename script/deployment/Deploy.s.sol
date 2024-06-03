@@ -30,7 +30,7 @@ contract DeployScript is Base {
 
     function _deploy() internal broadcast {
         hexit = new HexitToken();
-        feed = new HexOnePriceFeed(address(hexit), 500);
+        feed = new HexOnePriceFeed(address(hexit), 300);
 
         address[] memory sacrificeTokens = new address[](4);
         sacrificeTokens[0] = HEX_TOKEN;
@@ -112,6 +112,7 @@ contract DeployScript is Base {
         console.log("vault         : ", address(vault));
         console.log("hex one token : ", hex1);
         console.log("manager       : ", address(manager));
+        console.log("hex1 token    : ", address(hex1));
         console.log("HEX1/DAI pool : ", manager.pools(0));
         console.log("HEXIT pool    : ", manager.pools(1));
     }
