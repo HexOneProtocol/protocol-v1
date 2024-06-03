@@ -18,6 +18,7 @@ import {IHexToken} from "./interfaces/IHexToken.sol";
 import {IERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {IPulseXRouter02 as IPulseXRouter} from "./interfaces/pulsex/IPulseXRouter.sol";
 import {IHedron} from "./interfaces/IHedron.sol";
+import {IComm} from "./interfaces/IComm.sol";
 
 /**
  *  @title Hex One Vault
@@ -52,6 +53,8 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     address private constant USDC = 0x15D38573d2feeb82e7ad5187aB8c1D52810B1f07;
     /// @dev address of the usdt token.
     address private constant USDT = 0x0Cb6F5a34ad42ec934882A05265A7d5F59b51A2f;
+    /// @dev address of the comm token.
+    address private constant COMM = 0x5A9780Bfe63f3ec57f01b087cD65BD656C9034A8;
 
     /// @dev duration of the hex stakes.
     uint16 public constant DURATION = 5555;
@@ -193,7 +196,11 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
      *  @notice claims hedron tokens.
      *  @param _id token id of the stake.
      */
-    function withdraw(uint256 _id) external nonReentrant returns (uint256 hxAmount, uint256 hdrnAmount) {
+    function withdraw(uint256 _id)
+        external
+        nonReentrant
+        returns (uint256 hxAmount, uint256 hdrnAmount, uint256 commAmount)
+    {
         if (msg.sender != ownerOf(_id)) revert InvalidOwner();
 
         Stake memory stake = stakes[_id];
@@ -208,9 +215,11 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
             emit Repaid(msg.sender, _id, stake.debt);
         }
 
+        commAmount = _claimComm(_id, stake.param, stake.amount);
         hdrnAmount = _claimHdrn(_id, stake.param);
         hxAmount = _claimHx(_id, stake.param);
 
+        IERC20(COMM).safeTransfer(msg.sender, commAmount);
         IERC20(HDRN).safeTransfer(msg.sender, hdrnAmount);
         IERC20(HX).safeTransfer(msg.sender, hxAmount);
 
@@ -222,7 +231,11 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
      *  @notice if stake has debt it must be repaid.
      *  @param _id token id of the stake.
      */
-    function liquidate(uint256 _id) external nonReentrant returns (uint256 hxAmount, uint256 hdrnAmount) {
+    function liquidate(uint256 _id)
+        external
+        nonReentrant
+        returns (uint256 hxAmount, uint256 hdrnAmount, uint256 commAmount)
+    {
         Stake memory stake = stakes[_id];
         if (currentDay() < stake.end + GRACE_PERIOD) revert StakeNotLiquidatable();
 
@@ -235,9 +248,11 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
             emit Repaid(msg.sender, _id, stake.debt);
         }
 
+        commAmount = _claimComm(_id, stake.param, stake.amount);
         hdrnAmount = _claimHdrn(_id, stake.param);
         hxAmount = _claimHx(_id, stake.param);
 
+        IERC20(COMM).safeTransfer(msg.sender, commAmount);
         IERC20(HDRN).safeTransfer(msg.sender, hdrnAmount);
         IERC20(HX).safeTransfer(msg.sender, hxAmount);
 
@@ -361,6 +376,14 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
      */
     function _claimHdrn(uint256 _id, uint40 _param) private returns (uint256 hdrnAmount) {
         hdrnAmount = IHedron(HDRN).mintNative(_id, _param);
+    }
+
+    function _claimComm(uint256 _id, uint40 _param, uint72 _amount) private returns (uint256 commAmount) {
+        uint256 balanceBefore = IERC20(COMM).balanceOf(address(this));
+        IComm(COMM).mintEndBonus(_id, _param, address(this), _amount);
+        uint256 balanceAfter = IERC20(COMM).balanceOf(address(this));
+
+        commAmount = balanceAfter - balanceBefore;
     }
 
     /**
