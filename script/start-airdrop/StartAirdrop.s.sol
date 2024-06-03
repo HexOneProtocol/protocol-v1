@@ -9,6 +9,6 @@ contract StartAirdropScript is Base {
     HexOneBootstrap internal immutable bootstrap = HexOneBootstrap(0x4f4Bbe6Be6Ec33aD7cEe686F2d5d11cD06cF8CE5);
 
     function run() external broadcast {
-        bootstrap.startAirdrop(uint64(block.timestamp + 20));
+        bootstrap.startAirdrop(uint64(block.timestamp + 1 minutes));
     }
 }

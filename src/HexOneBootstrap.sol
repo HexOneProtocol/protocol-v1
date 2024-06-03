@@ -61,7 +61,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     uint16 private constant DECREASE_FACTOR = 9900;
     /// @dev hexit minted to the team over the remaining hex 66.67% in bps.
     uint16 private constant HEXIT_TEAM_RATE = 6667;
-    /// @dev bonus hexit multiplier multiplier used during sacrifice.
+    /// @dev bonus hexit multiplier used during sacrifice.
     uint16 private constant MULTIPLIER = 5555;
     /// @dev percentage of hex sacrifice used to bootstrap liquidity 25% in bps.
     uint16 private constant LIQUIDITY_RATE = 2500;
