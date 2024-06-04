@@ -26,6 +26,12 @@ interface IHexOneBootstrap {
         bool airdropClaimed;
     }
 
+    struct TokenSacrificeInfo {
+        uint256 sacrificedAmount;
+        uint256 sacrificedUsd;
+        uint256 hexitShares;
+    }
+
     error VaultAlreadyInitialized();
     error InvalidTimestamp();
     error EmptyArray();

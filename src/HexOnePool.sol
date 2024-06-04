@@ -34,6 +34,8 @@ contract HexOnePool is AccessControl, IHexOnePool {
     uint256 public totalStaked;
     /// @dev user => amount staked.
     mapping(address => uint256) public stakeOf;
+    /// @dev user => claimed rewards.
+    mapping(address => uint256) public claimed;
 
     /// @dev user => earned amount to be claimed.
     mapping(address => uint256) internal earned;
@@ -111,6 +113,7 @@ contract HexOnePool is AccessControl, IHexOnePool {
         rewards = earned[msg.sender];
         if (rewards > 0) {
             earned[msg.sender] = 0;
+            claimed[msg.sender] += rewards;
             IHexitToken(hexit).mint(msg.sender, rewards);
         }
 
