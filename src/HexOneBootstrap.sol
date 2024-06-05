@@ -31,7 +31,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     /// @dev min amount accepted to be sacrificed.
     uint256 public constant MIN_SACRIFICE = 1e18;
     /// @dev base hexit amount of hexit.
-    uint256 public constant BASE_HEXIT = 5_555_555 * 1e18;
+    uint256 public constant BASE_HEXIT = 5555 * 1e18;
 
     /// @dev duration of the sacrifice duration.
     uint64 public constant SACRIFICE_DURATION = 30 days;
@@ -64,7 +64,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     /// @dev percentage of hex sacrifice used to bootstrap liquidity 25% in bps.
     uint16 private constant LIQUIDITY_RATE = 2500;
     /// @dev bonus hexit multiplier used during sacrifice.
-    uint16 private constant MULTIPLIER = 555;
+    uint16 private constant MULTIPLIER = 55_555;
 
     /// @dev address of the price feed.
     address public immutable feed;
