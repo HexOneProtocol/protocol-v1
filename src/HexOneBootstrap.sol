@@ -147,6 +147,13 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     }
 
     /**
+     *  @dev returns the amount of hexit tokens that allocated to the msg.sender during the airdrop period.
+     */
+    function airdropHexitAllocation() public view returns (uint256 hexitAllocation) {
+        hexitAllocation = _hexitAirdropShares(userInfos[msg.sender].sacrificedUsd, _quote(HX, _getHxStaked(), DAI));
+    }
+
+    /**
      *  @dev initializes the vault in the contract.
      *  @notice can only be called once by the owner.
      *  @param _vault address of the vault.
