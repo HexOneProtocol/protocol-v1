@@ -99,8 +99,8 @@ contract DeployScript is Base {
         tokens[1] = address(hexitHex1);
 
         uint256[] memory rewardsPerToken = new uint256[](2);
-        rewardsPerToken[0] = 555e18;
-        rewardsPerToken[1] = 155e18;
+        rewardsPerToken[0] = 555_555_555e18;
+        rewardsPerToken[1] = 155_555_555e18;
 
         manager.createPools(tokens, rewardsPerToken);
     }

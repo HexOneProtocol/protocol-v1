@@ -64,7 +64,9 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     /// @dev percentage of hex sacrifice used to bootstrap liquidity 25% in bps.
     uint16 private constant LIQUIDITY_RATE = 2500;
     /// @dev bonus hexit multiplier used during sacrifice.
-    uint16 private constant MULTIPLIER = 55_555;
+    uint16 private constant SACRIFICE_MULTIPLIER = 5555;
+    /// @dev bonus hexit multiplier used during sacrifice.
+    uint16 private constant AIRDROP_MULTIPLIER = 1555;
 
     /// @dev address of the price feed.
     address public immutable feed;
@@ -401,7 +403,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
      */
     function _hexitSacrificeShares(uint256 _sacrificedUsd) private view returns (uint256 hexitShares) {
         hexitShares = (_sacrificedUsd * _baseDailyHexit(sacrificeDay())) / 1e18;
-        hexitShares = (hexitShares * MULTIPLIER) / FIXED_POINT;
+        hexitShares = hexitShares * SACRIFICE_MULTIPLIER;
     }
 
     /**
@@ -414,12 +416,8 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         view
         returns (uint256 hexitShares)
     {
-        hexitShares = (9 * _sacrificedUsd) + _hxStakedUsd;
-        if (hexitShares == 0) {
-            return hexitShares;
-        } else {
-            return hexitShares + _baseDailyHexit(airdropDay());
-        }
+        uint256 totalValue = (_sacrificedUsd * AIRDROP_MULTIPLIER) + _hxStakedUsd;
+        hexitShares = (totalValue * _baseDailyHexit(airdropDay())) / 1e18;
     }
 
     /**
