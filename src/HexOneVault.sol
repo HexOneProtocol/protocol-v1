@@ -346,12 +346,9 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
         path[2] = DAI;
         path[3] = hex1;
 
-        (uint256 reserveA, uint256 reserveB) = UniswapV2Library.getReserves(FACTORY_V2, DAI, hex1);
-
-        uint256 amountOutMin = UniswapV2Library.getAmountOut(_fee, reserveA, reserveB);
-
+        // accept any amount of tokens
         uint256[] memory amounts =
-            IPulseXRouter(ROUTER_V2).swapExactTokensForTokens(_fee, amountOutMin, path, address(this), block.timestamp);
+            IPulseXRouter(ROUTER_V2).swapExactTokensForTokens(_fee, 0, path, address(this), block.timestamp);
 
         IHexOneToken(hex1).burn(address(this), amounts[amounts.length - 1]);
     }

@@ -60,6 +60,13 @@ contract DeployScript is Base {
         hexDaiPath[2] = DAI_TOKEN;
         feed.addPath(hexDaiPath);
 
+        // DAI/HEX
+        address[] memory daiHexPath = new address[](3);
+        daiHexPath[0] = DAI_TOKEN;
+        daiHexPath[1] = WPLS_TOKEN;
+        daiHexPath[2] = HEX_TOKEN;
+        feed.addPath(daiHexPath);
+
         // HEX/USDC
         address[] memory hexUsdcPath = new address[](3);
         hexUsdcPath[0] = HEX_TOKEN;
@@ -80,11 +87,23 @@ contract DeployScript is Base {
         wplsDaiPath[1] = DAI_TOKEN;
         feed.addPath(wplsDaiPath);
 
+        // WPLS/HEX path
+        address[] memory wplsHexPath = new address[](2);
+        wplsHexPath[0] = WPLS_TOKEN;
+        wplsHexPath[1] = HEX_TOKEN;
+        feed.addPath(wplsHexPath);
+
         // PLSX/DAI path
         address[] memory plsxDaiPath = new address[](2);
         plsxDaiPath[0] = PLSX_TOKEN;
         plsxDaiPath[1] = DAI_TOKEN;
         feed.addPath(plsxDaiPath);
+
+        // PLSX/HEX path
+        address[] memory daiPlsxPath = new address[](2);
+        daiPlsxPath[0] = PLSX_TOKEN;
+        daiPlsxPath[1] = HEX_TOKEN;
+        feed.addPath(daiPlsxPath);
 
         // configure bootstrap
         bootstrap.initVault(address(vault));
@@ -99,8 +118,8 @@ contract DeployScript is Base {
         tokens[1] = address(hexitHex1);
 
         uint256[] memory rewardsPerToken = new uint256[](2);
-        rewardsPerToken[0] = 555_555_555e18;
-        rewardsPerToken[1] = 155_555_555e18;
+        rewardsPerToken[0] = 5_555_555e18;
+        rewardsPerToken[1] = 1_555_555e18;
 
         manager.createPools(tokens, rewardsPerToken);
     }
