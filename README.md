@@ -66,5 +66,6 @@ forge build --sizes
 ```
 
 ## Audits
-- Coverage (06-03-2024): [report](https://github.com/HexOneProtocol/hex1-contracts/files/14516700/hex1-security-review.pdf).
+- Coverage (31-05-2024): [report](https://github.com/coveragelabs/portfolio/blob/main/reports/2024-05-hex1.pdf).
+- Coverage (06-03-2024): [report](https://github.com/coveragelabs/portfolio/blob/main/reports/2024-01-hex1.pdf).
 - Certik (19-05-2023): [report](https://skynet.certik.com/projects/hex1#active-monitor).
