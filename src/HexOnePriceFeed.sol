@@ -23,7 +23,7 @@ contract HexOnePriceFeed is AccessControl, IHexOnePriceFeed {
     bytes32 public constant OWNER_ROLE = 0xb19546dff01e856fb3f010c267a7b1c60363cf8a4664e21cc89c26224620214e;
 
     /// @dev precision scale multipler.
-    uint256 public constant MULTIPLIER = 555_555e18;
+    uint256 public constant MULTIPLIER = 155_555e18;
 
     /// @dev max update period supported.
     uint256 public constant MAX_PERIOD = 700;
