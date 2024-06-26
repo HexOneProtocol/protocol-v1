@@ -91,6 +91,8 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
 
     /// @dev user => UserInfo.
     mapping(address => UserInfo) public userInfos;
+    /// @dev sacrifice token => TokenSacrificeInfo.
+    mapping(address => TokenSacrificeInfo) public totalSacrificedOf;
     /// @dev user => sacrifice token => TokenSacrificeInfo.
     mapping(address => mapping(address => TokenSacrificeInfo)) public sacrificedOf;
 
@@ -211,6 +213,11 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
         tokenSacrifice.sacrificedAmount += _amount;
         tokenSacrifice.sacrificedUsd += quote;
         tokenSacrifice.hexitShares += shares;
+
+        TokenSacrificeInfo storage totalSacrifice = totalSacrificedOf[_token];
+        totalSacrifice.sacrificedAmount += _amount;
+        totalSacrifice.sacrificedUsd += quote;
+        totalSacrifice.hexitShares += shares;
 
         IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
 
