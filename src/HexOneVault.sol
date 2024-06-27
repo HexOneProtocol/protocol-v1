@@ -102,6 +102,13 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
+     *  @dev returns the base uri for the nft token.
+     */
+    function tokenURI(uint256) public pure override returns (string memory) {
+        return "https://red-late-crocodile-294.mypinata.cloud/ipfs/QmTP6y2MhjbfTovxcDX5ZKtMZFay5zj7gsmbDfsb6GfDYR";
+    }
+
+    /**
      *  @dev returns the current day for the hex contract.
      */
     function currentDay() public view returns (uint256) {
