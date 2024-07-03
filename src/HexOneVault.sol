@@ -9,6 +9,8 @@ import {ReentrancyGuard} from "../lib/openzeppelin-contracts/contracts/utils/Ree
 import {SafeERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {UniswapV2Library} from "./libraries/UniswapV2Library.sol";
 import {TokenUtils} from "./utils/TokenUtils.sol";
+import {Strings} from "../lib/openzeppelin-contracts/contracts/utils/Strings.sol";
+import {Base64} from "../lib/openzeppelin-contracts/contracts/utils/Base64.sol";
 
 import {IHexOneVault} from "./interfaces/IHexOneVault.sol";
 import {IHexOneToken} from "./interfaces/IHexOneToken.sol";
@@ -25,6 +27,7 @@ import {IComm} from "./interfaces/IComm.sol";
  *  @dev turns hex stakes into nfts with hex one borrowing functionality.
  */
 contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
+    using Strings for uint256;
     using SafeERC20 for IERC20;
 
     /// @dev access control bootstrap role, resulting hash of keccak256("BOOTSTRAP_ROLE").
@@ -104,8 +107,44 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     /**
      *  @dev returns the base uri for the nft token.
      */
-    function tokenURI(uint256) public pure override returns (string memory) {
-        return "https://red-late-crocodile-294.mypinata.cloud/ipfs/QmTP6y2MhjbfTovxcDX5ZKtMZFay5zj7gsmbDfsb6GfDYR";
+    function tokenURI(uint256 _id) public view override returns (string memory) {
+        _requireOwned(_id);
+
+        bytes memory attributes = abi.encodePacked(
+            '"attributes": [',
+            "{",
+            '"trait_type": "T-Shares",',
+            '"value": "',
+            uint256(stakes[_id].shares).toString(),
+            '"',
+            "},",
+            "{",
+            '"trait_type": "Maturity",',
+            '"value": "',
+            uint256(stakes[_id].end).toString(),
+            '"',
+            "}",
+            "]"
+        );
+
+        bytes memory data = abi.encodePacked(
+            "{",
+            '"name": "HEX1 Debt Title #',
+            _id.toString(),
+            '",',
+            '"description": "Magic Carpet Ride",',
+            '"image": "',
+            _baseURI(),
+            '",',
+            attributes,
+            "}"
+        );
+
+        return string(abi.encodePacked("data:application/json;base64,", Base64.encode(data)));
+    }
+
+    function _baseURI() internal pure override returns (string memory) {
+        return "ipfs://QmTP6y2MhjbfTovxcDX5ZKtMZFay5zj7gsmbDfsb6GfDYR";
     }
 
     /**
