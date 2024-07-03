@@ -233,7 +233,13 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
         }
 
         emit Deposited(
-            msg.sender, tokenId, stakeStore.stakeId, _amount, stakeStore.lockedDay, stakeStore.lockedDay + DURATION
+            msg.sender,
+            tokenId,
+            stakeStore.stakeId,
+            _amount,
+            stakeStore.stakeShares,
+            stakeStore.lockedDay,
+            stakeStore.lockedDay + DURATION
         );
     }
 
