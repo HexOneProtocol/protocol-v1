@@ -170,6 +170,23 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     }
 
     /**
+     *  @dev returns the future hex stake value of a given token id.
+     *  @param _id token id of the stake.
+     */
+    function stakeValue(uint256 _id) public view returns (uint256 value) {
+        Stake memory stake = stakes[_id];
+
+        uint256 hxAmount;
+        if (currentDay() >= stake.end) {
+            hxAmount = stake.amount + _accrued(_id, stake.start, stake.end);
+        } else {
+            hxAmount = stake.amount + _accrued(_id, stake.start, currentDay()) + _payout(_id);
+        }
+
+        return _hxQuote(hxAmount);
+    }
+
+    /**
      *  @dev returns the health ratio for a given token id.
      *  @param _id token id of the stake.
      */
