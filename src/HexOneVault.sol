@@ -110,12 +110,31 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
     function tokenURI(uint256 _id) public view override returns (string memory) {
         _requireOwned(_id);
 
+        uint256 factor = 10 ** 12;
+        uint256 whole = stakes[_id].shares / factor;
+        uint256 fraction = stakes[_id].shares % factor;
+
+        string memory str = "";
+        for (uint256 i = 11; i > 0; i--) {
+            if (fraction < 10 ** i) {
+                str = string(abi.encodePacked(str, "0"));
+            } else {
+                break;
+            }
+        }
+
+        string memory shares = string(abi.encodePacked(Strings.toString(whole), ".", str, Strings.toString(fraction)));
+
+        return shares;
+
+        /*
+
         bytes memory attributes = abi.encodePacked(
             '"attributes": [',
             "{",
             '"trait_type": "T-Shares",',
             '"value": "',
-            uint256(stakes[_id].shares).toString(),
+            shares,
             '"',
             "},",
             "{",
@@ -130,7 +149,7 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
         bytes memory data = abi.encodePacked(
             "{",
             '"name": "HEX1 Debt Title #',
-            _id.toString(),
+            shares,
             '",',
             '"description": "Magic Carpet Ride",',
             '"image": "',
@@ -141,6 +160,7 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
         );
 
         return string(abi.encodePacked("data:application/json;base64,", Base64.encode(data)));
+        */
     }
 
     function _baseURI() internal pure override returns (string memory) {
