@@ -125,10 +125,6 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
 
         string memory shares = string(abi.encodePacked(Strings.toString(whole), ".", str, Strings.toString(fraction)));
 
-        return shares;
-
-        /*
-
         bytes memory attributes = abi.encodePacked(
             '"attributes": [',
             "{",
@@ -160,7 +156,6 @@ contract HexOneVault is ERC721, AccessControl, ReentrancyGuard, IHexOneVault {
         );
 
         return string(abi.encodePacked("data:application/json;base64,", Base64.encode(data)));
-        */
     }
 
     function _baseURI() internal pure override returns (string memory) {
