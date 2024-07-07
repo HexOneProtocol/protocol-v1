@@ -38,7 +38,7 @@ contract HexOneBootstrap is AccessControl, ReentrancyGuard, IHexOneBootstrap {
     /// @dev duration of the sacrifice claim duration.
     uint64 public constant SACRIFICE_CLAIM_DURATION = 7 days;
     /// @dev duration of the airdrop claim duration.
-    uint64 public constant AIRDROP_DURATION = 15 days;
+    uint64 public constant AIRDROP_DURATION = 69 days;
 
     /// @dev address of the team wallet.
     address public constant TEAM_WALLET = 0x9f4b45c40A64E345A7222F0CE595503EcB6030A6;
