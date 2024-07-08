@@ -67,16 +67,16 @@ forge build --sizes
 
 ## Deployment Addresses
 
-| Description            | Address                                    |
-|------------------------|--------------------------------------------|
-| HEXIT                  | 0x0Ed412B72a6676241E16E9CBC3aE499EB195A697 |
-| HEX1                   | 0x786382a335205fEEf59b36C502c8891b5dd532b9 |
-| Price Feed             | 0xa053E94C8a95FED093611Ea5b02f04e9f1f30F65 |
-| Bootstrap              | 0x02e49cB9a245aFE3DCf3E434A85f6A8edBb3dF63 |
-| Vault                  | 0x8070Fe8e6b4DB067d09B37da5497c328Be5A2Ad5 |
-| Farm Manager           | 0x3EB1b653bcEB4632AA62f08e0d7775375178228c |
-| HEX1DAI LP / HEXIT Farm| 0x6a3Cceff9614Fc6B5eb9144935018798286e113B |
-| HEX1 / HEXIT Farm      | 0xa26c5320cf1341D8CbC32e68c0aa715eaA631c06 |
+| Description             | Address                                    |
+|-------------------------|--------------------------------------------|
+| HEXIT                   | 0x8d4D6aa8339dB0252dc92957544fe6931e0826Db |
+| HEX1                    | 0x298978f9B59A4BF9c08C114Fb6848fade7Be7E18 |
+| PRICE FEED              | 0x5d07dF5C5bf6Be1d0d5dA53DFEdc50B374EB7f82 |
+| BOOTSTRAP               | 0x9636f5103Ce5c86b5167a48bd3D5C89bb4F857F8 |
+| VAULT                   | 0x5fA107112E0C3B221fd4930cEB7010632b85bD13 |
+| FARM MANAGER            | 0x9780A434e9c178ae025D8fD2fa32392Eb87f8D49 |
+| HEX1DAI LP / HEXIT FARM | 0xB0051517782700A84F84462f3BBf401A37ff1fAd |
+| HEX1 / HEXIT FARM       | 0xCaF445439E55BD8F43B45d28536A1E43C1b5C6e5 |
 
 
 ## Audits

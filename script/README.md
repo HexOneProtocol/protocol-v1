@@ -6,7 +6,7 @@ Before trying to deploy the protocol a private key must be specified in `.env`.
 
 ### Deployment
 ```
-forge script script/deployment/Deploy.s.sol:DeployScript --rpc-url https://rpc.pulsechain.com --broadcast -vvvv
+forge script script/deployment/Deploy.s.sol:DeployScript --rpc-url https://rpc.pulsechain.com --verify --verifier sourcify --broadcast -vvv
 ```
 
 ### Process Sacrifice

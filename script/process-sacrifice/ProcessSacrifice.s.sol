@@ -11,10 +11,10 @@ import {IPulseXFactory} from "../../src/interfaces/pulsex/IPulseXFactory.sol";
 import {IPulseXRouter01 as IPulseXRouter} from "../../src/interfaces/pulsex/IPulseXRouter.sol";
 
 contract ProcessSacrificeScript is Base {
-    HexOneBootstrap internal immutable bootstrap = HexOneBootstrap(0x8a83de108199009e1D11175E3f98753B47e424f2);
+    HexOneBootstrap internal immutable bootstrap = HexOneBootstrap(0x9636f5103Ce5c86b5167a48bd3D5C89bb4F857F8);
 
-    address internal immutable hex1 = 0x369BDe403F3705a84Ca22249146DCc87829D6E7a;
-    address internal immutable hexit = 0xb192491672854059027BCdbF76eCf2a50328eD8d;
+    address internal immutable hex1 = 0x298978f9B59A4BF9c08C114Fb6848fade7Be7E18;
+    address internal immutable hexit = 0x8d4D6aa8339dB0252dc92957544fe6931e0826Db;
 
     function run() external broadcast {
         // get the amount out min of dai tokens the protocol wants to receive

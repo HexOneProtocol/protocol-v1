@@ -38,7 +38,7 @@ contract DeployScript is Base {
         sacrificeTokens[2] = WPLS_TOKEN;
         sacrificeTokens[3] = PLSX_TOKEN;
 
-        uint64 sacrificeStart = uint64(block.timestamp + 1 minutes);
+        uint64 sacrificeStart = uint64(1720609200);
 
         bootstrap = new HexOneBootstrap(sacrificeStart, address(feed), address(hexit), sacrificeTokens);
         vault = new HexOneVault(address(feed), address(bootstrap));
